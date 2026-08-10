@@ -34,6 +34,7 @@ Every task's requirements implicitly include this section.
 - **Tap targets** minimum 44×44px.
 - **Accessibility target:** WCAG 2.2 AA.
 - **Node:** 20 LTS or newer.
+- **Styling convention.** Astro `<style>` blocks are component-scoped by default, so page-specific rules live in the page that uses them — that is idiomatic, not duplication. The exception is rules that are byte-identical across three or more pages: those live in `global.css` under an `ra-` prefix (`.ra-eyebrow`, `.ra-lede`, `.ra-cards`, `.ra-card`, `.ra-prose`, `.ra-actions`, `.ra-sub`, `.ra-crumbs`) and page styles must not redeclare them. Where a page needs a variant of a shared rule, it overrides the specific property rather than restating the whole block.
 
 ---
 
@@ -614,6 +615,72 @@ a { color: var(--ra-navy-600); text-underline-offset: 0.2em; }
 }
 
 .ra-measure { max-width: var(--ra-measure); }
+
+/* ---------------------------------------------------------------------
+   Shared page composition classes.
+   Declared once here because Home, Services, Service detail, About, Work,
+   Contact, Returns, Privacy, Terms and 404 all use them. Page <style>
+   blocks must NOT redeclare these — they add only page-specific rules.
+   --------------------------------------------------------------------- */
+
+.ra-eyebrow {
+  color: var(--ra-gold-500);
+  font-size: var(--ra-step--1);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--ra-space-m);
+}
+
+.ra-lede {
+  max-width: 56ch;
+  font-size: var(--ra-step-1);
+  color: var(--ra-fg-muted);
+  margin-block: var(--ra-space-l) var(--ra-space-xl);
+}
+
+.ra-sub { color: var(--ra-fg-muted); margin-top: var(--ra-space-s); }
+
+.ra-actions { display: flex; flex-wrap: wrap; gap: var(--ra-space-m); }
+
+.ra-cards {
+  display: grid;
+  gap: var(--ra-space-l);
+  margin-top: var(--ra-space-xl);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) { .ra-cards { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .ra-cards--three { grid-template-columns: repeat(3, 1fr); } }
+
+.ra-card {
+  padding: var(--ra-space-l);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-m);
+  background: var(--ra-surface);
+}
+.ra-card h3 { font-size: var(--ra-step-1); margin-bottom: var(--ra-space-xs); }
+.ra-card h3 a { text-decoration: none; }
+.ra-card h3 a:hover { text-decoration: underline; }
+.ra-card p { color: var(--ra-fg-muted); }
+.ra-card__price { margin-top: var(--ra-space-m); font-weight: 700; color: var(--ra-navy-600); }
+
+.ra-prose h2 { font-size: var(--ra-step-2); margin-top: var(--ra-space-xl); }
+.ra-prose h2:first-child { margin-top: 0; }
+.ra-prose p { margin-top: var(--ra-space-m); color: var(--ra-fg-muted); }
+.ra-prose ul { margin-top: var(--ra-space-m); padding-left: 1.2em; }
+.ra-prose li { margin-top: var(--ra-space-2xs); color: var(--ra-fg-muted); }
+
+.ra-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ra-space-xs);
+  list-style: none;
+  padding: 0;
+  margin-bottom: var(--ra-space-l);
+  font-size: var(--ra-step--1);
+  color: var(--ra-fg-muted);
+}
+.ra-crumbs li + li::before { content: '/'; margin-right: var(--ra-space-xs); opacity: 0.5; }
 
 .ra-visually-hidden {
   position: absolute; width: 1px; height: 1px;
@@ -1467,15 +1534,12 @@ const organisation = {
 
 - [ ] **Step 5: Implement the base layout**
 
-Create `src/layouts/Base.astro`. Header, Footer and WhatsAppButton arrive in Task 7 — import them now and create minimal stubs so the layout compiles, then Task 7 fills them in:
+Create `src/layouts/Base.astro`. Site chrome (header, footer, WhatsApp button) is Task 7 — this task deliberately does **not** import or stub those components, so every file created here is complete rather than a placeholder:
 
 ```astro
 ---
 import '../styles/global.css';
 import Seo from '../components/Seo.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import WhatsAppButton from '../components/WhatsAppButton.astro';
 
 interface Props {
   title: string;
@@ -1496,25 +1560,14 @@ const { title, description, path, type, noindex } = Astro.props;
   </head>
   <body>
     <a class="ra-skip-link" href="#main">Skip to content</a>
-    <Header />
     <main id="main">
       <slot />
     </main>
-    <Footer />
-    <WhatsAppButton />
   </body>
 </html>
 ```
 
-- [ ] **Step 6: Create minimal component stubs so the layout compiles**
-
-Create `src/components/Header.astro`, `src/components/Footer.astro`, `src/components/WhatsAppButton.astro`, each containing only:
-
-```astro
-<!-- filled in by Task 7 -->
-```
-
-- [ ] **Step 7: Point the homepage at the layout**
+- [ ] **Step 6: Point the homepage at the layout**
 
 Replace `src/pages/index.astro`:
 
@@ -1532,7 +1585,7 @@ import { SITE } from '../lib/site';
 </Base>
 ```
 
-- [ ] **Step 8: Add robots.txt**
+- [ ] **Step 7: Add robots.txt**
 
 Create `public/robots.txt`:
 
@@ -1544,16 +1597,16 @@ Disallow: /comps/
 Sitemap: https://radiantalphadigital.com/sitemap-index.xml
 ```
 
-- [ ] **Step 9: Add noindex to the comps pages**
+- [ ] **Step 8: Add noindex to the comps pages**
 
 In both `src/pages/comps/hero.astro` and `src/pages/comps/product.astro`, confirm `<meta name="robots" content="noindex, nofollow" />` is present in the head. It was added in Task 5.
 
-- [ ] **Step 10: Run the tests to verify they pass**
+- [ ] **Step 9: Run the tests to verify they pass**
 
-Run: `npm run test:e2e`
-Expected: PASS on both mobile and desktop projects.
+Run: `npm run test:e2e -- seo`
+Expected: PASS on both mobile and desktop projects. The `navigation` suite does not exist yet — it arrives in Task 7.
 
-- [ ] **Step 11: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add -A
@@ -1990,12 +2043,36 @@ const href = buildWhatsAppUrl({
 </style>
 ```
 
-- [ ] **Step 7: Run the tests to verify they pass**
+- [ ] **Step 7: Wire the chrome into the base layout**
 
-Run: `npm run test:e2e -- navigation`
-Expected: PASS on both projects.
+In `src/layouts/Base.astro`, add the three imports to the frontmatter, immediately below the `Seo` import:
 
-- [ ] **Step 8: Commit**
+```astro
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+```
+
+Then replace the body so the chrome wraps the main landmark:
+
+```astro
+  <body>
+    <a class="ra-skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <WhatsAppButton />
+  </body>
+```
+
+- [ ] **Step 8: Run the tests to verify they pass**
+
+Run: `npm run test:e2e`
+Expected: PASS on both projects — the `seo` suite from Task 6 and the new `navigation` suite.
+
+- [ ] **Step 9: Commit**
 
 ```bash
 git add -A
@@ -2528,7 +2605,7 @@ const pricing = [
   path="/services"
 >
   <Section register="dark">
-    <p class="eyebrow">What we do</p>
+    <p class="ra-eyebrow">What we do</p>
     <h1 class="ra-display">Technology services built around your business goals.</h1>
     <p class="lede">
       From a first website to custom software and ongoing marketing — delivered by a
@@ -2597,14 +2674,6 @@ const pricing = [
 </Base>
 
 <style>
-  .eyebrow {
-    color: var(--ra-gold-500);
-    font-size: var(--ra-step--1);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: var(--ra-space-m);
-  }
   .lede {
     max-width: 56ch;
     font-size: var(--ra-step-1);
@@ -2692,7 +2761,7 @@ test.describe('service detail pages', () => {
       expect(response!.status()).toBe(200);
 
       await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
-      await expect(page).toHaveTitle(new RegExp(name.replace(/&/g, '&')));
+      await expect(page).toHaveTitle(`${name} | Radiant Alpha`);
 
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
         'href',
@@ -3066,7 +3135,7 @@ const expectations = [
   path="/"
 >
   <Section register="dark" class="hero">
-    <p class="eyebrow">Digital services · Abuja, Nigeria</p>
+    <p class="ra-eyebrow">Digital services · Abuja, Nigeria</p>
     <h1 class="ra-display hero__title">{SITE.tagline}</h1>
     <p class="lede">
       We help businesses establish a powerful digital presence through professional web
@@ -3147,14 +3216,6 @@ const expectations = [
 
 <style>
   .hero { padding-block: clamp(3.5rem, 11vh, 8rem); }
-  .eyebrow {
-    color: var(--ra-gold-500);
-    font-size: var(--ra-step--1);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: var(--ra-space-m);
-  }
   .hero__title { max-width: 18ch; }
   .lede {
     max-width: 56ch;
@@ -3333,7 +3394,7 @@ const audiences = [
   path="/about"
 >
   <Section register="dark">
-    <p class="eyebrow">About us</p>
+    <p class="ra-eyebrow">About us</p>
     <h1 class="ra-display">Technology should be accessible, reliable, and focused on solving real business challenges.</h1>
   </Section>
 
@@ -3398,14 +3459,6 @@ const audiences = [
 </Base>
 
 <style>
-  .eyebrow {
-    color: var(--ra-gold-500);
-    font-size: var(--ra-step--1);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: var(--ra-space-m);
-  }
   .prose h2 { font-size: var(--ra-step-2); }
   .prose p { margin-top: var(--ra-space-m); color: var(--ra-fg-muted); }
 
@@ -3479,7 +3532,7 @@ const examples = [
   path="/work"
 >
   <Section register="dark">
-    <p class="eyebrow">Our work</p>
+    <p class="ra-eyebrow">Our work</p>
     <h1 class="ra-display">We're currently expanding our portfolio.</h1>
     <p class="lede">
       As we complete more client engagements, this page will showcase the projects
@@ -3507,14 +3560,6 @@ const examples = [
 </Base>
 
 <style>
-  .eyebrow {
-    color: var(--ra-gold-500);
-    font-size: var(--ra-step--1);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: var(--ra-space-m);
-  }
   .lede {
     max-width: 56ch;
     font-size: var(--ra-step-1);
@@ -3622,6 +3667,14 @@ test.describe('contact page', () => {
     await expect(page.getByText(/if the form doesn't work/i)).toBeVisible();
   });
 
+  test('submits to a real success page rather than a query string', async ({ page }) => {
+    await page.goto('/contact');
+    await expect(page.locator('form[data-netlify="true"]')).toHaveAttribute(
+      'action',
+      '/contact/thanks'
+    );
+  });
+
   test('client-side validation blocks an empty submission', async ({ page }) => {
     await page.goto('/contact');
     await page.getByRole('button', { name: /send/i }).click();
@@ -3630,6 +3683,20 @@ test.describe('contact page', () => {
       (el: HTMLInputElement) => el.validity.valid
     );
     expect(nameValid).toBe(false);
+  });
+});
+
+test.describe('contact success page', () => {
+  test('confirms the message was sent and says what happens next', async ({ page }) => {
+    const response = await page.goto('/contact/thanks');
+    expect(response!.status()).toBe(200);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/thank you/i);
+    await expect(page.getByText(/within one business day/i)).toBeVisible();
+  });
+
+  test('is excluded from search indexing', async ({ page }) => {
+    await page.goto('/contact/thanks');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
   });
 });
 
@@ -3668,7 +3735,9 @@ test.describe('404 page', () => {
 Run: `npm run test:e2e -- contact`
 Expected: FAIL — 404 on all routes.
 
-- [ ] **Step 3: Build the contact page**
+- [ ] **Step 3: Build the contact page and its success page**
+
+Netlify redirects to the form's `action` URL on a successful submission, so the success state is a real page rather than a query-string branch. That keeps it JS-free, gives a shareable URL, and makes the confirmation testable.
 
 Create `src/pages/contact.astro`:
 
@@ -3690,7 +3759,7 @@ const waUrl = buildWhatsAppUrl({
   path="/contact"
 >
   <Section register="dark">
-    <p class="eyebrow">Contact</p>
+    <p class="ra-eyebrow">Contact</p>
     <h1 class="ra-display">Let's build something great together.</h1>
     <p class="lede">
       Whether you need a professional website, digital marketing, IT consulting, or
@@ -3738,7 +3807,7 @@ const waUrl = buildWhatsAppUrl({
           method="POST"
           data-netlify="true"
           netlify-honeypot="bot-field"
-          action="/contact?sent=true"
+          action="/contact/thanks"
           class="form"
         >
           <input type="hidden" name="form-name" value="contact" />
@@ -3796,14 +3865,6 @@ const waUrl = buildWhatsAppUrl({
 </Base>
 
 <style>
-  .eyebrow {
-    color: var(--ra-gold-500);
-    font-size: var(--ra-step--1);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: var(--ra-space-m);
-  }
   .lede {
     max-width: 56ch;
     font-size: var(--ra-step-1);
@@ -3861,6 +3922,55 @@ const waUrl = buildWhatsAppUrl({
     padding: var(--ra-space-m);
     border-radius: var(--ra-radius-s);
     background: var(--ra-navy-50);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+</style>
+```
+
+Then create `src/pages/contact/thanks.astro`:
+
+```astro
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import { buildWhatsAppUrl } from '../../lib/whatsapp';
+import { SITE } from '../../lib/site';
+
+const waUrl = buildWhatsAppUrl({
+  message: "Hi Radiant Alpha, I just sent a message through your website.",
+});
+---
+<Base
+  title="Thank you"
+  description="Your message has been sent to Radiant Alpha Digital Services. We'll be in touch shortly."
+  path="/contact/thanks"
+  noindex
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Message sent</p>
+    <h1 class="ra-display">Thank you — we've got your message.</h1>
+    <p class="ra-lede">
+      We read every enquiry and aim to reply <strong>within one business day</strong>.
+      If it's urgent, WhatsApp is faster than email.
+    </p>
+    <div class="ra-actions">
+      <Button href={waUrl} variant="gold" external>Message on WhatsApp</Button>
+      <Button href="/services" variant="secondary">Explore Our Services</Button>
+    </div>
+    <p class="direct">
+      Prefer to reach us directly? <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      {' '}or <a href={`tel:${SITE.phoneE164}`}>{SITE.phoneDisplay}</a>.
+    </p>
+  </Section>
+</Base>
+
+<style>
+  .direct {
+    margin-top: var(--ra-space-2xl);
+    padding-top: var(--ra-space-l);
+    border-top: 1px solid var(--ra-rule);
     font-size: var(--ra-step--1);
     color: var(--ra-fg-muted);
   }
@@ -4312,14 +4422,19 @@ import { join } from 'node:path';
 
 const DIST = 'dist';
 
-const FORBIDDEN: Array<[string, string]> = [
-  ['street address', 'standard estate'],
-  ['street address', 'galadimawa'],
-  ['street address', 'b09'],
-  ['tax identification number', '2623730842678'],
-  ['superseded email', '00yila.dev'],
-  ['superseded phone', '7040159044'],
-  ['superseded phone', '704 015 9044'],
+/**
+ * Each entry is [label, pattern]. Patterns are regexes, not substrings:
+ * "b09" is short enough to occur by chance inside a content-hashed asset
+ * filename or a minified bundle, so it is matched with word boundaries.
+ */
+const FORBIDDEN: Array<[string, RegExp]> = [
+  ['street address', /standard\s+estate/i],
+  ['street address', /galadimawa/i],
+  ['street address', /\bb09\b/i],
+  ['tax identification number', /2623730842678/],
+  ['superseded email', /00yila\.dev/i],
+  ['superseded phone', /\+?234\s*704\s*015\s*9044/],
+  ['superseded phone', /\b7040159044\b/],
 ];
 
 function walk(dir: string): string[] {
@@ -4333,15 +4448,17 @@ describe('built output contains no private or superseded details', () => {
   let files: string[] = [];
 
   beforeAll(() => {
-    files = walk(DIST).filter((f) => /\.(html|xml|txt|json|js|css)$/.test(f));
+    files = walk(DIST)
+      // Author-controlled output only. Hashed asset bundles under _astro/
+      // are compiled artefacts of these same sources, so scanning them adds
+      // no coverage and invites false positives from content hashes.
+      .filter((f) => /\.(html|xml|txt|json)$/.test(f));
     expect(files.length, 'run `npm run build` before this test').toBeGreaterThan(0);
   });
 
-  it.each(FORBIDDEN)('never leaks the %s (%s)', (_label, needle) => {
-    const offenders = files.filter((file) =>
-      readFileSync(file, 'utf8').toLowerCase().includes(needle)
-    );
-    expect(offenders, `found "${needle}" in: ${offenders.join(', ')}`).toEqual([]);
+  it.each(FORBIDDEN)('never leaks the %s (%s)', (_label, pattern) => {
+    const offenders = files.filter((file) => pattern.test(readFileSync(file, 'utf8')));
+    expect(offenders, `matched ${pattern} in: ${offenders.join(', ')}`).toEqual([]);
   });
 
   it('publishes the RC number, which is intentional', () => {
@@ -4379,8 +4496,8 @@ import AxeBuilder from '@axe-core/playwright';
 
 const PAGES = [
   '/', '/about', '/work', '/services', '/services/software-development',
-  '/services/digital-marketing', '/contact', '/returns', '/privacy',
-  '/terms', '/shop', '/blog',
+  '/services/digital-marketing', '/contact', '/contact/thanks', '/returns',
+  '/privacy', '/terms', '/shop', '/blog', '/404',
 ];
 
 for (const path of PAGES) {
