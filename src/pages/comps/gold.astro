@@ -1,0 +1,205 @@
+---
+/*
+ * Decision comp: the current marigold against a muted champagne, applied to
+ * real sections rather than swatches — a gold only reveals its character next
+ * to navy, at the sizes the site actually uses it.
+ *
+ * Both families pass every pairing the gold rule requires; this is purely a
+ * question of tone. Delete this page once the call is made.
+ */
+import '../../styles/global.css';
+import { SITE } from '../../lib/site';
+import { formatNaira } from '../../lib/format';
+
+const options = [
+  {
+    id: 'marigold',
+    name: 'Current — Marigold',
+    hex: '#EFB42E',
+    ink: '#8C6800',
+    note: 'Straight from the logo. Saturated and high-energy; reads bright and confident, but sits close to the yellow used for warnings.',
+    vars: { g500: '#EFB42E', g400: '#F5C85C', g300: '#F9D98F', ink: '#8C6800' },
+    ratios: { navy: '9.41', canvasInk: '5.00' },
+  },
+  {
+    id: 'champagne',
+    name: 'Alternative — Champagne',
+    hex: '#D2B27A',
+    ink: '#7A6234',
+    note: 'Desaturated toward the metal. Reads calmer and more premium, closer to how luxury and consultancy brands use gold. Loses some of the logo’s brightness.',
+    vars: { g500: '#D2B27A', g400: '#E2C795', g300: '#EDDCBB', ink: '#7A6234' },
+    ratios: { navy: '8.70', canvasInk: '5.65' },
+  },
+];
+---
+
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Comp — Gold direction</title>
+</head>
+<body>
+  <div class="page">
+    <header class="intro">
+      <p class="ra-eyebrow intro__eyebrow">Decision comp</p>
+      <h1>Which gold?</h1>
+      <p class="intro__lede">
+        The same sections rendered in both. Every pairing below passes WCAG AA in
+        both families, so this is a question of tone, not accessibility. Compare
+        them on a phone too — saturation reads differently on a small screen.
+      </p>
+    </header>
+
+    <div class="split">
+      {options.map((opt) => (
+        <section
+          class="col"
+          style={`--g500:${opt.vars.g500}; --g400:${opt.vars.g400}; --g300:${opt.vars.g300}; --gink:${opt.vars.ink};`}
+        >
+          <div class="col__head">
+            <div class="chips">
+              <span class="chip" style={`background:${opt.vars.g500}`} title={opt.vars.g500}></span>
+              <span class="chip" style={`background:${opt.vars.g400}`} title={opt.vars.g400}></span>
+              <span class="chip" style={`background:${opt.vars.ink}`} title={opt.vars.ink}></span>
+            </div>
+            <h2>{opt.name}</h2>
+            <p class="col__hex ra-numeric">{opt.hex} · ink {opt.ink}</p>
+            <p class="col__note">{opt.note}</p>
+            <p class="col__ratio ra-numeric">
+              {opt.ratios.navy}:1 on navy · {opt.ratios.canvasInk}:1 ink on canvas
+            </p>
+          </div>
+
+          {/* ---- dark register ---- */}
+          <div class="band band--dark">
+            <p class="band__eyebrow">Digital services · Abuja, Nigeria</p>
+            <h3 class="ra-display band__title">Building Digital Solutions That Drive Business Growth.</h3>
+            <p class="band__sub">
+              Professional web development, custom software, and digital marketing.
+            </p>
+            <div class="btns">
+              <span class="btn btn--gold">Start Your Project</span>
+              <span class="btn btn--ghost">Explore Our Services</span>
+            </div>
+            <p class="band__trust">{SITE.trustLine}</p>
+          </div>
+
+          {/* ---- light register: where gold-ink does the work ---- */}
+          <div class="band band--light">
+            <p class="band__eyebrow band__eyebrow--ink">What we do</p>
+            <h3 class="band__h3">Website Design &amp; Development</h3>
+            <p class="band__body">
+              Fast, mobile-first websites designed to convert visitors into customers.
+            </p>
+            <p class="price ra-numeric">From {formatNaira(150000)}</p>
+
+            <div class="strip">
+              <div><span class="strip__k">RC 9421582</span><span class="strip__v">CAC registered</span></div>
+              <div><span class="strip__k">Abuja, FCT</span><span class="strip__v">Serving Nigeria</span></div>
+              <div><span class="strip__k">3–4 weeks</span><span class="strip__v">Pre-order delivery</span></div>
+            </div>
+
+            <div class="btns">
+              <span class="btn btn--navy">Get in Touch</span>
+              <span class="btn btn--outline">Browse the Shop</span>
+            </div>
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <p class="foot">
+      Hover states are omitted here on purpose — this comp is about resting tone.
+    </p>
+  </div>
+</body>
+</html>
+
+<style>
+  .page {
+    width: min(100% - 2rem, 1400px);
+    margin-inline: auto;
+    padding-block: var(--ra-space-xl) var(--ra-space-3xl);
+  }
+  .intro { max-width: 62ch; margin-bottom: var(--ra-space-xl); }
+  .intro__eyebrow { color: var(--ra-gold-ink); }
+  .intro__lede { color: var(--ra-fg-muted); margin-top: var(--ra-space-m); }
+
+  .split { display: grid; gap: var(--ra-space-xl); }
+  @media (min-width: 900px) { .split { grid-template-columns: 1fr 1fr; } }
+
+  .col {
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-l);
+    overflow: hidden;
+    background: var(--ra-surface);
+  }
+  .col__head { padding: var(--ra-space-l); border-bottom: 1px solid var(--ra-border); }
+  .col__head h2 { font-size: var(--ra-step-2); }
+  .chips { display: flex; gap: var(--ra-space-2xs); margin-bottom: var(--ra-space-s); }
+  .chip { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgb(16 24 40 / 0.12); }
+  .col__hex { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: var(--ra-space-2xs); }
+  .col__note { margin-top: var(--ra-space-s); color: var(--ra-fg-muted); max-width: 46ch; }
+  .col__ratio {
+    margin-top: var(--ra-space-s);
+    font-size: var(--ra-step--1);
+    color: var(--ra-gold-ink);
+    font-weight: 600;
+  }
+
+  .band { padding: var(--ra-space-xl) var(--ra-space-l); }
+
+  .band--dark { background: var(--ra-navy-900); color: var(--ra-surface); }
+  .band--dark .band__title { color: var(--ra-surface); max-width: 16ch; font-size: var(--ra-step-3); }
+  .band__eyebrow {
+    color: var(--g500);
+    font-size: var(--ra-step--1);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: var(--ra-space-s);
+  }
+  .band__sub { color: var(--ra-navy-200); margin-block: var(--ra-space-m) var(--ra-space-l); }
+  .band__trust {
+    margin-top: var(--ra-space-l);
+    padding-top: var(--ra-space-m);
+    border-top: 1px solid var(--ra-navy-700);
+    font-size: var(--ra-step--1);
+    color: var(--ra-navy-200);
+  }
+
+  .band--light { background: var(--ra-canvas); }
+  .band__eyebrow--ink { color: var(--gink); }
+  .band__h3 { font-size: var(--ra-step-2); color: var(--ra-navy-600); }
+  .band__body { color: var(--ra-fg-muted); margin-top: var(--ra-space-xs); }
+  .price { margin-top: var(--ra-space-m); font-weight: 700; color: var(--gink); font-size: var(--ra-step-1); }
+
+  .strip {
+    display: grid;
+    gap: var(--ra-space-m);
+    margin-block: var(--ra-space-l);
+    padding-block: var(--ra-space-m);
+    border-block: 1px solid var(--ra-border);
+  }
+  @media (min-width: 480px) { .strip { grid-template-columns: repeat(3, 1fr); } }
+  .strip__k { display: block; font-weight: 700; color: var(--gink); }
+  .strip__v { display: block; font-size: var(--ra-step--1); color: var(--ra-fg-muted); }
+
+  .btns { display: flex; flex-wrap: wrap; gap: var(--ra-space-s); }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--ra-space-s) var(--ra-space-l);
+    border-radius: var(--ra-radius-m);
+    font-weight: 600;
+  }
+  .btn--gold { background: var(--g500); color: var(--ra-navy-900); }
+  .btn--ghost { color: var(--g500); box-shadow: inset 0 0 0 1.5px var(--g500); }
+  .btn--navy { background: var(--ra-navy-600); color: var(--ra-surface); }
+  .btn--outline { color: var(--gink); box-shadow: inset 0 0 0 1.5px var(--g500); }
+
+  .foot { margin-top: var(--ra-space-l); color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
+</style>
