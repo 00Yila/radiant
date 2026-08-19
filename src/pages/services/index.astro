@@ -125,13 +125,19 @@ const pricing = [
 </Base>
 
 <style>
-  .tier + .tier { margin-top: var(--ra-space-3xl); }
-
-  .tier__head {
-    max-width: 60ch;
-    padding-left: var(--ra-space-m);
-    border-left: 3px solid var(--ra-gold-500);
+  /*
+   * Tiers are separated by a full-width rule above each subsequent one — a
+   * section break, which is what this actually is. The gold-ink "Tier n" label
+   * below already carries the accent, so a coloured bar as well would be two
+   * markers doing one job.
+   */
+  .tier + .tier {
+    margin-top: var(--ra-space-3xl);
+    padding-top: var(--ra-space-3xl);
+    border-top: 1px solid var(--ra-border);
   }
+
+  .tier__head { max-width: 60ch; }
   /* Gold at text weight on the light register needs the darker ink. */
   .tier__label {
     color: var(--ra-gold-ink);

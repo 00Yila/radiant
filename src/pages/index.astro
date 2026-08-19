@@ -252,7 +252,18 @@ const expectations = [
     grid-template-columns: repeat(2, 1fr);
   }
   @media (min-width: 800px) { .creds__list { grid-template-columns: repeat(4, 1fr); } }
-  .creds__list li { padding-left: var(--ra-space-m); border-left: 2px solid var(--ra-gold-500); }
+  /*
+   * Column rules between the facts, not an accent bar on each — these are one
+   * row of related figures, and the gold-ink numerals already carry the brand
+   * colour. Applied only at the four-across breakpoint, where every item really
+   * is on one row; at two-across a left rule would fall mid-row.
+   */
+  @media (min-width: 800px) {
+    .creds__list li + li {
+      padding-left: var(--ra-space-l);
+      border-left: 1px solid var(--ra-border);
+    }
+  }
   .creds__figure {
     font-size: var(--ra-step-2);
     font-weight: 700;
