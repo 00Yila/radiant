@@ -2,6 +2,7 @@
 @import '@fontsource-variable/fraunces';
 @import './reset.css';
 @import './tokens.css';
+@import './backdrops.css';
 
 :root {
   --ra-font-sans: 'Plus Jakarta Sans Variable', system-ui, -apple-system, sans-serif;

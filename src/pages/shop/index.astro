@@ -14,7 +14,26 @@ const waUrl = buildWhatsAppUrl({
   description="Smartphones, laptops, and accessories on pre-order from Radiant Alpha. Condition, warranty, and delivery time stated clearly on every listing."
   path="/shop"
 >
-  <Section register="dark">
+  {/*
+    * A device photograph, not a mock storefront: the catalogue genuinely is
+    * not built yet, and dressing an empty shop in fake product cards would
+    * promise stock we cannot ship.
+    */}
+  <Section register="dark" class="ra-backdrop-photo shop-hero">
+    <picture class="ra-backdrop__img">
+      <source
+        type="image/webp"
+        srcset="/images/photos/products-iphone-640.webp 640w, /images/photos/products-iphone-1280.webp 1280w"
+        sizes="100vw"
+      />
+      <img
+        src="/images/photos/products-iphone-1280.jpg"
+        width="1280"
+        height="960"
+        decoding="async"
+        alt=""
+      />
+    </picture>
     <h1 class="ra-display">Our shop is opening shortly.</h1>
     <p class="ra-lede">
       We&rsquo;re preparing the full catalogue now. In the meantime, message us on WhatsApp with

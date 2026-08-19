@@ -74,6 +74,55 @@ describe('gold ink is light-register only', () => {
   });
 });
 
+/*
+ * A photograph behind text is the usual way a hero quietly fails contrast: the
+ * scrim is tuned against the average frame, then one bright region drops the
+ * accent colour below AA. This pins the floor rather than trusting the eye.
+ */
+describe('the photo scrim keeps text legible over the brightest frame', () => {
+  const css = readFileSync('src/styles/backdrops.css', 'utf8');
+
+  /** Brightest pixel the Abuja photograph actually contains — blown-out cloud. */
+  const SKY = '#F5F8FC';
+
+  function composite(fg: string, alpha: number, bg: string): string {
+    const parse = (h: string) =>
+      [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const [f, b] = [parse(fg), parse(bg)];
+    return (
+      '#' +
+      f
+        .map((c, i) =>
+          Math.round(alpha * c + (1 - alpha) * b[i])
+            .toString(16)
+            .padStart(2, '0')
+        )
+        .join('')
+    );
+  }
+
+  const alphas = [...css.matchAll(/rgb\(10 25 48 \/ (0\.\d+)\)/g)].map((m) =>
+    Number(m[1])
+  );
+
+  it('declares scrim stops', () => {
+    expect(alphas.length, 'no scrim gradient found in backdrops.css').toBeGreaterThan(0);
+  });
+
+  it.each([
+    ['gold accent', TOKENS.gold500],
+    ['muted text', TOKENS.navy200],
+    ['body text', TOKENS.surface],
+  ])('%s clears AA at the weakest scrim stop', (_label, fg) => {
+    const weakest = Math.min(...alphas);
+    const behind = composite(TOKENS.navy900, weakest, SKY);
+    expect(
+      contrastRatio(fg, behind),
+      `at alpha ${weakest} over ${SKY}`
+    ).toBeGreaterThanOrEqual(AA_NORMAL);
+  });
+});
+
 describe('tokens.css stays in sync with tokens.ts', () => {
   const css = readFileSync('src/styles/tokens.css', 'utf8');
 

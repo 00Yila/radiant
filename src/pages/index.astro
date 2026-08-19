@@ -87,7 +87,7 @@ const expectations = [
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </Fragment>
 
-  <Section register="dark" class="hero">
+  <Section register="dark" class="hero ra-backdrop-glow">
     <HeroFigure />
     <p class="ra-eyebrow">Digital services · Abuja, Nigeria</p>
     <h1 class="ra-display hero__title">{SITE.tagline}</h1>
@@ -119,7 +119,7 @@ const expectations = [
     </ul>
   </Section>
 
-  <Section>
+  <Section class="ra-backdrop-hex">
     <h2>What we do</h2>
     <p class="ra-measure ra-sub">
       Four core services, plus IT consulting, networking, and technology products.
@@ -151,14 +151,36 @@ const expectations = [
     </ul>
   </Section>
 
-  <Section>
-    <h2>Technology products, described honestly</h2>
-    <p class="ra-measure ra-sub">
-      Smartphones, laptops, and accessories on pre-order. Every listing states condition,
-      network lock, SIM type, battery health, and warranty before you order — allow
-      {' '}{SITE.preOrderLeadTime} for delivery from confirmation.
-    </p>
-    <p class="shop-cta"><Button href="/shop">Browse the Shop</Button></p>
+  <Section class="products">
+    <div class="products__grid">
+      <div>
+        <h2>Technology products, described honestly</h2>
+        <p class="ra-sub">
+          Smartphones, laptops, and accessories on pre-order. Every listing states
+          condition, network lock, SIM type, battery health, and warranty before you
+          order — allow {SITE.preOrderLeadTime} for delivery from confirmation.
+        </p>
+        <p class="shop-cta"><Button href="/shop">Browse the Shop</Button></p>
+      </div>
+      {/* Dimensions are on the tag so the grid does not reflow as it loads. */}
+      <picture class="products__shot">
+        <source
+          type="image/webp"
+          srcset="/images/photos/products-iphone-640.webp 640w, /images/photos/products-iphone-1280.webp 1280w"
+          sizes="(min-width: 900px) 46vw, 100vw"
+        />
+        <img
+          src="/images/photos/products-iphone-640.jpg"
+          srcset="/images/photos/products-iphone-640.jpg 640w, /images/photos/products-iphone-1280.jpg 1280w"
+          sizes="(min-width: 900px) 46vw, 100vw"
+          width="640"
+          height="480"
+          loading="lazy"
+          decoding="async"
+          alt="The rear camera array of a modern smartphone, lit against a dark background."
+        />
+      </picture>
+    </div>
   </Section>
 
   <Section>
@@ -201,7 +223,7 @@ const expectations = [
     </div>
   </Section>
 
-  <Section register="dark">
+  <Section register="dark" class="ra-backdrop-nodes">
     <h2 class="ra-display">Ready to grow your business?</h2>
     <p class="ra-lede">
       Whether you need a professional website, custom software, digital marketing, IT
@@ -329,6 +351,19 @@ const expectations = [
 
   .more { margin-top: var(--ra-space-l); font-weight: 600; }
   .shop-cta { margin-top: var(--ra-space-l); }
+
+  .products__grid { display: grid; gap: var(--ra-space-xl); align-items: center; }
+  @media (min-width: 900px) {
+    .products__grid { grid-template-columns: 1fr 1fr; gap: var(--ra-space-2xl); }
+  }
+  .products__shot {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--ra-radius-l);
+    /* The photo is dark on dark; a hairline keeps its edge legible on canvas. */
+    box-shadow: 0 0 0 1px var(--ra-border), var(--ra-shadow-m);
+  }
+  .products__shot img { width: 100%; height: auto; }
 
   .reasons {
     display: grid;

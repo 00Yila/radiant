@@ -24,9 +24,31 @@ const audiences = [
   description="Radiant Alpha Digital Services Ltd is a CAC-registered Nigerian technology company in Abuja, helping businesses grow through practical digital solutions."
   path="/about"
 >
-  <Section register="dark">
+  {/*
+    * A real photograph of Abuja, where we actually trade — not a generic
+    * stand-in skyline, because the page states the location as fact. The
+    * scrim in .ra-backdrop-photo is what keeps the heading at full contrast.
+    */}
+  <Section register="dark" class="ra-backdrop-photo about-hero">
+    <picture class="ra-backdrop__img">
+      <source
+        type="image/webp"
+        srcset="/images/photos/abuja-skyline-800.webp 800w, /images/photos/abuja-skyline-1600.webp 1600w"
+        sizes="100vw"
+      />
+      <img
+        src="/images/photos/abuja-skyline-800.jpg"
+        srcset="/images/photos/abuja-skyline-800.jpg 800w, /images/photos/abuja-skyline-1600.jpg 1600w"
+        sizes="100vw"
+        width="1600"
+        height="900"
+        decoding="async"
+        alt="A modern high-rise office tower in Abuja against a bright, cloudy sky."
+      />
+    </picture>
     <p class="ra-eyebrow">About us</p>
     <h1 class="ra-display">Technology should be accessible, reliable, and focused on solving real business challenges.</h1>
+    <p class="about-hero__where">{SITE.location}</p>
   </Section>
 
   <Section>
@@ -90,6 +112,15 @@ const audiences = [
 </Base>
 
 <style>
+  :global(.about-hero) { --ra-section-pad: clamp(4rem, 13vh, 8rem); }
+  .about-hero h1 { max-width: 20ch; }
+  .about-hero__where {
+    margin-top: var(--ra-space-l);
+    color: var(--ra-gold-500);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
   .split { display: grid; gap: var(--ra-space-xl); }
   @media (min-width: 800px) { .split { grid-template-columns: repeat(2, 1fr); } }
   .split p { margin-top: var(--ra-space-m); color: var(--ra-fg-muted); max-width: 42ch; }
