@@ -1,0 +1,122 @@
+---
+import { SITE } from '../lib/site';
+
+const columns = [
+  {
+    heading: 'Services',
+    links: [
+      { href: '/services/software-development', label: 'Software Development' },
+      { href: '/services/website-design-development', label: 'Website Design' },
+      { href: '/services/ecommerce-solutions', label: 'E-Commerce' },
+      { href: '/services/digital-marketing', label: 'Digital Marketing' },
+    ],
+  },
+  {
+    heading: 'Company',
+    links: [
+      { href: '/about', label: 'About Us' },
+      { href: '/work', label: 'Our Work' },
+      { href: '/blog', label: 'Blog' },
+      { href: '/contact', label: 'Contact' },
+    ],
+  },
+  {
+    heading: 'Support',
+    links: [
+      { href: '/shop', label: 'Shop' },
+      { href: '/returns', label: 'Returns & Warranty' },
+      { href: '/privacy', label: 'Privacy Policy' },
+      { href: '/terms', label: 'Terms of Service' },
+    ],
+  },
+];
+const year = new Date().getFullYear();
+---
+<footer class="ftr ra-dark">
+  <div class="ra-container">
+    <div class="ftr__grid">
+      <div class="ftr__brand">
+        <img src="/images/logo-mark.png" alt="" width="48" height="48" />
+        <p class="ftr__tagline">{SITE.tagline}</p>
+        <address class="ftr__contact">
+          <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+          <a href={`tel:${SITE.phoneE164}`}>{SITE.phoneDisplay}</a>
+          <span>{SITE.location}</span>
+        </address>
+      </div>
+
+      {columns.map(({ heading, links }) => (
+        <nav class="ftr__col" aria-label={heading}>
+          <h2 class="ftr__heading">{heading}</h2>
+          <ul role="list">
+            {links.map(({ href, label }) => (
+              <li><a href={href}>{label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+
+    <div class="ftr__legal">
+      <p class="ftr__trust">{SITE.trustLine}</p>
+      <p class="ftr__copy">© {year} {SITE.legalName}. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ftr {
+    background: var(--ra-navy-900);
+    color: var(--ra-surface);
+    padding-block: var(--ra-space-2xl) var(--ra-space-xl);
+    margin-top: var(--ra-space-3xl);
+  }
+  .ftr__grid {
+    display: grid;
+    gap: var(--ra-space-xl);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 720px) {
+    .ftr__grid { grid-template-columns: 1.4fr repeat(3, 1fr); }
+  }
+  .ftr__brand img { width: 48px; height: 48px; }
+  .ftr__tagline {
+    max-width: 30ch;
+    margin-block: var(--ra-space-m);
+    color: var(--ra-navy-200);
+  }
+  .ftr__contact { display: grid; gap: var(--ra-space-2xs); font-style: normal; }
+  .ftr__contact a, .ftr__contact span { color: var(--ra-gold-500); text-decoration: none; }
+  .ftr__contact span { color: var(--ra-navy-200); }
+  .ftr__contact a:hover { text-decoration: underline; }
+
+  .ftr__heading {
+    font-size: var(--ra-step--1);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ra-navy-200);
+    margin-bottom: var(--ra-space-m);
+  }
+  .ftr__col ul { display: grid; gap: var(--ra-space-xs); list-style: none; padding: 0; }
+  .ftr__col a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--ra-surface);
+    text-decoration: none;
+    transition: color 160ms ease;
+  }
+  /* On navy, gold is legible as text — so here the label itself turns gold. */
+  .ftr__col a:hover { color: var(--ra-gold-500); }
+
+  .ftr__legal {
+    margin-top: var(--ra-space-xl);
+    padding-top: var(--ra-space-l);
+    border-top: 1px solid var(--ra-navy-700);
+    display: grid;
+    gap: var(--ra-space-xs);
+    font-size: var(--ra-step--1);
+    color: var(--ra-navy-200);
+  }
+</style>

@@ -1,0 +1,47 @@
+---
+import { SITE } from '../lib/site';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+}
+const { title, description, path, type = 'website', noindex = false } = Astro.props;
+
+const canonical = new URL(path, SITE.domain).href;
+const fullTitle = path === '/' ? title : `${title} | ${SITE.name}`;
+
+const organisation = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE.legalName,
+  alternateName: SITE.name,
+  url: SITE.domain,
+  email: SITE.email,
+  telephone: SITE.phoneE164,
+  foundingDate: SITE.founded,
+  identifier: { '@type': 'PropertyValue', name: 'RC Number', value: SITE.rcNumber },
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: SITE.addressLocality,
+    addressRegion: SITE.addressRegion,
+    addressCountry: SITE.addressCountry,
+  },
+};
+---
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonical} />
+<meta property="og:site_name" content={SITE.legalName} />
+<meta property="og:locale" content="en_NG" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<script type="application/ld+json" set:html={JSON.stringify(organisation)} />

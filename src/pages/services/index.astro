@@ -1,0 +1,120 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import { formatNaira } from '../../lib/format';
+
+const services = (await getCollection('services')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const leadServices = services.filter((s) => s.data.lead);
+const otherServices = services.filter((s) => !s.data.lead);
+
+const pricing = [
+  { service: 'Business Website', from: 150000, unit: '' },
+  { service: 'E-commerce Website', from: 300000, unit: '' },
+  { service: 'Custom Web Application', from: 500000, unit: '' },
+  { service: 'Website Maintenance', from: 30000, unit: '/month' },
+  { service: 'SEO Services', from: 80000, unit: '/month' },
+  { service: 'Social Media Management', from: 100000, unit: '/month' },
+  { service: 'Branding Package', from: 120000, unit: '' },
+  { service: 'IT Consulting', from: 25000, unit: '/hour' },
+  { service: 'Network Setup', from: 100000, unit: '' },
+  { service: 'Technical Support', from: 20000, unit: '' },
+];
+---
+<Base
+  title="Services"
+  description="Software development, website design, e-commerce, digital marketing, IT consulting, and networking for businesses across Nigeria. Transparent starting prices."
+  path="/services"
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">What we do</p>
+    <h1 class="ra-display">Technology services built around your business goals.</h1>
+    <p class="ra-lede">
+      From a first website to custom software and ongoing marketing — delivered by a
+      CAC-registered team in Abuja, with pricing stated up front.
+    </p>
+  </Section>
+
+  <Section>
+    <h2>Core services</h2>
+    <ul class="ra-cards" role="list">
+      {leadServices.map((service) => (
+        <li class="ra-card">
+          <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
+          <p>{service.data.summary}</p>
+          {service.data.startingFrom && (
+            <p class="ra-card__price ra-numeric">
+              From {formatNaira(service.data.startingFrom)}
+            </p>
+          )}
+        </li>
+      ))}
+    </ul>
+
+    <h2 class="also">Also available</h2>
+    <ul class="ra-cards ra-cards--three" role="list">
+      {otherServices.map((service) => (
+        <li class="ra-card">
+          <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
+          <p>{service.data.summary}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section>
+    <h2 id="pricing">Pricing</h2>
+    <p class="ra-measure">
+      Indicative starting prices. Final cost depends on scope — tell us what you need
+      and we will quote precisely.
+    </p>
+    <div class="table-wrap">
+      <table aria-labelledby="pricing">
+        <caption class="ra-visually-hidden">Service pricing, starting from</caption>
+        <thead>
+          <tr><th scope="col">Service</th><th scope="col">Starting from</th></tr>
+        </thead>
+        <tbody>
+          {pricing.map(({ service, from, unit }) => (
+            <tr>
+              <th scope="row">{service}</th>
+              <td class="ra-numeric">{formatNaira(from)}{unit}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </Section>
+
+  <Section register="dark">
+    <h2 class="ra-display">Ready to grow your business?</h2>
+    <p class="ra-lede">
+      Tell us what you are trying to achieve and we will tell you what it takes.
+    </p>
+    <Button href="/contact" variant="gold">Start Your Project</Button>
+  </Section>
+</Base>
+
+<style>
+  .also { margin-top: var(--ra-space-2xl); }
+
+  .table-wrap { overflow-x: auto; margin-top: var(--ra-space-l); }
+  table { width: 100%; border-collapse: collapse; min-width: 380px; }
+  caption { text-align: left; }
+  th, td {
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border-bottom: 1px solid var(--ra-border);
+    text-align: left;
+  }
+  thead th {
+    font-size: var(--ra-step--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ra-fg-muted);
+  }
+  tbody th { font-weight: 600; }
+  td { text-align: right; font-weight: 600; color: var(--ra-navy-600); }
+</style>

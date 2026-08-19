@@ -1,0 +1,139 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Button from '../components/Button.astro';
+import { SITE } from '../lib/site';
+
+const values = [
+  { name: 'Innovation', body: 'We embrace creativity and emerging technologies to develop smart, future-ready solutions.' },
+  { name: 'Integrity', body: 'We build trust through honesty, transparency, and accountability.' },
+  { name: 'Excellence', body: 'We are committed to delivering exceptional quality in every project.' },
+  { name: 'Customer Success', body: "Our clients' growth drives everything we do." },
+  { name: 'Continuous Improvement', body: 'We continually learn, adapt, and improve to remain ahead in an ever-changing technology landscape.' },
+];
+
+const audiences = [
+  'Small and Medium Enterprises', 'Startups', 'Entrepreneurs',
+  'Government Agencies', 'Corporate Organizations', 'Educational Institutions',
+  'Non-Profit Organizations', 'Retail Businesses', 'Professionals and Freelancers',
+  'Individuals seeking quality technology products',
+];
+---
+<Base
+  title="About Us"
+  description="Radiant Alpha Digital Services Ltd is a CAC-registered Nigerian technology company in Abuja, helping businesses grow through practical digital solutions."
+  path="/about"
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">About us</p>
+    <h1 class="ra-display">Technology should be accessible, reliable, and focused on solving real business challenges.</h1>
+  </Section>
+
+  <Section>
+    <div class="ra-measure ra-prose">
+      <h2>Our Story</h2>
+      <p>Radiant Alpha Digital Services Ltd was established to help businesses leverage technology to achieve sustainable growth.</p>
+      <p>In today's digital economy, having the right technology partner can make the difference between simply operating and truly thriving. We work with startups, entrepreneurs, SMEs, corporate organizations, and public institutions to develop practical digital solutions that improve efficiency, strengthen brands, and unlock new opportunities.</p>
+      <p>Whether it's designing a modern website, developing custom software, implementing digital marketing strategies, or supplying quality technology products, our goal is simple — to deliver solutions that create measurable value for every client.</p>
+      <p>We believe technology should be accessible, reliable, and focused on solving real business challenges. Every project we undertake is guided by professionalism, innovation, and a commitment to excellence.</p>
+      <p>As we continue to grow, we remain dedicated to building long-term partnerships based on trust, quality, and exceptional service.</p>
+    </div>
+  </Section>
+
+  <Section register="dark">
+    <div class="split">
+      <div>
+        <h2>Our Mission</h2>
+        <p>To deliver innovative digital solutions that empower businesses to grow, compete, and succeed in an increasingly connected world.</p>
+      </div>
+      <div>
+        <h2>Our Vision</h2>
+        <p>To become one of Africa's leading digital technology companies, recognized for innovation, reliability, and excellence in delivering business-focused technology solutions.</p>
+      </div>
+    </div>
+  </Section>
+
+  <Section>
+    <h2>Our Core Values</h2>
+    <ul class="values" role="list">
+      {values.map(({ name, body }) => (
+        <li>
+          <h3>{name}</h3>
+          <p>{body}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section>
+    <h2>Who we serve</h2>
+    <ul class="audiences" role="list">
+      {audiences.map((audience) => <li>{audience}</li>)}
+    </ul>
+  </Section>
+
+  <Section>
+    <h2>Company details</h2>
+    <dl class="facts">
+      <div><dt>Registered name</dt><dd>{SITE.legalName}</dd></div>
+      <div><dt>RC number</dt><dd class="ra-numeric">{SITE.rcNumber}</dd></div>
+      <div><dt>Registered with</dt><dd>Corporate Affairs Commission, Nigeria</dd></div>
+      <div><dt>Location</dt><dd>{SITE.location}</dd></div>
+      <div><dt>Founder &amp; Director</dt><dd>Arabs David-Pari</dd></div>
+    </dl>
+  </Section>
+
+  <Section register="dark">
+    <h2 class="ra-display">Let&rsquo;s build something great together.</h2>
+    <p class="cta-space"><Button href="/contact" variant="gold">Get in Touch</Button></p>
+  </Section>
+</Base>
+
+<style>
+  .split { display: grid; gap: var(--ra-space-xl); }
+  @media (min-width: 800px) { .split { grid-template-columns: repeat(2, 1fr); } }
+  .split p { margin-top: var(--ra-space-m); color: var(--ra-fg-muted); max-width: 42ch; }
+
+  .values {
+    display: grid;
+    gap: var(--ra-space-l);
+    margin-top: var(--ra-space-xl);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 700px) { .values { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1000px) { .values { grid-template-columns: repeat(3, 1fr); } }
+  .values li {
+    padding: var(--ra-space-l);
+    border-radius: var(--ra-radius-m);
+    background: var(--ra-navy-50);
+  }
+  .values h3 { font-size: var(--ra-step-1); }
+  .values p { margin-top: var(--ra-space-xs); color: var(--ra-fg-muted); }
+
+  .audiences {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ra-space-xs);
+    margin-top: var(--ra-space-l);
+  }
+  .audiences li {
+    padding: var(--ra-space-xs) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: 999px;
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+
+  .facts { margin-top: var(--ra-space-l); max-width: 52ch; }
+  .facts > div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--ra-space-m);
+    padding-block: var(--ra-space-s);
+    border-bottom: 1px solid var(--ra-border);
+  }
+  .facts dt { color: var(--ra-fg-muted); }
+  .facts dd { margin: 0; font-weight: 600; text-align: right; }
+
+  .cta-space { margin-top: var(--ra-space-l); }
+</style>

@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import { buildWhatsAppUrl } from '../../lib/whatsapp';
+import { SITE } from '../../lib/site';
+
+const waUrl = buildWhatsAppUrl({
+  message: 'Hi Radiant Alpha, I just sent a message through your website.',
+});
+---
+<Base
+  title="Thank you"
+  description="Your message has been sent to Radiant Alpha Digital Services. We'll be in touch shortly."
+  path="/contact/thanks"
+  noindex
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Message sent</p>
+    <h1 class="ra-display">Thank you — we&rsquo;ve got your message.</h1>
+    <p class="ra-lede">
+      We read every enquiry and aim to reply <strong>within one business day</strong>.
+      If it&rsquo;s urgent, WhatsApp is faster than email.
+    </p>
+    <div class="ra-actions">
+      <Button href={waUrl} variant="gold" external>Message on WhatsApp</Button>
+      <Button href="/services" variant="secondary">Explore Our Services</Button>
+    </div>
+    <p class="direct">
+      Prefer to reach us directly? <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      {' '}or <a href={`tel:${SITE.phoneE164}`}>{SITE.phoneDisplay}</a>.
+    </p>
+  </Section>
+</Base>
+
+<style>
+  .direct {
+    margin-top: var(--ra-space-2xl);
+    padding-top: var(--ra-space-l);
+    border-top: 1px solid var(--ra-rule);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+</style>

@@ -1,0 +1,24 @@
+---
+interface Props {
+  register?: 'light' | 'dark';
+  as?: 'section' | 'div' | 'header' | 'footer';
+  class?: string;
+}
+const { register = 'light', as: Tag = 'section', class: className = '' } = Astro.props;
+---
+<Tag class:list={['ra-section', register === 'dark' && 'ra-dark', className]}>
+  <div class="ra-container">
+    <slot />
+  </div>
+</Tag>
+
+<style>
+  .ra-section {
+    background: var(--ra-bg);
+    color: var(--ra-fg);
+    padding-block: var(--ra-space-3xl);
+  }
+  @media (max-width: 640px) {
+    .ra-section { padding-block: var(--ra-space-2xl); }
+  }
+</style>

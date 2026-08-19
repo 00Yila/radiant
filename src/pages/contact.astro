@@ -1,0 +1,197 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import { buildWhatsAppUrl } from '../lib/whatsapp';
+import { SITE } from '../lib/site';
+
+const waUrl = buildWhatsAppUrl({
+  message: "Hi Radiant Alpha, I'd like to discuss a project.",
+});
+---
+<Base
+  title="Contact"
+  description="Get in touch with Radiant Alpha Digital Services. WhatsApp for the fastest response, or send us an email about your project. Based in Abuja, Nigeria."
+  path="/contact"
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Contact</p>
+    <h1 class="ra-display">Let&rsquo;s build something great together.</h1>
+    <p class="ra-lede lede--tight">
+      Whether you need a professional website, digital marketing, IT consulting, or
+      quality technology products, we&rsquo;re here to help.
+    </p>
+  </Section>
+
+  <Section>
+    <div class="layout">
+      <div>
+        <h2>Reach us directly</h2>
+        <p class="ra-sub">
+          For the fastest response, send us a message on WhatsApp. We&rsquo;re also available by
+          email for project enquiries and business partnerships.
+        </p>
+
+        <ul class="channels" role="list">
+          <li>
+            <span class="channels__label">WhatsApp — fastest</span>
+            <a href={waUrl} target="_blank" rel="noopener noreferrer">{SITE.phoneDisplay}</a>
+          </li>
+          <li>
+            <span class="channels__label">Phone</span>
+            <a href={`tel:${SITE.phoneE164}`}>{SITE.phoneDisplay}</a>
+          </li>
+          <li>
+            <span class="channels__label">Email</span>
+            <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+          </li>
+          <li>
+            <span class="channels__label">Alternative email</span>
+            <a href={`mailto:${SITE.emailSecondary}`}>{SITE.emailSecondary}</a>
+          </li>
+          <li>
+            <span class="channels__label">Location</span>
+            <span>{SITE.location}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Send a message</h2>
+        <form
+          name="contact"
+          method="POST"
+          data-netlify="true"
+          netlify-honeypot="bot-field"
+          action="/contact/thanks"
+          class="form"
+        >
+          <input type="hidden" name="form-name" value="contact" />
+          <p class="ra-visually-hidden">
+            <label for="bot-field">Leave this field empty</label>
+            <input id="bot-field" name="bot-field" tabindex="-1" autocomplete="off" />
+          </p>
+
+          <div class="field">
+            <label for="name">Your name</label>
+            <input id="name" name="name" type="text" required autocomplete="name" />
+          </div>
+
+          <div class="field">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" required autocomplete="email" />
+          </div>
+
+          <div class="field">
+            <label for="phone">Phone or WhatsApp <span class="optional">(optional)</span></label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" />
+          </div>
+
+          <div class="field">
+            <label for="subject">What can we help with?</label>
+            <select id="subject" name="subject" required>
+              <option value="">Choose one…</option>
+              <option>Website design &amp; development</option>
+              <option>Software development</option>
+              <option>E-commerce</option>
+              <option>Digital marketing</option>
+              <option>IT consulting</option>
+              <option>Networking &amp; infrastructure</option>
+              <option>Technology products</option>
+              <option>Something else</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="message">Tell us about your project</label>
+            <textarea id="message" name="message" rows="5" required></textarea>
+          </div>
+
+          <button type="submit" class="ra-btn ra-btn--primary">Send message</button>
+        </form>
+
+        <p class="fallback">
+          If the form doesn&rsquo;t work for any reason, message us on
+          <a href={waUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          or email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> instead.
+        </p>
+      </div>
+    </div>
+  </Section>
+</Base>
+
+<style>
+  .lede--tight { margin-block-end: 0; }
+
+  .layout { display: grid; gap: var(--ra-space-2xl); }
+  @media (min-width: 900px) { .layout { grid-template-columns: 1fr 1.2fr; } }
+
+  .channels { display: grid; gap: var(--ra-space-m); margin-top: var(--ra-space-l); }
+  .channels li {
+    display: grid;
+    gap: var(--ra-space-2xs);
+    padding-bottom: var(--ra-space-m);
+    border-bottom: 1px solid var(--ra-border);
+  }
+  .channels__label {
+    font-size: var(--ra-step--1);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ra-fg-muted);
+  }
+  .channels a { font-weight: 600; }
+
+  .form { display: grid; gap: var(--ra-space-m); margin-top: var(--ra-space-l); }
+  .field { display: grid; gap: var(--ra-space-2xs); }
+  .field label { font-weight: 600; font-size: var(--ra-step--1); }
+  .optional { font-weight: 400; color: var(--ra-fg-muted); }
+  input, select, textarea {
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-surface);
+  }
+  textarea { min-height: 8rem; resize: vertical; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    border-color: var(--ra-navy-500);
+  }
+  /* Matches Button.astro's primary variant — same weight, same press feel. */
+  button[type='submit'] {
+    justify-self: start;
+    border: 0;
+    cursor: pointer;
+    padding: var(--ra-space-s) var(--ra-space-xl);
+    border-radius: var(--ra-radius-m);
+    font-weight: 600;
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    box-shadow: var(--ra-shadow-s);
+    transition:
+      transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 160ms ease,
+      box-shadow 160ms ease,
+      color 160ms ease;
+  }
+  button[type='submit']:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow: 0 8px 20px -8px rgb(239 180 46 / 0.6);
+    transform: translateY(-2px);
+  }
+  button[type='submit']:active {
+    background: var(--ra-gold-400);
+    color: var(--ra-navy-900);
+    box-shadow: var(--ra-shadow-s);
+    transform: translateY(0) scale(0.985);
+    transition-duration: 60ms;
+  }
+  .fallback {
+    margin-top: var(--ra-space-l);
+    padding: var(--ra-space-m);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-navy-50);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+</style>

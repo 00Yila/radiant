@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Button from '../components/Button.astro';
+---
+<Base
+  title="Page not found"
+  description="The page you were looking for doesn't exist. Browse our services or shop instead."
+  path="/404"
+  noindex
+>
+  <Section register="dark">
+    <p class="code ra-numeric">404</p>
+    <h1 class="ra-display">We couldn&rsquo;t find that page.</h1>
+    <p class="ra-lede">
+      It may have moved, or the link might be wrong. Here&rsquo;s where most people are heading:
+    </p>
+    <div class="ra-actions">
+      <Button href="/shop" variant="gold">Browse the Shop</Button>
+      <Button href="/services" variant="secondary">Our Services</Button>
+      <Button href="/" variant="secondary">Home</Button>
+    </div>
+  </Section>
+</Base>
+
+<style>
+  .code {
+    font-size: var(--ra-step-3);
+    font-weight: 700;
+    color: var(--ra-gold-500);
+    margin-bottom: var(--ra-space-s);
+  }
+</style>

@@ -1,0 +1,155 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Button from '../components/Button.astro';
+import { formatNaira } from '../lib/format';
+import { SITE } from '../lib/site';
+
+const leadServices = (await getCollection('services'))
+  .filter((s) => s.data.lead)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const reasons = [
+  { title: 'Registered & Trusted', body: `Fully incorporated with the Corporate Affairs Commission — RC ${SITE.rcNumber}.` },
+  { title: 'Tailored Solutions', body: 'Every project is designed around your specific business goals, not a template.' },
+  { title: 'End-to-End Services', body: 'From strategy and development through deployment and ongoing support.' },
+  { title: 'Affordable Excellence', body: 'Professional work at prices that make sense for growing businesses.' },
+  { title: 'Future-Focused', body: 'Modern technology chosen for scalability, security, and performance.' },
+  { title: 'Dedicated Support', body: 'Long-term relationships built on dependable service, not one-off jobs.' },
+];
+
+const expectations = [
+  'Professional service, quality solutions, and a team that truly understands business needs.',
+  'Reliable technology partner committed to delivering measurable results.',
+  'Excellent communication, timely delivery, and outstanding customer support.',
+];
+---
+<Base
+  title="Radiant Alpha Digital Services — Web Development & Digital Marketing in Abuja"
+  description="CAC-registered Nigerian technology company building websites, custom software, e-commerce, and digital marketing for businesses. Based in Abuja, serving all of Nigeria."
+  path="/"
+>
+  <Section register="dark" class="hero">
+    <p class="ra-eyebrow">Digital services · Abuja, Nigeria</p>
+    <h1 class="ra-display hero__title">{SITE.tagline}</h1>
+    <p class="ra-lede">
+      We help businesses establish a powerful digital presence through professional web
+      development, custom software, digital marketing, IT consulting, and quality
+      technology products.
+    </p>
+    <div class="ra-actions">
+      <Button href="/contact" variant="gold">Start Your Project</Button>
+      <Button href="/services" variant="secondary">Explore Our Services</Button>
+    </div>
+    <p class="hero__trust">{SITE.trustLine}</p>
+  </Section>
+
+  <Section>
+    <h2>What we do</h2>
+    <p class="ra-measure ra-sub">
+      Four core services, plus IT consulting, networking, and technology products.
+    </p>
+    <ul class="ra-cards" role="list">
+      {leadServices.map((service) => (
+        <li class="ra-card">
+          <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
+          <p>{service.data.summary}</p>
+          {service.data.startingFrom && (
+            <p class="ra-card__price ra-numeric">From {formatNaira(service.data.startingFrom)}</p>
+          )}
+        </li>
+      ))}
+    </ul>
+    <p class="more"><a href="/services">See all services and pricing →</a></p>
+  </Section>
+
+  <Section register="dark">
+    <h2 class="ra-display">Why choose Radiant Alpha?</h2>
+    <ul class="reasons" role="list">
+      {reasons.map(({ title, body }) => (
+        <li>
+          <h3>{title}</h3>
+          <p>{body}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section>
+    <h2>Technology products, described honestly</h2>
+    <p class="ra-measure ra-sub">
+      Smartphones, laptops, and accessories on pre-order. Every listing states condition,
+      network lock, SIM type, battery health, and warranty before you order — allow
+      {' '}{SITE.preOrderLeadTime} for delivery from confirmation.
+    </p>
+    <p class="shop-cta"><Button href="/shop">Browse the Shop</Button></p>
+  </Section>
+
+  <Section>
+    <h2>What you can expect</h2>
+    <p class="ra-measure ra-sub">
+      We are a new company and have not yet collected client reviews. These are
+      illustrative of the service we commit to — not quotes from real customers. We will
+      replace them with genuine reviews as soon as we have them.
+    </p>
+    <ul class="quotes" role="list">
+      {expectations.map((quote) => (
+        <li><blockquote><p>{quote}</p></blockquote></li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section register="dark">
+    <h2 class="ra-display">Ready to grow your business?</h2>
+    <p class="ra-lede">
+      Whether you need a professional website, custom software, digital marketing, IT
+      consulting, or quality technology products — let's build something remarkable together.
+    </p>
+    <Button href="/contact" variant="gold">Get in Touch</Button>
+  </Section>
+</Base>
+
+<style>
+  .hero { padding-block: clamp(3.5rem, 11vh, 8rem); }
+  .hero__title { max-width: 18ch; }
+  .hero__trust {
+    margin-top: var(--ra-space-2xl);
+    padding-top: var(--ra-space-l);
+    border-top: 1px solid var(--ra-rule);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+
+  .more { margin-top: var(--ra-space-l); font-weight: 600; }
+  .shop-cta { margin-top: var(--ra-space-l); }
+
+  .reasons {
+    display: grid;
+    gap: var(--ra-space-l);
+    margin-top: var(--ra-space-xl);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 700px) { .reasons { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1000px) { .reasons { grid-template-columns: repeat(3, 1fr); } }
+  .reasons h3 { font-size: var(--ra-step-1); color: var(--ra-gold-500); }
+  .reasons p { margin-top: var(--ra-space-2xs); color: var(--ra-fg-muted); }
+
+  .quotes {
+    display: grid;
+    gap: var(--ra-space-l);
+    margin-top: var(--ra-space-xl);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 800px) { .quotes { grid-template-columns: repeat(3, 1fr); } }
+  .quotes blockquote {
+    height: 100%;
+    margin: 0;
+    padding: var(--ra-space-l);
+    border-left: 3px solid var(--ra-gold-500);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-navy-50);
+    color: var(--ra-fg-muted);
+    font-style: italic;
+  }
+</style>

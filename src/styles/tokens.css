@@ -1,0 +1,71 @@
+:root {
+  /* Colour — mirrors src/lib/tokens.ts */
+  --ra-navy-900: #0A1930;
+  --ra-navy-800: #0E2244;
+  --ra-navy-700: #16305C;
+  --ra-navy-600: #1D3E7C;
+  --ra-navy-500: #2E5AA8;
+  --ra-navy-400: #5B84C4;
+  --ra-navy-200: #B9CCE8;
+  --ra-navy-50:  #EDF2FA;
+
+  --ra-gold-500: #EFB42E;
+  --ra-gold-400: #F5C85C;
+  --ra-gold-300: #F9D98F;
+  /* Gold as TEXT on the light register only — 5.00:1 on canvas. */
+  --ra-gold-ink: #8C6800;
+
+  --ra-ink:       #101828;
+  --ra-ink-muted: #475467;
+  --ra-canvas:    #FDFCFA;
+  --ra-surface:   #FFFFFF;
+  --ra-border:    #E4E7EC;
+
+  /* Semantic — light register (default) */
+  --ra-bg:        var(--ra-canvas);
+  --ra-fg:        var(--ra-ink);
+  --ra-fg-muted:  var(--ra-ink-muted);
+  --ra-heading:   var(--ra-navy-600);
+  --ra-rule:      var(--ra-border);
+
+  /* Type scale — fluid, 320px to 1280px viewport */
+  --ra-step--1: clamp(0.83rem, 0.80rem + 0.15vw, 0.94rem);
+  --ra-step-0:  clamp(1.00rem, 0.95rem + 0.25vw, 1.13rem);
+  --ra-step-1:  clamp(1.20rem, 1.11rem + 0.45vw, 1.50rem);
+  --ra-step-2:  clamp(1.44rem, 1.29rem + 0.75vw, 2.00rem);
+  --ra-step-3:  clamp(1.73rem, 1.49rem + 1.20vw, 2.66rem);
+  --ra-step-4:  clamp(2.07rem, 1.71rem + 1.82vw, 3.55rem);
+  --ra-step-5:  clamp(2.49rem, 1.95rem + 2.70vw, 4.73rem);
+
+  /* Spacing */
+  --ra-space-2xs: 0.25rem;
+  --ra-space-xs:  0.5rem;
+  --ra-space-s:   0.75rem;
+  --ra-space-m:   1rem;
+  --ra-space-l:   1.5rem;
+  --ra-space-xl:  2.5rem;
+  --ra-space-2xl: 4rem;
+  --ra-space-3xl: 6rem;
+
+  /* Radii, borders, shadow */
+  --ra-radius-s: 6px;
+  --ra-radius-m: 12px;
+  --ra-radius-l: 20px;
+  --ra-shadow-s: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.10);
+  --ra-shadow-m: 0 4px 8px -2px rgb(16 24 40 / 0.10), 0 2px 4px -2px rgb(16 24 40 / 0.06);
+
+  /* Layout */
+  --ra-measure: 68ch;
+  --ra-container: 1180px;
+  --ra-tap-min: 44px;
+}
+
+/* Dark register — applied by Section.astro, never to :root */
+.ra-dark {
+  --ra-bg:       var(--ra-navy-900);
+  --ra-fg:       var(--ra-surface);
+  --ra-fg-muted: var(--ra-navy-200);
+  --ra-heading:  var(--ra-surface);
+  --ra-accent:   var(--ra-gold-500);
+  --ra-rule:     var(--ra-navy-700);
+}

@@ -1,0 +1,70 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Button from '../components/Button.astro';
+
+const examples = [
+  { title: 'Business website', discipline: 'Website Design', body: 'A fast, mobile-first site with clear service pages and direct contact routes.' },
+  { title: 'Online store', discipline: 'E-Commerce', body: 'A product catalogue with secure checkout and an admin area the owner runs themselves.' },
+  { title: 'Internal operations tool', discipline: 'Software Development', body: 'A custom system replacing spreadsheets and manual record-keeping.' },
+  { title: 'Search visibility campaign', discipline: 'Digital Marketing', body: 'Technical SEO and content targeting the terms customers actually search.' },
+];
+---
+<Base
+  title="Our Work"
+  description="Radiant Alpha is building its portfolio of web development, software, and digital marketing projects. Here is the kind of work we take on."
+  path="/work"
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Our work</p>
+    <h1 class="ra-display">We&rsquo;re currently expanding our portfolio.</h1>
+    <p class="ra-lede">
+      As we complete more client engagements, this page will showcase the projects
+      themselves. In the meantime, here is the kind of work we take on — and we&rsquo;re happy
+      to talk through our approach in detail.
+    </p>
+    <Button href="/contact" variant="gold">Discuss Your Project</Button>
+  </Section>
+
+  <Section>
+    <h2>The work we do</h2>
+    <ul class="ra-cards" role="list">
+      {examples.map(({ title, discipline, body }) => (
+        <li class="card">
+          <p class="card__tag">{discipline}</p>
+          <h3>{title}</h3>
+          <p class="card__body">{body}</p>
+          <p class="card__note">
+            An example of the kind of work we take on — not a delivered client project.
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+</Base>
+
+<style>
+  .card {
+    padding: var(--ra-space-l);
+    border: 1px dashed var(--ra-border);
+    border-radius: var(--ra-radius-m);
+  }
+  .card__tag {
+    font-size: var(--ra-step--1);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ra-navy-500);
+    margin-bottom: var(--ra-space-xs);
+  }
+  .card h3 { font-size: var(--ra-step-1); }
+  .card__body { margin-top: var(--ra-space-xs); color: var(--ra-fg-muted); }
+  .card__note {
+    margin-top: var(--ra-space-m);
+    padding-top: var(--ra-space-s);
+    border-top: 1px solid var(--ra-border);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+    font-style: italic;
+  }
+</style>

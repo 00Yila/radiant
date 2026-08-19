@@ -1,0 +1,26 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import { buildWhatsAppUrl } from '../../lib/whatsapp';
+import { SITE } from '../../lib/site';
+
+const waUrl = buildWhatsAppUrl({
+  message: "Hi Radiant Alpha, I'd like to ask about a device.",
+});
+---
+<Base
+  title="Shop"
+  description="Smartphones, laptops, and accessories on pre-order from Radiant Alpha. Condition, warranty, and delivery time stated clearly on every listing."
+  path="/shop"
+>
+  <Section register="dark">
+    <h1 class="ra-display">Our shop is opening shortly.</h1>
+    <p class="ra-lede">
+      We&rsquo;re preparing the full catalogue now. In the meantime, message us on WhatsApp with
+      the model you&rsquo;re after and we&rsquo;ll quote you directly. All devices are supplied on
+      pre-order — allow {SITE.preOrderLeadTime} from order confirmation.
+    </p>
+    <Button href={waUrl} variant="gold" external>Ask About a Device</Button>
+  </Section>
+</Base>

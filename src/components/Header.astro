@@ -1,0 +1,160 @@
+---
+const links = [
+  { href: '/services', label: 'Services' },
+  { href: '/shop', label: 'Shop' },
+  { href: '/work', label: 'Work' },
+  { href: '/about', label: 'About' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/contact', label: 'Contact' },
+];
+const current = Astro.url.pathname;
+---
+<header class="hdr">
+  <div class="ra-container hdr__inner">
+    <a href="/" class="hdr__logo" aria-label="Radiant Alpha home">
+      <img src="/images/logo-mark.png" alt="" width="40" height="40" />
+      <span class="hdr__wordmark">Radiant Alpha</span>
+    </a>
+
+    <button
+      class="hdr__toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="primary-nav"
+      aria-label="Menu"
+    >
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18" />
+      </svg>
+    </button>
+
+    <nav id="primary-nav" class="hdr__nav" aria-label="Primary">
+      <ul role="list">
+        {links.map(({ href, label }) => (
+          <li>
+            <a href={href} aria-current={current.startsWith(href) ? 'page' : undefined}>
+              {label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.hdr__toggle');
+  const nav = document.querySelector<HTMLElement>('#primary-nav');
+
+  function setOpen(open: boolean) {
+    toggle?.setAttribute('aria-expanded', String(open));
+    nav?.classList.toggle('is-open', open);
+  }
+
+  toggle?.addEventListener('click', () => {
+    setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+</script>
+
+<style>
+  .hdr {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--ra-canvas);
+    border-bottom: 1px solid var(--ra-border);
+  }
+  .hdr__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ra-space-m);
+    min-height: 68px;
+  }
+  .hdr__logo {
+    display: flex;
+    align-items: center;
+    gap: var(--ra-space-xs);
+    text-decoration: none;
+  }
+  .hdr__logo img { width: 36px; height: 36px; }
+  .hdr__wordmark {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ra-navy-600);
+  }
+
+  .hdr__toggle {
+    display: grid;
+    place-items: center;
+    width: var(--ra-tap-min);
+    height: var(--ra-tap-min);
+    background: none;
+    border: 0;
+    border-radius: var(--ra-radius-s);
+    color: var(--ra-navy-600);
+    cursor: pointer;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+  .hdr__toggle:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+  }
+
+  .hdr__nav ul {
+    display: flex;
+    gap: var(--ra-space-l);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .hdr__nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--ra-tap-min);
+    padding-inline: var(--ra-space-s);
+    border-radius: var(--ra-radius-s);
+    color: var(--ra-ink);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+  .hdr__nav a[aria-current='page'] { color: var(--ra-navy-600); }
+
+  /*
+   * The header sits on the light canvas, where gold text measures 1.87:1.
+   * So the item turns gold and the label goes navy, rather than the reverse.
+   */
+  .hdr__nav a:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+  }
+
+  @media (max-width: 900px) {
+    .hdr__nav {
+      display: none;
+      position: absolute;
+      inset-inline: 0;
+      top: 100%;
+      background: var(--ra-canvas);
+      border-bottom: 1px solid var(--ra-border);
+      padding: var(--ra-space-m) var(--ra-space-l) var(--ra-space-l);
+    }
+    .hdr__nav.is-open { display: block; }
+    .hdr__nav ul { flex-direction: column; gap: 0; }
+    .hdr__nav li + li { border-top: 1px solid var(--ra-border); }
+    .hdr__nav a { width: 100%; }
+  }
+
+  @media (min-width: 901px) {
+    .hdr__toggle { display: none; }
+  }
+</style>
