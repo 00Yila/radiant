@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Section from '../../components/Section.astro';
 import Button from '../../components/Button.astro';
+import ServiceGlyph from '../../components/ServiceGlyph.astro';
 import { formatNaira } from '../../lib/format';
 
 const services = (await getCollection('services')).sort(
@@ -75,6 +76,7 @@ const pricing = [
         <ul class="ra-cards ra-cards--three" role="list">
           {tier.services.map((service) => (
             <li class="ra-card">
+              <ServiceGlyph name={service.id} class="card__glyph" />
               <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
               <p>{service.data.summary}</p>
               {service.data.startingFrom && (

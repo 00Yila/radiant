@@ -1,0 +1,107 @@
+---
+/*
+ * The logo's two halves blown up as a hero backdrop: a gold sun on the left
+ * edge of the figure, a navy hex lattice with lit nodes spreading right —
+ * the same idea as the mark, at a scale where it reads as texture instead of
+ * an icon.
+ *
+ * Decorative only (aria-hidden), and it sits behind the copy at low opacity
+ * so contrast on the headline is untouched. Hidden below 900px, where the
+ * text needs the full width.
+ */
+const hexes: Array<{ x: number; y: number; o: number }> = [
+  { x: 250, y: 110, o: 0.5 }, { x: 250, y: 200, o: 0.85 }, { x: 250, y: 290, o: 0.5 },
+  { x: 328, y: 65,  o: 0.4 }, { x: 328, y: 155, o: 0.7 },  { x: 328, y: 245, o: 0.7 },
+  { x: 328, y: 335, o: 0.4 },
+  { x: 406, y: 110, o: 0.45 }, { x: 406, y: 200, o: 0.6 }, { x: 406, y: 290, o: 0.45 },
+  { x: 484, y: 155, o: 0.3 },  { x: 484, y: 245, o: 0.3 },
+];
+
+/** Nodes on stalks, as on the mark's outer edge. */
+const nodes: Array<{ x1: number; y1: number; x2: number; y2: number; r: number }> = [
+  { x1: 452, y1: 130, x2: 512, y2: 84,  r: 7 },
+  { x1: 452, y1: 270, x2: 522, y2: 316, r: 6 },
+  { x1: 530, y1: 200, x2: 578, y2: 200, r: 5 },
+];
+
+const RAY_COUNT = 13;
+---
+
+<svg
+  class="figure"
+  viewBox="0 0 620 400"
+  aria-hidden="true"
+  focusable="false"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- sun rays, mirroring the mark's left half -->
+  <g class="figure__rays">
+    {Array.from({ length: RAY_COUNT }, (_, i) => {
+      const angle = (-90 + (i - (RAY_COUNT - 1) / 2) * 13) * (Math.PI / 180);
+      // rays fan out to the LEFT, so rotate the fan a quarter turn
+      const a = angle - Math.PI / 2;
+      const cx = 168;
+      const cy = 200;
+      return (
+        <line
+          x1={cx + Math.cos(a) * 62}
+          y1={cy + Math.sin(a) * 62}
+          x2={cx + Math.cos(a) * (96 + (i % 3) * 12)}
+          y2={cy + Math.sin(a) * (96 + (i % 3) * 12)}
+        />
+      );
+    })}
+  </g>
+
+  <circle class="figure__sun" cx="168" cy="200" r="46" />
+
+  <g class="figure__hexes">
+    {hexes.map(({ x, y, o }) => (
+      <polygon
+        opacity={o}
+        points={Array.from({ length: 6 }, (_, i) => {
+          const a = (Math.PI / 180) * (60 * i - 30);
+          return `${(x + Math.cos(a) * 42).toFixed(1)},${(y + Math.sin(a) * 42).toFixed(1)}`;
+        }).join(' ')}
+      />
+    ))}
+  </g>
+
+  <g class="figure__nodes">
+    {nodes.map(({ x1, y1, x2, y2, r }) => (
+      <>
+        <line x1={x1} y1={y1} x2={x2} y2={y2} />
+        <circle cx={x2} cy={y2} r={r} />
+      </>
+    ))}
+  </g>
+</svg>
+
+<style>
+  /*
+   * Sized and placed to clear the 56ch lede entirely — the figure begins where
+   * the copy ends. Overlapping it cost real legibility on the sun disc.
+   */
+  .figure {
+    position: absolute;
+    top: 50%;
+    right: -2%;
+    translate: 0 -50%;
+    width: min(41%, 500px);
+    height: auto;
+    pointer-events: none;
+    opacity: 0.42;
+  }
+  /* Below the 1180px container the copy needs the full width. */
+  @media (max-width: 1100px) { .figure { display: none; } }
+
+  .figure__sun { fill: var(--ra-gold-500); opacity: 0.8; }
+  .figure__rays {
+    stroke: var(--ra-gold-500);
+    stroke-width: 5;
+    stroke-linecap: round;
+    opacity: 0.75;
+  }
+  .figure__hexes { fill: none; stroke: var(--ra-navy-400); stroke-width: 2; }
+  .figure__nodes { stroke: var(--ra-navy-400); stroke-width: 2; fill: var(--ra-navy-400); }
+</style>

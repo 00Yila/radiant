@@ -103,6 +103,7 @@ a { color: var(--ra-navy-600); text-underline-offset: 0.2em; }
   border-color: var(--ra-gold-500);
   box-shadow: var(--ra-shadow-m);
 }
+.ra-card .card__glyph { color: var(--ra-navy-600); margin-bottom: var(--ra-space-m); }
 .ra-card h3 { font-size: var(--ra-step-1); margin-bottom: var(--ra-space-xs); }
 .ra-card h3 a { text-decoration: none; }
 .ra-card h3 a:hover { text-decoration: underline; }

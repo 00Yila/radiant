@@ -36,7 +36,8 @@ const year = new Date().getFullYear();
   <div class="ra-container">
     <div class="ftr__grid">
       <div class="ftr__brand">
-        <img src="/images/logo-mark.png" alt="" width="48" height="48" />
+        {/* Navy-on-navy would vanish, so the footer takes the white-hex variant. */}
+        <img src="/images/logo-mark-light-96.png" alt="" width="48" height="48" />
         <p class="ftr__tagline">{SITE.tagline}</p>
         <address class="ftr__contact">
           <a href={`mailto:${SITE.email}`}>{SITE.email}</a>

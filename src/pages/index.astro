@@ -3,6 +3,8 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Section from '../components/Section.astro';
 import Button from '../components/Button.astro';
+import ServiceGlyph from '../components/ServiceGlyph.astro';
+import HeroFigure from '../components/HeroFigure.astro';
 import { formatNaira } from '../lib/format';
 import { SITE } from '../lib/site';
 
@@ -86,6 +88,7 @@ const expectations = [
   </Fragment>
 
   <Section register="dark" class="hero">
+    <HeroFigure />
     <p class="ra-eyebrow">Digital services · Abuja, Nigeria</p>
     <h1 class="ra-display hero__title">{SITE.tagline}</h1>
     <p class="ra-lede">
@@ -124,6 +127,7 @@ const expectations = [
     <ul class="ra-cards" role="list">
       {leadServices.map((service) => (
         <li class="ra-card">
+          <ServiceGlyph name={service.id} class="card__glyph" />
           <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
           <p>{service.data.summary}</p>
           {service.data.startingFrom && (
@@ -202,7 +206,22 @@ const expectations = [
 </Base>
 
 <style>
-  .hero { padding-block: clamp(4.5rem, 15vh, 10rem); }
+  /*
+   * `hero` and `creds` are handed to <Section> as props, so they land on that
+   * component's root element and never receive this file's scope hash. Scoped
+   * selectors silently match nothing — these have to be :global to apply.
+   */
+  :global(.hero) {
+    --ra-section-pad: clamp(4.5rem, 15vh, 10rem);
+    position: relative;
+    overflow: hidden;
+  }
+  /* Copy rides above the decorative figure, which stays on the base layer. */
+  :global(.hero .ra-container > *:not(.figure)) {
+    position: relative;
+    z-index: 1;
+  }
+  :global(.hero .figure) { z-index: 0; }
   /*
    * The home headline is the one place the type should be genuinely large —
    * a step above the global h1, tighter, and held to a narrow measure so it
@@ -223,7 +242,10 @@ const expectations = [
   }
 
   /* Credentials strip — sits tight under the hero, so it loses the usual band padding. */
-  .creds { padding-block: var(--ra-space-xl); }
+  :global(.creds) {
+    --ra-section-pad: var(--ra-space-xl);
+    --ra-section-pad-sm: var(--ra-space-l);
+  }
   .creds__list {
     display: grid;
     gap: var(--ra-space-l);

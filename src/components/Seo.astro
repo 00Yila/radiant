@@ -11,6 +11,14 @@ interface Props {
 const { title, description, path, type = 'website', noindex = false } = Astro.props;
 
 const canonical = new URL(path, SITE.domain).href;
+
+/*
+ * twitter:card was already summary_large_image, but no image was ever
+ * declared — so every shared link rendered as a blank card. Must be an
+ * absolute URL: relative paths are silently dropped by the scrapers.
+ */
+const ogImage = new URL('/images/og-default.png', SITE.domain).href;
+const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
 const fullTitle = path === '/' ? title : `${title} | ${SITE.name}`;
 
 const organisation = {
@@ -42,6 +50,11 @@ const organisation = {
 <meta property="og:url" content={canonical} />
 <meta property="og:site_name" content={SITE.legalName} />
 <meta property="og:locale" content="en_NG" />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={ogImageAlt} />
 <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content={ogImage} />
 
 <script type="application/ld+json" set:html={JSON.stringify(organisation)} />
