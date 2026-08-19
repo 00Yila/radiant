@@ -97,7 +97,12 @@ const pricing = [
       Indicative starting prices. Final cost depends on scope — tell us what you need
       and we will quote precisely.
     </p>
-    <div class="table-wrap">
+    {/*
+      * The table scrolls sideways on narrow screens, and a scrollable region
+      * has to be focusable or a keyboard user can never reach the second
+      * column. role+label stop it being an anonymous tab stop.
+      */}
+    <div class="table-wrap" role="region" aria-labelledby="pricing" tabindex="0">
       <table aria-labelledby="pricing">
         <caption class="ra-visually-hidden">Service pricing, starting from</caption>
         <thead>

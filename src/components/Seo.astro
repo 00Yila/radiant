@@ -10,7 +10,14 @@ interface Props {
 }
 const { title, description, path, type = 'website', noindex = false } = Astro.props;
 
-const canonical = new URL(path, SITE.domain).href;
+/*
+ * Pages build to directories (/about/index.html), and the sitemap lists them
+ * with a trailing slash. A canonical without one disagreed with the sitemap on
+ * every page but the home page — two different preferred URLs for the same
+ * document, which is exactly the signal canonical exists to prevent.
+ */
+const canonicalPath = path.endsWith('/') ? path : `${path}/`;
+const canonical = new URL(canonicalPath, SITE.domain).href;
 
 /*
  * twitter:card was already summary_large_image, but no image was ever
