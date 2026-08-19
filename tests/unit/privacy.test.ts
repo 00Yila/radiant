@@ -55,36 +55,4 @@ describe('built output contains no private or superseded details', () => {
   });
 });
 
-/*
- * Alt text and the JS budget are checked here rather than in Playwright: both
- * are properties of the built files themselves, so they need no browser and
- * fail in seconds instead of minutes.
- */
-describe('every image in the built output carries an alt attribute', () => {
-  it('has no <img> without alt', () => {
-    const offenders: string[] = [];
-
-    for (const file of walk(DIST).filter((f) => f.endsWith('.html'))) {
-      const html = readFileSync(file, 'utf8');
-      for (const tag of html.match(/<img\b[^>]*>/g) ?? []) {
-        if (!/\salt\s*=/.test(tag)) offenders.push(`${file}: ${tag}`);
-      }
-    }
-
-    expect(offenders, offenders.join('\n')).toEqual([]);
-  });
-});
-
-describe('JavaScript budget', () => {
-  const BUDGET_BYTES = 15_360;
-
-  it(`ships under ${BUDGET_BYTES} bytes of JavaScript`, () => {
-    const scripts = walk(DIST).filter((f) => f.endsWith('.js'));
-    const total = scripts.reduce((sum, f) => sum + statSync(f).size, 0);
-
-    expect(
-      total,
-      `${(total / 1024).toFixed(1)}KB across ${scripts.length} file(s):\n${scripts.join('\n')}`
-    ).toBeLessThan(BUDGET_BYTES);
-  });
-});
+// Alt text, the JS budget and sitemap agreement live in build-output.test.ts.

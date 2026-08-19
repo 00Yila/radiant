@@ -82,22 +82,11 @@ test.describe('document head', () => {
       );
     }
   });
-
-  /*
-   * The canonical and the sitemap must name the same URL. They disagreed on
-   * every page but the home page until the canonical gained its trailing slash.
-   */
-  test('canonicals agree with the sitemap, and comps are absent from it', async ({
-    page,
-    request,
-  }) => {
-    const sitemap = await (await request.get('/sitemap-0.xml')).text();
-    expect(sitemap).not.toContain('/comps/');
-
-    for (const path of ['/about/', '/services/', '/contact/']) {
-      await page.goto(path);
-      const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
-      expect(sitemap, `sitemap is missing ${canonical}`).toContain(`<loc>${canonical}</loc>`);
-    }
-  });
 });
+
+/*
+ * Sitemap/canonical agreement is asserted in tests/unit/build-output.test.ts,
+ * against dist/ on disk. The sitemap is emitted at build time only, so over
+ * HTTP this check silently depends on whether dev or preview happens to be
+ * serving — the dev server returns the 404 page for /sitemap-0.xml.
+ */

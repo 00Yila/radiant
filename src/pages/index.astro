@@ -168,9 +168,15 @@ const expectations = [
       illustrative of the service we commit to — not quotes from real customers. We will
       replace them with genuine reviews as soon as we have them.
     </p>
-    <ul class="quotes" role="list">
-      {expectations.map((quote) => (
-        <li><blockquote><p>{quote}</p></blockquote></li>
+    {/*
+      * Not <blockquote>: nobody said these. The paragraph above states they are
+      * commitments rather than customer quotes, so marking them up as
+      * quotations would have screen readers announce a source that
+      * does not exist.
+      */}
+    <ul class="commitments" role="list">
+      {expectations.map((commitment) => (
+        <li><p>{commitment}</p></li>
       ))}
     </ul>
   </Section>
@@ -335,21 +341,23 @@ const expectations = [
   .reasons h3 { font-size: var(--ra-step-1); color: var(--ra-gold-500); }
   .reasons p { margin-top: var(--ra-space-2xs); color: var(--ra-fg-muted); }
 
-  .quotes {
+  .commitments {
     display: grid;
     gap: var(--ra-space-l);
     margin-top: var(--ra-space-xl);
     grid-template-columns: 1fr;
   }
-  @media (min-width: 800px) { .quotes { grid-template-columns: repeat(3, 1fr); } }
-  .quotes blockquote {
+  @media (min-width: 800px) { .commitments { grid-template-columns: repeat(3, 1fr); } }
+  /*
+   * Deliberately quiet. Italic, a tinted panel and a gold accent together read
+   * as a testimonial card, which would visually assert the social proof the
+   * copy directly above is at pains to disclaim.
+   */
+  .commitments li {
     height: 100%;
-    margin: 0;
     padding: var(--ra-space-l);
-    border-left: 3px solid var(--ra-gold-500);
     border-radius: var(--ra-radius-s);
     background: var(--ra-navy-50);
     color: var(--ra-fg-muted);
-    font-style: italic;
   }
 </style>
