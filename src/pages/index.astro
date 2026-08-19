@@ -19,6 +19,57 @@ const reasons = [
   { title: 'Dedicated Support', body: 'Long-term relationships built on dependable service, not one-off jobs.' },
 ];
 
+/*
+ * Every figure here is verifiable: the CAC registration, the trading location,
+ * and the two timeframes published on /returns. No client counts or awards —
+ * we have neither yet, and inventing them is the one thing that would cost us
+ * the trust the rest of this page is trying to earn.
+ */
+const credentials = [
+  { figure: `RC ${SITE.rcNumber}`, label: 'Registered with the CAC' },
+  { figure: 'Abuja, FCT', label: 'Serving all of Nigeria' },
+  { figure: SITE.preOrderLeadTime, label: 'Typical pre-order delivery' },
+  { figure: '14 days', label: 'Defect warranty on hardware' },
+];
+
+/*
+ * The four questions that otherwise arrive by WhatsApp before anyone is ready
+ * to enquire. Answering them here removes the reason to hesitate, and gives
+ * the page FAQPage structured data.
+ */
+const faqs = [
+  {
+    question: 'How much does a website cost?',
+    answer:
+      'A business website starts at ₦150,000 and an online store at ₦300,000. Custom web applications start at ₦500,000. The final figure depends on how many pages you need, whether you want to edit the content yourself, and what has to connect to it. Every quote is itemised before you commit — see the full price list on our services page.',
+  },
+  {
+    question: 'How long does a project take?',
+    answer:
+      'A straightforward business website is usually two to three weeks from the point we have your content. Online stores and custom software take longer and we scope them individually. We give you a date in writing before starting, and tell you early if anything threatens it.',
+  },
+  {
+    question: 'Do you maintain the site after launch?',
+    answer:
+      'Yes. Maintenance covers updates, backups, security patches, and small content changes, from ₦30,000 a month. It is optional — you are not locked in, and we will hand over everything you need to host it elsewhere if you would rather.',
+  },
+  {
+    question: 'Can you help my business rank on Google?',
+    answer:
+      'Every site we build is technically sound for search: fast, mobile-first, with proper page titles and structured data. Ongoing SEO work — content, local listings, and link building — is a separate service from ₦80,000 a month. We will not promise a number-one position, because nobody can honestly do that.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+
 const expectations = [
   'Professional service, quality solutions, and a team that truly understands business needs.',
   'Reliable technology partner committed to delivering measurable results.',
@@ -30,6 +81,10 @@ const expectations = [
   description="CAC-registered Nigerian technology company building websites, custom software, e-commerce, and digital marketing for businesses. Based in Abuja, serving all of Nigeria."
   path="/"
 >
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+
   <Section register="dark" class="hero">
     <p class="ra-eyebrow">Digital services · Abuja, Nigeria</p>
     <h1 class="ra-display hero__title">{SITE.tagline}</h1>
@@ -43,6 +98,22 @@ const expectations = [
       <Button href="/services" variant="secondary">Explore Our Services</Button>
     </div>
     <p class="hero__trust">{SITE.trustLine}</p>
+  </Section>
+
+  {/*
+    * A credentials strip, not a stats strip. Competitors put "500+ clients"
+    * here; we are a new company, so every figure below is one we can evidence
+    * — the registration, the location, and the two commitments we publish.
+    */}
+  <Section class="creds">
+    <ul class="creds__list" role="list">
+      {credentials.map(({ figure, label }) => (
+        <li>
+          <p class="creds__figure ra-numeric">{figure}</p>
+          <p class="creds__label">{label}</p>
+        </li>
+      ))}
+    </ul>
   </Section>
 
   <Section>
@@ -100,6 +171,26 @@ const expectations = [
     </ul>
   </Section>
 
+  <Section>
+    <h2>Frequently asked questions</h2>
+    <p class="ra-measure ra-sub">
+      The four we are asked most. If yours is not here,
+      {' '}<a href="/contact">ask us directly</a> — we answer plainly.
+    </p>
+    {/* <details> gives a real accordion with no JavaScript and no ARIA to get wrong. */}
+    <div class="faqs">
+      {faqs.map(({ question, answer }) => (
+        <details class="faq">
+          <summary>
+            <span class="faq__q">{question}</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          <p class="faq__a">{answer}</p>
+        </details>
+      ))}
+    </div>
+  </Section>
+
   <Section register="dark">
     <h2 class="ra-display">Ready to grow your business?</h2>
     <p class="ra-lede">
@@ -111,14 +202,90 @@ const expectations = [
 </Base>
 
 <style>
-  .hero { padding-block: clamp(3.5rem, 11vh, 8rem); }
-  .hero__title { max-width: 18ch; }
+  .hero { padding-block: clamp(4.5rem, 15vh, 10rem); }
+  /*
+   * The home headline is the one place the type should be genuinely large —
+   * a step above the global h1, tighter, and held to a narrow measure so it
+   * breaks into three stacked lines rather than running wide.
+   */
+  .hero__title {
+    max-width: 15ch;
+    font-size: clamp(2.75rem, 1.6rem + 5.2vw, 5.5rem);
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+  }
   .hero__trust {
     margin-top: var(--ra-space-2xl);
     padding-top: var(--ra-space-l);
     border-top: 1px solid var(--ra-rule);
     font-size: var(--ra-step--1);
     color: var(--ra-fg-muted);
+  }
+
+  /* Credentials strip — sits tight under the hero, so it loses the usual band padding. */
+  .creds { padding-block: var(--ra-space-xl); }
+  .creds__list {
+    display: grid;
+    gap: var(--ra-space-l);
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 800px) { .creds__list { grid-template-columns: repeat(4, 1fr); } }
+  .creds__list li { padding-left: var(--ra-space-m); border-left: 2px solid var(--ra-gold-500); }
+  .creds__figure {
+    font-size: var(--ra-step-2);
+    font-weight: 700;
+    color: var(--ra-gold-ink);
+    line-height: 1.1;
+  }
+  .creds__label {
+    margin-top: var(--ra-space-2xs);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+
+  .faqs {
+    max-width: 78ch;
+    margin-top: var(--ra-space-xl);
+    border-top: 1px solid var(--ra-border);
+  }
+  .faq { border-bottom: 1px solid var(--ra-border); }
+  .faq summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ra-space-m);
+    min-height: var(--ra-tap-min);
+    padding-block: var(--ra-space-m);
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq__q { font-weight: 600; color: var(--ra-navy-600); }
+  .faq[open] .faq__q { color: var(--ra-gold-ink); }
+
+  /* Plus sign that becomes a minus — two rules, no icon font. */
+  .faq__icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+  }
+  .faq__icon::before,
+  .faq__icon::after {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto 0;
+    height: 2px;
+    background: var(--ra-gold-ink);
+    transition: transform 180ms ease;
+  }
+  .faq__icon::after { transform: rotate(90deg); }
+  .faq[open] .faq__icon::after { transform: rotate(0deg); }
+
+  .faq__a {
+    padding-bottom: var(--ra-space-l);
+    color: var(--ra-fg-muted);
+    max-width: 68ch;
   }
 
   .more { margin-top: var(--ra-space-l); font-weight: 600; }

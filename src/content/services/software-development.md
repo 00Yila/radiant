@@ -4,6 +4,7 @@ shortTitle: "Software Development"
 summary: "Custom software built to automate your processes, cut manual work, and scale with your business. Built in Abuja for Nigerian organisations."
 lead: true
 order: 1
+tier: 1
 startingFrom: 500000
 faqs:
   - question: "How long does a custom software project take?"

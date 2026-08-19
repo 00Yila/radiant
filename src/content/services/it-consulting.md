@@ -4,6 +4,7 @@ shortTitle: "IT Consulting"
 summary: "Independent technology guidance for businesses making decisions about systems, suppliers, and spending. Advice you can act on, not a sales pitch."
 lead: false
 order: 5
+tier: 2
 startingFrom: 25000
 faqs:
   - question: "Do you only recommend systems you build?"

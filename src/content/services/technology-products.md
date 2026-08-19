@@ -4,6 +4,7 @@ shortTitle: "Technology Products"
 summary: "Smartphones, laptops, and accessories supplied on pre-order at competitive prices, with condition and warranty stated clearly before you buy."
 lead: false
 order: 7
+tier: 3
 faqs:
   - question: "Why is delivery three to four weeks?"
     answer: "Products are supplied on a pre-order basis, sourced after your order is confirmed. That is what keeps prices competitive, and we state the wait plainly rather than surprising you after payment."

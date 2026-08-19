@@ -4,6 +4,7 @@ shortTitle: "Digital Marketing"
 summary: "SEO, social media, branding, and content that bring measurable traffic and enquiries. Reporting that shows what worked, not vanity metrics."
 lead: true
 order: 4
+tier: 2
 startingFrom: 80000
 faqs:
   - question: "How long before I see results from SEO?"

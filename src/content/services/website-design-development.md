@@ -4,6 +4,7 @@ shortTitle: "Website Design"
 summary: "Fast, mobile-first websites designed to convert visitors into customers. Built to load quickly on Nigerian mobile networks and rank in local search."
 lead: true
 order: 2
+tier: 1
 startingFrom: 150000
 faqs:
   - question: "Will my website work well on mobile?"

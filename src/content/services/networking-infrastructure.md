@@ -4,6 +4,7 @@ shortTitle: "Networking"
 summary: "Reliable office networks, hardware deployment, and infrastructure setup for businesses that need their systems simply to work every day."
 lead: false
 order: 6
+tier: 3
 startingFrom: 100000
 faqs:
   - question: "Do you cover locations outside Abuja?"

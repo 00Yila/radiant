@@ -4,6 +4,7 @@ shortTitle: "E-Commerce"
 summary: "Online stores that take payment reliably and are simple to run day to day. Product management, secure checkout, and order handling built in."
 lead: true
 order: 3
+tier: 1
 startingFrom: 300000
 faqs:
   - question: "Which payment methods can you set up?"

@@ -8,8 +8,34 @@ import { formatNaira } from '../../lib/format';
 const services = (await getCollection('services')).sort(
   (a, b) => a.data.order - b.data.order
 );
-const leadServices = services.filter((s) => s.data.lead);
-const otherServices = services.filter((s) => !s.data.lead);
+
+/*
+ * Seven services in one flat grid reads as a list of whatever we happen to
+ * offer. Grouped into Build → Grow → Equip it reads as a progression, and a
+ * visitor can find their own stage in it.
+ */
+const tiers = [
+  {
+    n: 1,
+    name: 'Build',
+    blurb: 'The thing itself — the software, site, or store your customers use.',
+  },
+  {
+    n: 2,
+    name: 'Grow',
+    blurb: 'Getting it in front of people, and making sound decisions about it.',
+  },
+  {
+    n: 3,
+    name: 'Equip',
+    blurb: 'The networks and hardware everything else runs on.',
+  },
+] as const;
+
+const byTier = tiers.map((tier) => ({
+  ...tier,
+  services: services.filter((s) => s.data.tier === tier.n),
+}));
 
 const pricing = [
   { service: 'Business Website', from: 150000, unit: '' },
@@ -39,30 +65,28 @@ const pricing = [
   </Section>
 
   <Section>
-    <h2>Core services</h2>
-    <ul class="ra-cards" role="list">
-      {leadServices.map((service) => (
-        <li class="ra-card">
-          <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
-          <p>{service.data.summary}</p>
-          {service.data.startingFrom && (
-            <p class="ra-card__price ra-numeric">
-              From {formatNaira(service.data.startingFrom)}
-            </p>
-          )}
-        </li>
-      ))}
-    </ul>
-
-    <h2 class="also">Also available</h2>
-    <ul class="ra-cards ra-cards--three" role="list">
-      {otherServices.map((service) => (
-        <li class="ra-card">
-          <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
-          <p>{service.data.summary}</p>
-        </li>
-      ))}
-    </ul>
+    {byTier.map((tier) => (
+      <div class="tier">
+        <div class="tier__head">
+          <p class="tier__label ra-numeric">Tier {tier.n}</p>
+          <h2 class="tier__name">{tier.name}</h2>
+          <p class="tier__blurb">{tier.blurb}</p>
+        </div>
+        <ul class="ra-cards ra-cards--three" role="list">
+          {tier.services.map((service) => (
+            <li class="ra-card">
+              <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
+              <p>{service.data.summary}</p>
+              {service.data.startingFrom && (
+                <p class="ra-card__price ra-numeric">
+                  From {formatNaira(service.data.startingFrom)}
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
   </Section>
 
   <Section>
@@ -99,7 +123,23 @@ const pricing = [
 </Base>
 
 <style>
-  .also { margin-top: var(--ra-space-2xl); }
+  .tier + .tier { margin-top: var(--ra-space-3xl); }
+
+  .tier__head {
+    max-width: 60ch;
+    padding-left: var(--ra-space-m);
+    border-left: 3px solid var(--ra-gold-500);
+  }
+  /* Gold at text weight on the light register needs the darker ink. */
+  .tier__label {
+    color: var(--ra-gold-ink);
+    font-size: var(--ra-step--1);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tier__name { font-size: var(--ra-step-3); margin-top: var(--ra-space-2xs); }
+  .tier__blurb { color: var(--ra-fg-muted); margin-top: var(--ra-space-xs); }
 
   .table-wrap { overflow-x: auto; margin-top: var(--ra-space-l); }
   table { width: 100%; border-collapse: collapse; min-width: 380px; }
