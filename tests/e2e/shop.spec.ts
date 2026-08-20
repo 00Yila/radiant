@@ -34,3 +34,49 @@ test('every model page renders exactly one price at a time', async ({ page }) =>
     await expect(page.locator('.buy__panel:visible'), slug).toHaveCount(1);
   }
 });
+
+test.describe('shop search and filter', () => {
+  test('narrows the catalogue and reports how many match', async ({ page }) => {
+    await page.goto('/shop');
+    const tiles = page.locator('.tile');
+    const total = await tiles.count();
+
+    await expect(page.locator('#shop-filter')).toBeVisible();
+    await expect(page.locator('.filter__count')).toHaveText(`${total} products`);
+
+    await page.getByLabel('Search the shop').fill('pro max');
+    await expect(tiles.locator('visible=true')).not.toHaveCount(total);
+    for (const name of await tiles.locator('visible=true').locator('h3').allTextContents()) {
+      expect(name.toLowerCase()).toContain('pro max');
+    }
+
+    // A search matching nothing shows the empty state, not a wall of headings.
+    await page.getByLabel('Search the shop').fill('qqqq');
+    await expect(page.locator('#no-results')).toBeVisible();
+    await expect(page.locator('[data-section]')).toBeHidden();
+
+    await page.getByLabel('Search the shop').fill('');
+    await expect(page.locator('.filter__count')).toHaveText(`${total} products`);
+  });
+
+  test('category chips filter and report pressed state', async ({ page }) => {
+    await page.goto('/shop');
+    const phones = page.getByRole('button', { name: 'Phones' });
+    await phones.click();
+    await expect(phones).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'false');
+  });
+});
+
+test.describe('the catalogue is complete without JavaScript', () => {
+  test.use({ javaScriptEnabled: false });
+
+  test('all products render and the dead filter UI stays hidden', async ({ page }) => {
+    await page.goto('/shop');
+    // Every product is in the HTML — this is what search engines index.
+    await expect(page.locator('.tile')).toHaveCount(28);
+    // Controls that cannot work must not be offered.
+    await expect(page.locator('#shop-filter')).toBeHidden();
+    await expect(page.locator('#no-results')).toBeHidden();
+  });
+});

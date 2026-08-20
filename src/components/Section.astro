@@ -3,10 +3,22 @@ interface Props {
   register?: 'light' | 'dark';
   as?: 'section' | 'div' | 'header' | 'footer';
   class?: string;
+  [key: string]: unknown;
 }
-const { register = 'light', as: Tag = 'section', class: className = '' } = Astro.props;
+/*
+ * Anything else — id, data-*, hidden, aria-* — is forwarded to the band. Without
+ * this those attributes are silently dropped, which is a quiet way to lose an
+ * id a script depends on: the page still builds and the selector just never
+ * matches.
+ */
+const {
+  register = 'light',
+  as: Tag = 'section',
+  class: className = '',
+  ...rest
+} = Astro.props;
 ---
-<Tag class:list={['ra-section', register === 'dark' && 'ra-dark', className]}>
+<Tag class:list={['ra-section', register === 'dark' && 'ra-dark', className]} {...rest}>
   <div class="ra-container">
     <slot />
   </div>

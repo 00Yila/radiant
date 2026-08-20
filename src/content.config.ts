@@ -1,5 +1,7 @@
 import { defineCollection, z } from 'astro:content';
 import { glob, file } from 'astro/loaders';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const services = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/services' }),
@@ -43,22 +45,39 @@ const posts = defineCollection({
   }),
 });
 
-/*
- * Phone catalogue. One JSON file rather than 53 Markdown files: every field is
- * structured data with no prose body, and a single list is what the CMS will
- * bind a repeatable form to later.
+/**
+ * Everything the shop sells. Phones today; laptops, power banks, accessories
+ * and solar hardware use the same shape.
  *
- * conditionTier is derived from model age, not invented per unit — Apple
- * discontinued the iPhone X in 2018, so no iPhone X sold in 2026 is new from
- * any source. `image` is the swappable slot the spec calls for: set it and the
- * photograph replaces the generated placeholder for that one product.
+ * The two axes that used to be baked in are now data: `category` decides which
+ * silhouette and which spec rows a listing gets, and `variantAxis` names what
+ * the buyer is choosing — Storage for a phone, Capacity for a power bank,
+ * Wattage for a panel. Nothing here assumes Apple.
  */
+const CATEGORIES = ['phones', 'laptops', 'power-banks', 'accessories', 'solar'] as const;
+
 const products = defineCollection({
-  loader: file('./src/content/products/phones.json'),
+  /*
+   * One JSON file per category, concatenated. glob() would treat each file as
+   * a single entry — these hold arrays — and file() takes only one path, so
+   * the directory is read directly. Adding a category means dropping in a new
+   * file, with no config change.
+   *
+   * Inline loaders are not watched, so `npm run dev` needs a restart after
+   * editing a catalogue file.
+   */
+  loader: () => {
+    const dir = 'src/content/products';
+    return readdirSync(dir)
+      .filter((f) => f.endsWith('.json'))
+      .flatMap((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
+  },
   schema: z.object({
-    id: z.string(),
-    model: z.string(),
-    generation: z.number().int(),
+    id: z.string().regex(/^[a-z0-9-]+$/),
+    category: z.enum(CATEGORIES),
+    brand: z.string().min(1),
+    model: z.string().min(1),
+
     conditionTier: z.enum([
       'new',
       'refurbished-or-nos',
@@ -68,29 +87,40 @@ const products = defineCollection({
     conditionLabel: z.string(),
     tierRank: z.number().int().min(1).max(4),
 
+    /** What the chips are labelled: Storage, Capacity, Wattage, Configuration. */
+    variantAxis: z.string().min(1),
+
     /*
-     * One entry per buyable configuration. Storage is the only axis with real
-     * data today; colour and condition are declared so the shape does not have
-     * to change when the supplier confirms them, and are simply absent until
-     * then rather than invented.
-     *
-     * Every variant needs its own ref, because that is what goes into the
-     * WhatsApp order message and later identifies which unit was sold.
+     * One entry per buyable configuration. Every variant needs its own ref —
+     * that is what goes into the WhatsApp order message and later identifies
+     * which unit was sold.
      */
     variants: z
       .array(
         z.object({
-          storage: z.string().regex(/^\d+GB$/),
+          label: z.string().min(1),
           price: z.number().int().positive(),
-          ref: z.string(),
+          ref: z.string().min(1),
           colour: z.string().optional(),
           condition: z.string().optional(),
         })
       )
-      .min(1),
+      .min(1)
+      // Four is the ceiling the CSS variant picker can address.
+      .max(4),
 
-    /** Colourways offered across the model. Empty until the supplier confirms. */
+    /** Extra spec rows beyond the ones the category already provides. */
+    specs: z.array(z.object({ label: z.string(), value: z.string() })).default([]),
+
     colours: z.array(z.string()).default([]),
+
+    /*
+     * Apple phones only. Drives the silhouette, the eSIM caution, and the
+     * "discontinued, so it cannot be new" reasoning — none of which generalise
+     * to other brands, so it is optional rather than a required field carrying
+     * a meaningless zero.
+     */
+    appleGeneration: z.number().int().optional(),
 
     image: z.string().optional(),
     imageAlt: z.string().optional(),
@@ -101,7 +131,7 @@ const products = defineCollection({
     })
     .refine(
       (d) => new Set(d.variants.map((v) => v.ref)).size === d.variants.length,
-      { message: 'variant refs must be unique within a model', path: ['variants'] }
+      { message: 'variant refs must be unique within a product', path: ['variants'] }
     ),
 });
 

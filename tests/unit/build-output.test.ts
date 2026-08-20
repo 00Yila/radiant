@@ -38,17 +38,53 @@ describe('every image in the built output carries an alt attribute', () => {
   });
 });
 
+/*
+ * Astro inlines small scripts straight into the HTML rather than emitting .js
+ * files. Counting only .js therefore reported 0 bytes while the site really
+ * shipped working JavaScript — a budget that could never fail. Both forms are
+ * measured now, and per page, since page weight is what a visitor on mobile
+ * data actually pays.
+ */
 describe('JavaScript budget', () => {
   const BUDGET_BYTES = 15_360;
 
-  it(`ships under ${BUDGET_BYTES} bytes of JavaScript`, () => {
-    const scripts = built().filter((f) => f.endsWith('.js'));
-    const total = scripts.reduce((sum, f) => sum + statSync(f).size, 0);
+  /** Inline <script> only: src= is counted separately, JSON-LD is not script. */
+  const INLINE_SCRIPT =
+    /<script(?![^>]*\bsrc=)(?![^>]*type=["']application\/ld\+json)[^>]*>([\s\S]*?)<\/script>/g;
+
+  const externalBytes = () =>
+    built()
+      .filter((f) => f.endsWith('.js'))
+      .reduce((sum, f) => sum + statSync(f).size, 0);
+
+  const pageWeights = () =>
+    built()
+      .filter((f) => f.endsWith('.html'))
+      .map((f) => {
+        const inline = (readFileSync(f, 'utf8').match(INLINE_SCRIPT) ?? []).reduce(
+          (n, s) => n + Buffer.byteLength(s, 'utf8'),
+          0
+        );
+        return { file: f, bytes: inline };
+      })
+      .sort((a, b) => b.bytes - a.bytes);
+
+  it(`no page ships more than ${BUDGET_BYTES} bytes of JavaScript`, () => {
+    const shared = externalBytes();
+    const worst = pageWeights()[0];
+    const total = worst.bytes + shared;
 
     expect(
       total,
-      `${(total / 1024).toFixed(1)}KB across ${scripts.length} file(s):\n${scripts.join('\n')}`
+      `${worst.file} carries ${worst.bytes}B inline + ${shared}B external`
     ).toBeLessThan(BUDGET_BYTES);
+  });
+
+  it('actually finds the scripts it is meant to be measuring', () => {
+    // Guards the regex: if it silently stops matching, the budget above
+    // becomes a test that can never fail.
+    const shop = pageWeights().find((p) => p.file.includes('shop'));
+    expect(shop?.bytes, 'no inline script found on the shop page').toBeGreaterThan(0);
   });
 });
 

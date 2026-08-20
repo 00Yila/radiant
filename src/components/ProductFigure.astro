@@ -1,0 +1,176 @@
+---
+/*
+ * Product imagery, per spec: "Designed placeholder cards: correct silhouette,
+ * model name, storage, colourway, in navy and gold. Systematic rather than
+ * improvised, so [they] read as a deliberate catalogue style rather than
+ * missing photographs."
+ *
+ * One silhouette per category, so a laptop does not appear as a phone. If a
+ * product sets `image`, that photograph is used instead — the swappable slot
+ * the spec requires, so replacing one is a per-product edit.
+ *
+ * Deliberately not manufacturer press renders: those are licensed to
+ * authorised channel partners, and a pristine studio shot of a used unit
+ * misrepresents it either way. See CREDITS.md.
+ */
+interface Props {
+  category: 'phones' | 'laptops' | 'power-banks' | 'accessories' | 'solar';
+  model: string;
+  badge?: string;
+  appleGeneration?: number;
+  image?: string;
+  imageAlt?: string;
+  eager?: boolean;
+  class?: string;
+}
+const {
+  category,
+  model,
+  badge,
+  appleGeneration,
+  image,
+  imageAlt,
+  eager = false,
+  class: className = '',
+} = Astro.props;
+
+// Apple hardware cues: notch through the 11 series, Dynamic Island from the
+// 14 Pro on, squarer rails from the 12. Absent for every other brand, which
+// simply gets the plain slab.
+const gen = appleGeneration ?? 0;
+const hasIsland = gen >= 14;
+const hasNotch = gen >= 10 && gen < 14;
+const radius = gen >= 12 || gen === 0 ? 13 : 17;
+const cameraCount = /Pro|Max/.test(model) && gen >= 11 ? 3 : 2;
+
+const uid = `${category}-${(badge ?? model).replace(/\W+/g, '')}`;
+---
+{image ? (
+  <img
+    src={image}
+    alt={imageAlt}
+    class:list={['fig-photo', className]}
+    loading={eager ? 'eager' : 'lazy'}
+    decoding="async"
+    width="600"
+    height="600"
+  />
+) : (
+  <svg
+    class:list={['fig', className]}
+    viewBox="0 0 200 200"
+    role="img"
+    aria-label={`Illustration of ${model}${badge ? `, ${badge}` : ''}`}
+  >
+    <defs>
+      <linearGradient id={`g-${uid}`} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="var(--ra-navy-700)" />
+        <stop offset="1" stop-color="var(--ra-navy-900)" />
+      </linearGradient>
+    </defs>
+    <rect width="200" height="200" rx="14" fill={`url(#g-${uid})`} />
+
+    {category === 'phones' && (
+      <g>
+        <rect x="66" y="30" width="68" height="130" rx={radius}
+              fill="var(--ra-navy-800)" stroke="var(--ra-gold-500)" stroke-width="1.6" />
+        <rect x="70" y="34" width="60" height="122" rx={radius - 3}
+              fill="var(--ra-navy-900)" opacity="0.85" />
+        {hasNotch && <rect x="86" y="34" width="28" height="7" rx="3.5" fill="var(--ra-navy-700)" />}
+        {hasIsland && <rect x="88" y="39" width="24" height="7" rx="3.5" fill="var(--ra-navy-700)" />}
+        <g fill="var(--ra-navy-700)" stroke="var(--ra-gold-500)" stroke-width="0.8">
+          <circle cx="80" cy="52" r="4.4" />
+          <circle cx="80" cy="64" r="4.4" />
+          {cameraCount === 3 && <circle cx="91" cy="58" r="4.4" />}
+        </g>
+      </g>
+    )}
+
+    {category === 'laptops' && (
+      <g>
+        {/* Lid */}
+        <rect x="44" y="52" width="112" height="70" rx="5"
+              fill="var(--ra-navy-800)" stroke="var(--ra-gold-500)" stroke-width="1.6" />
+        <rect x="49" y="57" width="102" height="60" rx="3" fill="var(--ra-navy-900)" opacity="0.85" />
+        {/* Base, wider than the lid as on a real hinge */}
+        <path d="M34 126 h132 l8 12 h-148 z"
+              fill="var(--ra-navy-800)" stroke="var(--ra-gold-500)" stroke-width="1.6"
+              stroke-linejoin="round" />
+        <line x1="86" y1="132" x2="114" y2="132" stroke="var(--ra-navy-600)" stroke-width="2" />
+      </g>
+    )}
+
+    {category === 'power-banks' && (
+      <g>
+        <rect x="72" y="44" width="56" height="102" rx="9"
+              fill="var(--ra-navy-800)" stroke="var(--ra-gold-500)" stroke-width="1.6" />
+        {/* Charge-level pips */}
+        <g fill="var(--ra-gold-500)">
+          <rect x="84" y="60" width="32" height="5" rx="2.5" />
+          <rect x="84" y="70" width="32" height="5" rx="2.5" opacity="0.55" />
+          <rect x="84" y="80" width="32" height="5" rx="2.5" opacity="0.25" />
+        </g>
+        {/* USB ports */}
+        <g fill="var(--ra-navy-900)" stroke="var(--ra-navy-600)" stroke-width="1">
+          <rect x="84" y="122" width="14" height="7" rx="2" />
+          <rect x="104" y="122" width="14" height="7" rx="2" />
+        </g>
+      </g>
+    )}
+
+    {category === 'accessories' && (
+      <g>
+        {/* Keyboard slab with a suggestion of keys */}
+        <rect x="38" y="76" width="124" height="52" rx="7"
+              fill="var(--ra-navy-800)" stroke="var(--ra-gold-500)" stroke-width="1.6" />
+        <g fill="var(--ra-navy-600)">
+          {[0, 1, 2, 3, 4, 5, 6].map((c) => (
+            <rect x={48 + c * 15} y="86" width="10" height="9" rx="2" />
+          ))}
+          {[0, 1, 2, 3, 4, 5].map((c) => (
+            <rect x={55 + c * 15} y="100" width="10" height="9" rx="2" />
+          ))}
+          <rect x="70" y="114" width="60" height="8" rx="2" />
+        </g>
+      </g>
+    )}
+
+    {category === 'solar' && (
+      <g>
+        {/* Panel in perspective, with cell grid */}
+        <path d="M40 122 L64 62 h72 l24 60 z"
+              fill="var(--ra-navy-800)" stroke="var(--ra-gold-500)" stroke-width="1.6"
+              stroke-linejoin="round" />
+        <g stroke="var(--ra-navy-500)" stroke-width="1" opacity="0.75">
+          <line x1="52" y1="92" x2="148" y2="92" />
+          <line x1="88" y1="62" x2="76" y2="122" />
+          <line x1="112" y1="62" x2="124" y2="122" />
+        </g>
+        {/* Mounting leg */}
+        <line x1="100" y1="122" x2="100" y2="146" stroke="var(--ra-navy-600)" stroke-width="3" />
+        <line x1="82" y1="146" x2="118" y2="146" stroke="var(--ra-navy-600)" stroke-width="3" />
+        {/* Sun, the logo's own motif */}
+        <circle cx="152" cy="46" r="9" fill="var(--ra-gold-500)" />
+      </g>
+    )}
+
+    {badge && (
+      <text
+        x="100" y="180" text-anchor="middle"
+        fill="var(--ra-gold-500)" font-size="13" font-weight="700"
+        font-family="var(--ra-font-sans)" letter-spacing="0.5"
+      >{badge}</text>
+    )}
+  </svg>
+)}
+
+<style>
+  .fig, .fig-photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: var(--ra-radius-m);
+  }
+  .fig-photo { object-fit: cover; }
+</style>

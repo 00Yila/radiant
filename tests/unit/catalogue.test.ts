@@ -1,22 +1,29 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { formatNaira } from '../../src/lib/format';
 
-type Variant = { storage: string; price: number; ref: string; colour?: string };
+type Variant = { label: string; price: number; ref: string; colour?: string };
 type Product = {
   id: string;
+  category: string;
+  brand: string;
   model: string;
-  generation: number;
   conditionTier: string;
   conditionLabel: string;
   tierRank: number;
+  variantAxis: string;
   variants: Variant[];
   colours: string[];
+  appleGeneration?: number;
 };
 
-const products: Product[] = JSON.parse(
-  readFileSync('src/content/products/phones.json', 'utf8')
-);
+/** Every catalogue file, the same way content.config.ts loads them. */
+const products: Product[] = readdirSync('src/content/products')
+  .filter((f) => f.endsWith('.json'))
+  .flatMap((f) => JSON.parse(readFileSync(join('src/content/products', f), 'utf8')));
+
+const phones = products.filter((p) => p.category === 'phones');
 
 /**
  * The catalogue was transcribed from docs/content-brief.md §8a. Prices are the
@@ -38,7 +45,7 @@ function pricesFromBrief(): Map<string, number> {
 }
 
 /** Every buyable configuration, flattened back out of the model grouping. */
-const listings = products.flatMap((p) =>
+const listings = phones.flatMap((p) =>
   p.variants.map((v) => ({ ...v, model: p.model, id: p.id }))
 );
 
@@ -46,21 +53,21 @@ describe('phone catalogue', () => {
   const brief = pricesFromBrief();
 
   it('groups the 53 listings into one page per model', () => {
-    expect(products).toHaveLength(28);
+    expect(phones).toHaveLength(28);
     expect(listings).toHaveLength(53);
     expect(brief.size).toBe(53);
   });
 
   it('carries every listing in the brief, and no extras', () => {
-    const ours = new Set(listings.map((l) => `${l.model} ${l.storage}`));
+    const ours = new Set(listings.map((l) => `${l.model} ${l.label}`));
     expect([...brief.keys()].filter((k) => !ours.has(k))).toEqual([]);
     expect([...ours].filter((k) => !brief.has(k))).toEqual([]);
   });
 
   it('prices match the brief exactly', () => {
     const wrong = listings
-      .filter((l) => brief.get(`${l.model} ${l.storage}`) !== l.price)
-      .map((l) => `${l.model} ${l.storage}: ${l.price} != ${brief.get(`${l.model} ${l.storage}`)}`);
+      .filter((l) => brief.get(`${l.model} ${l.label}`) !== l.price)
+      .map((l) => `${l.model} ${l.label}: ${l.price} != ${brief.get(`${l.model} ${l.label}`)}`);
     expect(wrong).toEqual([]);
   });
 
@@ -113,7 +120,7 @@ describe('phone catalogue', () => {
 describe('condition tiers match the spec', () => {
   /* The spec's table counts listings, not model pages, so flatten first. */
   const count = (tier: string) =>
-    products
+    phones
       .filter((p) => p.conditionTier === tier)
       .reduce((n, p) => n + p.variants.length, 0);
 
@@ -125,15 +132,53 @@ describe('condition tiers match the spec', () => {
   });
 
   it('never calls a discontinued model new', () => {
-    const wrong = products.filter(
-      (p) => p.generation <= 15 && p.conditionTier === 'new'
+    const wrong = phones.filter(
+      (p) => (p.appleGeneration ?? 99) <= 15 && p.conditionTier === 'new'
     );
     expect(wrong.map((p) => `${p.model} ${p.storage}`)).toEqual([]);
   });
 
   it('only the current generation is marked new', () => {
-    for (const p of products.filter((p) => p.conditionTier === 'new')) {
-      expect(p.generation, `${p.model} marked new`).toBe(17);
+    for (const p of phones.filter((p) => p.conditionTier === 'new')) {
+      expect(p.appleGeneration, `${p.model} marked new`).toBe(17);
     }
+  });
+});
+
+/*
+ * These hold for every category, not only phones — they are what stops a
+ * laptop or solar entry being added in a shape the shop cannot render.
+ */
+describe('catalogue integrity across all categories', () => {
+  const CATEGORIES = ['phones', 'laptops', 'power-banks', 'accessories', 'solar'];
+
+  it('uses a known category and a brand on every product', () => {
+    for (const p of products) {
+      expect(CATEGORIES, `${p.model}`).toContain(p.category);
+      expect(p.brand?.trim(), `${p.model} has no brand`).toBeTruthy();
+    }
+  });
+
+  it('page ids are unique across categories, not just within one', () => {
+    expect(new Set(products.map((p) => p.id)).size).toBe(products.length);
+  });
+
+  it('stock references are unique across the whole catalogue', () => {
+    const refs = products.flatMap((p) => p.variants.map((v) => v.ref));
+    const dupes = refs.filter((r, i) => refs.indexOf(r) !== i);
+    expect([...new Set(dupes)]).toEqual([]);
+  });
+
+  it('names the axis the buyer is choosing on', () => {
+    for (const p of products) {
+      expect(p.variantAxis?.trim(), `${p.model} has no variantAxis`).toBeTruthy();
+    }
+  });
+
+  it('reserves appleGeneration for Apple phones', () => {
+    const wrong = products.filter(
+      (p) => p.appleGeneration !== undefined && !(p.category === 'phones' && p.brand === 'Apple')
+    );
+    expect(wrong.map((p) => `${p.brand} ${p.model}`)).toEqual([]);
   });
 });

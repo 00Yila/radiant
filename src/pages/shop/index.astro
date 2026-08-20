@@ -3,49 +3,37 @@ import { getCollection, getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Section from '../../components/Section.astro';
 import Button from '../../components/Button.astro';
-import PhoneFigure from '../../components/PhoneFigure.astro';
+import ProductFigure from '../../components/ProductFigure.astro';
 import { formatNaira } from '../../lib/format';
 import { buildWhatsAppUrl } from '../../lib/whatsapp';
-import { SITE } from '../../lib/site';
+import { CATEGORY_LABELS, priceFrom, sortProducts } from '../../lib/catalogue';
 
 const shop = (await getEntry('settings', 'site'))!.data;
 const products = (await getCollection('products')).map((p) => p.data);
 
 /*
- * One tile per model, not per configuration: a buyer is anchored on "iPhone 15
- * Pro Max", and splitting that across two tiles differing only in storage made
- * the grid longer without helping anyone choose. Storage is picked on the
- * product page instead. Newest generation first, cheapest model within it.
+ * Sections follow the order in CATEGORY_LABELS, and only categories that
+ * actually have stock are rendered — an empty "Solar" heading advertises a
+ * range we cannot yet supply.
  */
-const priceFrom = (p: (typeof products)[number]) =>
-  Math.min(...p.variants.map((v) => v.price));
+const sections = (Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>)
+  .map((key) => ({
+    key,
+    ...CATEGORY_LABELS[key],
+    items: sortProducts(products.filter((p) => p.category === key)),
+  }))
+  .filter((s) => s.items.length > 0);
 
-const sorted = [...products].sort(
-  (a, b) => b.generation - a.generation || priceFrom(a) - priceFrom(b)
-);
-
-const groups = [
-  { g: 17, name: 'iPhone 17 & Air', note: 'Current generation.' },
-  { g: 16, name: 'iPhone 16', note: 'Previous generation.' },
-  { g: 15, name: 'iPhone 15', note: 'Superseded twice.' },
-  { g: 14, name: 'iPhone 14', note: '' },
-  { g: 13, name: 'iPhone 13', note: '' },
-  { g: 12, name: 'iPhone 12', note: '' },
-  { g: 11, name: 'iPhone 11', note: '' },
-  { g: 10, name: 'iPhone X, XR & XS', note: 'Discontinued from 2018.' },
-]
-  .map((group) => ({ ...group, items: sorted.filter((p) => p.generation === group.g) }))
-  .filter((group) => group.items.length > 0);
-
-const cheapest = Math.min(...products.flatMap((p) => p.variants.map((v) => v.price)));
 const listingCount = products.reduce((n, p) => n + p.variants.length, 0);
+const cheapest = Math.min(...products.flatMap((p) => p.variants.map((v) => v.price)));
+
 const waUrl = buildWhatsAppUrl({
-  message: "Hi Radiant Alpha, I'd like to ask about a device in your shop.",
+  message: "Hi Radiant Alpha, I'd like to ask about something in your shop.",
 });
 ---
 <Base
   title="Shop"
-  description={`${products.length} iPhone models — ${listingCount} configurations — on pre-order from Radiant Alpha, from ${formatNaira(cheapest)}. Condition, network lock and warranty stated before you order.`}
+  description={`Phones, laptops, power banks, accessories and solar hardware on pre-order from Radiant Alpha, from ${formatNaira(cheapest)}. Condition and warranty stated before you order.`}
   path="/shop"
 >
   <Section register="dark" class="ra-backdrop-photo shop-hero">
@@ -58,20 +46,14 @@ const waUrl = buildWhatsAppUrl({
       <img src="/images/photos/products-iphone-1280.jpg" width="1280" height="960" decoding="async" alt="" />
     </picture>
     <p class="ra-eyebrow">Shop · pre-order</p>
-    <h1 class="ra-display">{products.length} iPhones, described honestly.</h1>
+    <h1 class="ra-display">Technology, described honestly.</h1>
     <p class="ra-lede">
-      {listingCount} configurations across {products.length} models, all supplied on
-      pre-order — allow {shop.preOrderLeadTime} from order confirmation. Prices are
-      what you pay; condition and network lock are stated before you order, not after
-      the box is open.
+      {products.length} products in {listingCount} configurations, supplied on
+      pre-order — allow {shop.preOrderLeadTime} from order confirmation. Condition and
+      network lock are stated before you order, not after the box is open.
     </p>
   </Section>
 
-  {/*
-    * The transparency promise, restated at the top of the catalogue. The home
-    * page claims every listing states condition and lock status, so the shop
-    * has to actually do it — including admitting what is not yet confirmed.
-    */}
   <Section class="terms">
     <ul class="terms__list" role="list">
       <li>
@@ -87,45 +69,75 @@ const waUrl = buildWhatsAppUrl({
         <p class="terms__v">Defect warranty on hardware faults</p>
       </li>
       <li>
-        <p class="terms__k">{shop.networkLock}</p>
-        <p class="terms__v">Confirmed in writing before you pay</p>
+        <p class="terms__k">Stated up front</p>
+        <p class="terms__v">Condition, and what the warranty excludes</p>
       </li>
     </ul>
 
     {!shop.conditionConfirmed && (
       <p class="terms__pending">
         <strong>On condition:</strong> each listing states whether the model can be
-        new, based on when Apple discontinued it. The exact grade, battery health and
-        SIM type of the specific handset are confirmed with you in writing before any
-        payment — we would rather say so than print a number we have not verified.
+        new, based on when it was discontinued. The exact grade, battery health and
+        SIM type of the specific unit are confirmed with you in writing before any
+        payment — we would rather say so than print a figure we have not verified.
       </p>
     )}
   </Section>
 
-  {groups.map(({ g, name, note, items }) => (
-    <Section class="grp">
+  {/*
+    * Filter bar. Hidden in the markup and revealed by the script, so without
+    * JavaScript a visitor gets the complete catalogue and working section
+    * headings rather than controls that do nothing.
+    */}
+  <Section class="filters">
+    <form id="shop-filter" class="filter" hidden>
+      <div class="filter__search">
+        <label for="q">Search the shop</label>
+        <input id="q" type="search" name="q" placeholder="iPhone 13, 256GB, keyboard…" autocomplete="off" />
+      </div>
+
+      <fieldset class="filter__cats">
+        <legend>Category</legend>
+        <button type="button" class="chip is-on" data-cat="">All</button>
+        {sections.map((s) => (
+          <button type="button" class="chip" data-cat={s.key}>{s.short}</button>
+        ))}
+      </fieldset>
+
+      <p class="filter__count" role="status" aria-live="polite"></p>
+    </form>
+  </Section>
+
+  {sections.map((s) => (
+    <Section class="grp" data-section={s.key}>
       <div class="grp__head">
-        <h2 id={`gen-${g}`}>{name}</h2>
+        <h2 id={`cat-${s.key}`}>{s.label}</h2>
         <p class="grp__count ra-numeric">
-          {items.length} {items.length === 1 ? 'model' : 'models'}
-          {note && <span class="grp__note"> · {note}</span>}
+          {s.items.length} {s.items.length === 1 ? 'product' : 'products'}
+          {s.note && <span class="grp__note"> · {s.note}</span>}
         </p>
       </div>
 
-      <ul class="grid" role="list" aria-labelledby={`gen-${g}`}>
-        {items.map((p) => (
-          <li class="ra-card tile">
-            <PhoneFigure
+      <ul class="grid" role="list" aria-labelledby={`cat-${s.key}`}>
+        {s.items.map((p) => (
+          <li
+            class="ra-card tile"
+            data-category={p.category}
+            data-search={`${p.brand} ${p.model} ${p.variants.map((v) => v.label).join(' ')} ${s.short}`.toLowerCase()}
+          >
+            <ProductFigure
+              category={p.category}
               model={p.model}
-              storage={p.variants[0].storage}
-              generation={p.generation}
+              badge={p.variants[0].label}
+              appleGeneration={p.appleGeneration}
               image={p.image}
               imageAlt={p.imageAlt}
               class="tile__img"
             />
+            <p class="tile__brand">{p.brand}</p>
             <h3><a href={`/shop/${p.id}`}>{p.model}</a></h3>
-            <p class="tile__storage">
-              {p.variants.map((v) => v.storage).join(' · ')} · {p.conditionLabel}
+            <p class="tile__meta">
+              {p.variants.map((v) => v.label).join(' · ')} · {p.conditionLabel}
             </p>
             <p class="tile__price ra-numeric">
               {p.variants.length > 1 && <span class="tile__from">From </span>}
@@ -137,15 +149,92 @@ const waUrl = buildWhatsAppUrl({
     </Section>
   ))}
 
+  <Section class="noresults" id="no-results" hidden>
+    <div class="ra-measure">
+      <h2>Nothing matches that.</h2>
+      <p class="ra-sub">
+        Try a shorter search, or clear the filters. If we do not list it we can
+        usually still source it — ask and we will quote you.
+      </p>
+      <p class="noresults__cta"><Button href={waUrl} external>Ask on WhatsApp</Button></p>
+    </div>
+  </Section>
+
   <Section register="dark" class="ra-backdrop-nodes">
-    <h2 class="ra-display">Not sure which model?</h2>
+    <h2 class="ra-display">Looking for something not listed?</h2>
     <p class="ra-lede">
-      Tell us your budget and what you use a phone for, and we will tell you which of
-      these is the sensible buy — including when the cheaper one is.
+      Laptops, accessories, solar panels and batteries are supplied to order.
+      Tell us what you need and we will quote you.
     </p>
     <Button href={waUrl} variant="gold" external>Ask on WhatsApp</Button>
   </Section>
 </Base>
+
+<script>
+  /*
+   * Filtering runs over markup that is already complete: every product is in
+   * the HTML, so search engines and no-JS visitors get the whole catalogue.
+   * The form starts hidden and is revealed here, so the controls only appear
+   * when they can actually work.
+   */
+  const form = document.getElementById('shop-filter') as HTMLFormElement | null;
+
+  if (form) {
+    form.hidden = false;
+
+    const input = form.querySelector<HTMLInputElement>('#q')!;
+    const chips = [...form.querySelectorAll<HTMLButtonElement>('.chip')];
+    const count = form.querySelector<HTMLElement>('.filter__count')!;
+    const tiles = [...document.querySelectorAll<HTMLElement>('.tile')];
+    const sections = [...document.querySelectorAll<HTMLElement>('[data-section]')];
+    const empty = document.getElementById('no-results')!;
+
+    let category = '';
+
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      let shown = 0;
+
+      for (const tile of tiles) {
+        const okCat = !category || tile.dataset.category === category;
+        const okText = !q || (tile.dataset.search ?? '').includes(q);
+        tile.hidden = !(okCat && okText);
+        if (!tile.hidden) shown++;
+      }
+
+      // A heading with nothing under it is worse than no heading.
+      for (const section of sections) {
+        section.hidden = !section.querySelector('.tile:not([hidden])');
+      }
+
+      empty.hidden = shown > 0;
+      count.textContent =
+        shown === tiles.length
+          ? `${tiles.length} products`
+          : `${shown} of ${tiles.length} products`;
+    };
+
+    input.addEventListener('input', apply);
+
+    for (const chip of chips) {
+      chip.setAttribute('aria-pressed', String(chip.classList.contains('is-on')));
+      chip.addEventListener('click', () => {
+        category = chip.dataset.cat ?? '';
+        for (const c of chips) {
+          const on = c === chip;
+          c.classList.toggle('is-on', on);
+          c.setAttribute('aria-pressed', String(on));
+        }
+        apply();
+      });
+    }
+
+    // Enter would otherwise reload the page and drop the filter.
+    form.addEventListener('submit', (e) => e.preventDefault());
+
+    apply();
+  }
+</script>
 
 <style>
   .terms__list {
@@ -156,11 +245,7 @@ const waUrl = buildWhatsAppUrl({
   }
   @media (min-width: 640px) { .terms__list { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 960px) { .terms__list { grid-template-columns: repeat(4, 1fr); } }
-  .terms__k {
-    font-weight: 700;
-    font-size: var(--ra-step-1);
-    color: var(--ra-gold-ink);
-  }
+  .terms__k { font-weight: 700; font-size: var(--ra-step-1); color: var(--ra-gold-ink); }
   .terms__v { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: 2px; }
   .terms__pending {
     margin-top: var(--ra-space-xl);
@@ -172,7 +257,74 @@ const waUrl = buildWhatsAppUrl({
     font-size: var(--ra-step--1);
   }
 
-  /* Groups sit closer together than full sections — one continuous catalogue. */
+  /* ---- filter bar ---- */
+  .filters { padding-block: 0; }
+  /*
+   * `display: grid` below outranks the user-agent's `[hidden] { display: none }`,
+   * so without this the filter bar stays on screen for a no-JS visitor as a set
+   * of controls that do nothing. Same trap as .tile[hidden] further down.
+   */
+  .filter[hidden] { display: none; }
+
+  .filter {
+    position: sticky;
+    /* Clears the sticky header, so the two never overlap while scrolling. */
+    top: 68px;
+    z-index: 5;
+    display: grid;
+    gap: var(--ra-space-m);
+    padding: var(--ra-space-m) 0;
+    background: var(--ra-bg);
+    border-bottom: 1px solid var(--ra-border);
+  }
+  .filter__search { display: grid; gap: var(--ra-space-2xs); max-width: 26rem; }
+  .filter__search label { font-size: var(--ra-step--1); font-weight: 600; }
+  .filter__search input {
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-surface);
+  }
+  .filter__search input:focus-visible { border-color: var(--ra-navy-500); }
+
+  .filter__cats {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ra-space-xs);
+  }
+  .filter__cats legend {
+    font-size: var(--ra-step--1);
+    font-weight: 600;
+    margin-bottom: var(--ra-space-xs);
+  }
+  .chip {
+    min-height: var(--ra-tap-min);
+    padding-inline: var(--ra-space-m);
+    border: 0;
+    border-radius: var(--ra-radius-m);
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--ra-border);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  }
+  .chip:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow: inset 0 0 0 1.5px var(--ra-gold-500);
+  }
+  .chip.is-on {
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    box-shadow: inset 0 0 0 1.5px var(--ra-navy-600);
+  }
+  .filter__count { font-size: var(--ra-step--1); color: var(--ra-fg-muted); }
+
+  /* ---- catalogue ---- */
   .grp { padding-block: var(--ra-space-xl); }
   .grp__head {
     display: flex;
@@ -195,15 +347,20 @@ const waUrl = buildWhatsAppUrl({
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   }
   .tile { display: flex; flex-direction: column; }
+  /* [hidden] loses to display:flex without this. */
+  .tile[hidden] { display: none; }
   .tile__img { margin-bottom: var(--ra-space-m); }
-  .tile h3 { font-size: var(--ra-step-0); }
+  .tile__brand {
+    font-size: var(--ra-step--1);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ra-gold-ink);
+  }
+  .tile h3 { font-size: var(--ra-step-0); margin-top: 2px; }
   .tile h3 a { text-decoration: none; }
   .tile h3 a:hover { text-decoration: underline; }
-  .tile__storage {
-    color: var(--ra-fg-muted);
-    font-size: var(--ra-step--1);
-    margin-top: 2px;
-  }
+  .tile__meta { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: 2px; }
   .tile__from { font-weight: 400; color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
   .tile__price {
     margin-top: auto;
@@ -211,4 +368,7 @@ const waUrl = buildWhatsAppUrl({
     font-weight: 700;
     color: var(--ra-navy-600);
   }
+
+  .noresults h2 { font-size: var(--ra-step-2); }
+  .noresults__cta { margin-top: var(--ra-space-l); }
 </style>
