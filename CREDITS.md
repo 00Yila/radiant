@@ -27,6 +27,34 @@ same reasoning rules out stock "project screenshots" on the Work page.
 Photographs of specific named institutions are also avoided, since placing one
 on a company page implies a relationship with that institution.
 
+
+## Product imagery — why there are no Apple photographs
+
+The 53 phone listings use generated placeholder figures from
+`src/components/PhoneFigure.astro`: the correct silhouette per generation,
+in the brand's navy and gold, with the storage size as the distinguishing mark.
+
+Apple's official product renders are **not** used, for two separate reasons:
+
+1. **Licence.** Apple supplies product imagery to authorised resellers and
+   channel partners under its marketing guidelines. Outside that relationship
+   the images are copyrighted and the marks are trademarked, and a commercial
+   resale site is exactly the use Apple enforces against. The design spec made
+   this call deliberately: "launch legally clean rather than rely on
+   non-enforcement."
+2. **Accuracy.** 33 of the 53 listings are used or refurbished handsets. A
+   pristine studio render misrepresents the actual item, on a site whose whole
+   pitch is that it describes stock honestly.
+
+Every product has an optional `image` field. Setting it replaces the generated
+figure for that one listing — a per-product edit, not a rebuild. Use it for:
+
+- **Photographs of your own stock.** The strongest option by far, and the only
+  one that shows the buyer the actual handset.
+- **Apple's official assets, if you are an Apple Authorised Reseller.** Then you
+  have legitimate access through Apple's channel marketing resources, and the
+  licence question goes away. The accuracy point still applies to used units.
+
 ## Generated artwork
 
 Everything else is generated from the brand mark and committed as source, not

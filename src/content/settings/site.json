@@ -1,6 +1,11 @@
 [
   {
     "id": "site",
-    "preOrderLeadTime": "3–4 weeks"
+    "preOrderLeadTime": "3–4 weeks",
+    "inspectionWindowHours": 48,
+    "warrantyDays": 14,
+    "networkLock": "Factory unlocked",
+    "batteryMinimum": "85%+",
+    "conditionConfirmed": false
   }
 ]

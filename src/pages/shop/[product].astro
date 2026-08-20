@@ -1,0 +1,263 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import PhoneFigure from '../../components/PhoneFigure.astro';
+import { formatNaira } from '../../lib/format';
+import { buildWhatsAppUrl } from '../../lib/whatsapp';
+import { SITE } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const products = await getCollection('products');
+  return products.map((entry) => ({
+    params: { product: entry.data.id },
+    props: { product: entry.data },
+  }));
+}
+
+const { product } = Astro.props;
+const shop = (await getEntry('settings', 'site'))!.data;
+
+const all = (await getCollection('products')).map((p) => p.data);
+const alsoIn = all
+  .filter((p) => p.model === product.model && p.id !== product.id)
+  .sort((a, b) => a.price - b.price);
+const similar = all
+  .filter((p) => p.generation === product.generation && p.model !== product.model)
+  .sort((a, b) => a.price - b.price)
+  .slice(0, 4);
+
+/*
+ * The pre-order message is the revenue mechanism — it has to carry everything
+ * the buyer just agreed to, so neither side can later disagree about what was
+ * ordered or when it arrives.
+ */
+const message = [
+  `Hi Radiant Alpha, I'd like to pre-order:`,
+  `${product.model} — ${product.storage} — ${formatNaira(product.price)}`,
+  `Ref: ${product.ref}`,
+  `I understand delivery is ${shop.preOrderLeadTime} from order confirmation.`,
+].join('\n');
+const waUrl = buildWhatsAppUrl({ message });
+
+// US-market iPhone 14 and newer ship with no SIM tray at all. eSIM support
+// across MTN, Airtel and Glo is uneven, so this cannot wait until delivery day.
+const eSimCaution = product.generation >= 14;
+
+const productSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: `${product.model} ${product.storage}`,
+  sku: product.ref,
+  brand: { '@type': 'Brand', name: 'Apple' },
+  category: 'Mobile Phones',
+  offers: {
+    '@type': 'Offer',
+    price: product.price,
+    priceCurrency: 'NGN',
+    availability: 'https://schema.org/PreOrder',
+    url: new URL(`/shop/${product.id}`, SITE.domain).href,
+    seller: { '@type': 'Organization', name: SITE.legalName },
+  },
+};
+
+const crumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.domain },
+    { '@type': 'ListItem', position: 2, name: 'Shop', item: new URL('/shop', SITE.domain).href },
+    { '@type': 'ListItem', position: 3, name: `${product.model} ${product.storage}` },
+  ],
+};
+---
+<Base
+  title={`${product.model} ${product.storage}`}
+  description={`${product.model} ${product.storage} on pre-order at ${formatNaira(product.price)}. ${product.conditionLabel}. ${shop.networkLock}. Delivery ${shop.preOrderLeadTime} from confirmation.`}
+  path={`/shop/${product.id}`}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(productSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(crumbSchema)} />
+  </Fragment>
+
+  <Section>
+    <nav class="ra-crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><a href="/shop">Shop</a></li>
+        <li aria-current="page">{product.model} {product.storage}</li>
+      </ol>
+    </nav>
+
+    <div class="pdp">
+      <div class="pdp__media">
+        <PhoneFigure
+          model={product.model}
+          storage={product.storage}
+          generation={product.generation}
+          image={product.image}
+          imageAlt={product.imageAlt}
+          eager
+        />
+        {!product.image && (
+          <p class="pdp__imgnote">
+            Illustration, not a photograph of the actual unit. We send real photos of
+            your specific handset before you pay.
+          </p>
+        )}
+      </div>
+
+      <div class="pdp__detail">
+        <h1 class="pdp__title">{product.model}</h1>
+        <p class="pdp__storage">{product.storage} · Ref {product.ref}</p>
+        <p class="pdp__price ra-numeric">{formatNaira(product.price)}</p>
+
+        <p class="pdp__notice">
+          <strong>Pre-order:</strong> allow {shop.preOrderLeadTime} from order
+          confirmation for delivery.
+        </p>
+
+        <dl class="pdp__specs">
+          <div><dt>Condition</dt><dd>{product.conditionLabel}</dd></div>
+          <div><dt>Network</dt><dd>{shop.networkLock}</dd></div>
+          <div>
+            <dt>SIM</dt>
+            <dd>{eSimCaution ? 'Confirmed before order — may be eSIM-only' : 'Physical SIM'}</dd>
+          </div>
+          <div>
+            <dt>Battery</dt>
+            <dd>{shop.conditionConfirmed ? shop.batteryMinimum : 'Confirmed before order'}</dd>
+          </div>
+          <div><dt>Warranty</dt><dd>{shop.warrantyDays} days</dd></div>
+        </dl>
+
+        <Button href={waUrl} variant="gold" external>Pre-order on WhatsApp</Button>
+
+        <p class="pdp__notice pdp__notice--repeat">
+          Delivery {shop.preOrderLeadTime} from confirmation ·
+          <a href="/returns">Returns &amp; warranty</a>
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section class="ra-backdrop-hex">
+    <div class="honest ra-measure">
+      <h2>What we confirm before you pay</h2>
+      <p>
+        The imported-phone market runs on vagueness — condition and lock status
+        disclosed only after the box is open. We would rather lose a sale than have
+        you discover something on delivery day, four weeks after paying.
+      </p>
+      <ul>
+        <li>
+          <strong>Whether this model can be new.</strong> {product.conditionLabel}.
+          {product.generation <= 14 && ' Apple discontinued this model, so no unit sold today is new from any source.'}
+        </li>
+        <li>
+          <strong>The exact grade and battery health</strong> of your specific handset,
+          in writing, with photographs.
+        </li>
+        {eSimCaution && (
+          <li>
+            <strong>Whether it has a SIM tray.</strong> US-market units of this
+            generation are eSIM-only, and eSIM support on MTN, Airtel and Glo is
+            uneven. We confirm which variant you are getting.
+          </li>
+        )}
+        <li>
+          <strong>What the warranty excludes.</strong> {shop.warrantyDays} days on
+          hardware faults; never physical damage, water, or — on any non-new unit —
+          battery degradation and cosmetic wear.
+        </li>
+      </ul>
+    </div>
+  </Section>
+
+  {alsoIn.length > 0 && (
+    <Section>
+      <h2>Other storage sizes</h2>
+      <ul class="rail" role="list">
+        {alsoIn.map((p) => (
+          <li class="ra-card">
+            <h3><a href={`/shop/${p.id}`}>{p.model} {p.storage}</a></h3>
+            <p class="rail__price ra-numeric">{formatNaira(p.price)}</p>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )}
+
+  {similar.length > 0 && (
+    <Section class="ra-backdrop-hex">
+      <h2>Others in this generation</h2>
+      <ul class="rail" role="list">
+        {similar.map((p) => (
+          <li class="ra-card">
+            <h3><a href={`/shop/${p.id}`}>{p.model} {p.storage}</a></h3>
+            <p class="rail__price ra-numeric">{formatNaira(p.price)}</p>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )}
+</Base>
+
+<style>
+  .pdp { display: grid; gap: var(--ra-space-xl); }
+  @media (min-width: 820px) {
+    .pdp { grid-template-columns: 1fr 1fr; gap: var(--ra-space-3xl); align-items: start; }
+  }
+  .pdp__imgnote {
+    margin-top: var(--ra-space-s);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+  .pdp__title { font-size: var(--ra-step-3); }
+  .pdp__storage { color: var(--ra-fg-muted); margin-top: var(--ra-space-2xs); }
+  .pdp__price {
+    font-size: var(--ra-step-3);
+    font-weight: 700;
+    color: var(--ra-navy-600);
+    margin-block: var(--ra-space-m);
+  }
+  .pdp__notice {
+    background: var(--ra-navy-50);
+    border-left: 3px solid var(--ra-gold-500);
+    border-radius: 0 var(--ra-radius-s) var(--ra-radius-s) 0;
+    padding: var(--ra-space-s) var(--ra-space-m);
+    font-size: var(--ra-step--1);
+    margin-bottom: var(--ra-space-l);
+  }
+  .pdp__notice--repeat { margin-top: var(--ra-space-m); margin-bottom: 0; }
+  .pdp__specs {
+    display: grid;
+    gap: var(--ra-space-xs);
+    margin-bottom: var(--ra-space-l);
+    padding-block: var(--ra-space-m);
+    border-block: 1px solid var(--ra-rule);
+  }
+  .pdp__specs > div { display: flex; justify-content: space-between; gap: var(--ra-space-m); }
+  .pdp__specs dt { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
+  .pdp__specs dd { font-weight: 600; text-align: right; }
+
+  .honest h2 { font-size: var(--ra-step-2); }
+  .honest p { color: var(--ra-fg-muted); margin-top: var(--ra-space-m); }
+  .honest ul { margin-top: var(--ra-space-m); padding-left: 1.2em; }
+  .honest li { margin-top: var(--ra-space-s); color: var(--ra-fg-muted); }
+
+  .rail {
+    display: grid;
+    gap: var(--ra-space-m);
+    margin-top: var(--ra-space-l);
+    padding: 0;
+    list-style: none;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  .rail h3 { font-size: var(--ra-step-0); }
+  .rail h3 a { text-decoration: none; }
+  .rail h3 a:hover { text-decoration: underline; }
+  .rail__price { margin-top: var(--ra-space-xs); font-weight: 700; color: var(--ra-navy-600); }
+</style>

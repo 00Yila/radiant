@@ -57,15 +57,30 @@ const waUrl = buildWhatsAppUrl({
 
       <div>
         <h2>Send a message</h2>
-        <form
-          name="contact"
-          method="POST"
-          data-netlify="true"
-          netlify-honeypot="bot-field"
-          action="/contact/thanks"
-          class="form"
-        >
-          <input type="hidden" name="form-name" value="contact" />
+        {/*
+          * This page is static, so Astro.url.searchParams is empty at build
+          * time — the ?error= that contact.php redirects back with can only be
+          * read in the browser. Both messages ship hidden and a few lines of
+          * inline script reveal the right one.
+          */}
+        <div id="form-error" class="alert" role="alert" hidden>
+          <p data-error="send" hidden>
+            Something went wrong sending that, and it did not reach us. Please try
+            again, or message us on WhatsApp so nothing is lost.
+          </p>
+          <p data-error="invalid" hidden>
+            Some details were missing or did not look right. Please check the form
+            and try again.
+          </p>
+        </div>
+
+        {/*
+          * Posts to a PHP handler on the host, not to Netlify Forms. The
+          * handler redirects to /contact/thanks/ only when the mail actually
+          * sent — a thank-you page shown for a message that vanished is worse
+          * than an error, because nobody learns the enquiry was lost.
+          */}
+        <form name="contact" method="POST" action="/contact.php" class="form">
           <p class="ra-visually-hidden">
             <label for="bot-field">Leave this field empty</label>
             <input id="bot-field" name="bot-field" tabindex="-1" autocomplete="off" />
@@ -118,6 +133,22 @@ const waUrl = buildWhatsAppUrl({
     </div>
   </Section>
 </Base>
+
+<script>
+  // Reveals the banner contact.php redirected back for, then strips ?error=
+  // from the URL so a refresh does not resurrect a message already dealt with.
+  const code = new URLSearchParams(location.search).get('error');
+  if (code === 'send' || code === 'invalid') {
+    const box = document.getElementById('form-error');
+    const line = box?.querySelector(`[data-error="${code}"]`);
+    if (box && line) {
+      box.hidden = false;
+      (line as HTMLElement).hidden = false;
+      box.scrollIntoView({ block: 'center' });
+    }
+    history.replaceState(null, '', location.pathname);
+  }
+</script>
 
 <style>
   .lede--tight { margin-block-end: 0; }
@@ -186,6 +217,19 @@ const waUrl = buildWhatsAppUrl({
     transform: translateY(0) scale(0.985);
     transition-duration: 60ms;
   }
+  .alert {
+    margin-top: var(--ra-space-l);
+    padding: var(--ra-space-m);
+    border-radius: var(--ra-radius-s);
+    /* Not gold: gold is the brand accent here, and a failure must not look
+       like an accent. Red-brown reads as a problem without shouting. */
+    border-left: 3px solid #8F2530;
+    background: #FBF1F0;
+    color: #6B1C24;
+    font-size: var(--ra-step--1);
+  }
+  .alert p { margin: 0; }
+
   .fallback {
     margin-top: var(--ra-space-l);
     padding: var(--ra-space-m);

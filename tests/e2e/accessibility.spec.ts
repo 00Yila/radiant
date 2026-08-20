@@ -8,6 +8,8 @@ const PAGES = [
   // A post page renders authored markdown — headings, lists and a table the
   // other routes never exercise.
   '/blog/what-a-business-website-costs-in-nigeria',
+  // One product page: the shop's densest layout, and the only spec table.
+  '/shop/iphone-15-pro-max-256gb',
 ];
 
 for (const path of PAGES) {
