@@ -1,0 +1,119 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPublishedPosts, formatPostDate, toIsoDate } from '../../lib/posts';
+import { SITE } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { title, date, excerpt, tags } = post.data;
+const { Content } = await render(post);
+
+const all = await getPublishedPosts();
+const related = all.filter((p) => p.id !== post.id).slice(0, 3);
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description: excerpt,
+  datePublished: toIsoDate(date),
+  keywords: tags.join(', '),
+  mainEntityOfPage: new URL(`/blog/${post.id}`, SITE.domain).href,
+  author: { '@type': 'Organization', name: SITE.legalName, url: SITE.domain },
+  publisher: {
+    '@type': 'Organization',
+    name: SITE.legalName,
+    url: SITE.domain,
+  },
+};
+
+const crumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.domain },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: new URL('/blog', SITE.domain).href },
+    { '@type': 'ListItem', position: 3, name: title },
+  ],
+};
+---
+<Base title={title} description={excerpt} path={`/blog/${post.id}`} type="article">
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(crumbSchema)} />
+  </Fragment>
+
+  <Section register="dark" class="ra-backdrop-glow">
+    <nav class="ra-crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><a href="/blog">Blog</a></li>
+        <li aria-current="page">{title}</li>
+      </ol>
+    </nav>
+    {tags.length > 0 && <p class="ra-eyebrow">{tags.join(' · ')}</p>}
+    <h1 class="ra-display post__title">{title}</h1>
+    <time class="post__date" datetime={toIsoDate(date)}>{formatPostDate(date)}</time>
+  </Section>
+
+  <Section>
+    <article class="ra-measure ra-prose post__body">
+      <Content />
+    </article>
+  </Section>
+
+  {related.length > 0 && (
+    <Section class="ra-backdrop-hex">
+      <h2>More writing</h2>
+      <ul class="ra-cards ra-cards--three" role="list">
+        {related.map((p) => <PostCard post={p} />)}
+      </ul>
+    </Section>
+  )}
+
+  <Section register="dark" class="ra-backdrop-nodes">
+    <h2 class="ra-display">Have a project in mind?</h2>
+    <p class="ra-lede">
+      Tell us what you are trying to achieve and we will tell you what it takes.
+    </p>
+    <Button href="/contact" variant="gold">Start Your Project</Button>
+  </Section>
+</Base>
+
+<style>
+  .post__title { max-width: 22ch; }
+  .post__date {
+    display: block;
+    margin-top: var(--ra-space-l);
+    color: var(--ra-navy-200);
+    font-size: var(--ra-step--1);
+  }
+
+  /* Tables appear in the timeline post; .ra-prose does not style them. */
+  .post__body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--ra-space-l);
+  }
+  .post__body :global(th),
+  .post__body :global(td) {
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border-bottom: 1px solid var(--ra-border);
+    text-align: left;
+  }
+  .post__body :global(th) {
+    font-size: var(--ra-step--1);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ra-fg-muted);
+  }
+  .post__body :global(strong) { color: var(--ra-fg); }
+</style>

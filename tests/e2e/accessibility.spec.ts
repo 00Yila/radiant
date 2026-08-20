@@ -5,6 +5,9 @@ const PAGES = [
   '/', '/about', '/work', '/services', '/services/software-development',
   '/services/digital-marketing', '/contact', '/contact/thanks', '/returns',
   '/privacy', '/terms', '/shop', '/blog', '/404',
+  // A post page renders authored markdown — headings, lists and a table the
+  // other routes never exercise.
+  '/blog/what-a-business-website-costs-in-nigeria',
 ];
 
 for (const path of PAGES) {

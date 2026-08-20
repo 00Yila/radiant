@@ -1,5 +1,6 @@
 ---
-import { SITE } from '../lib/site';
+import { SITE, activeSocials } from '../lib/site';
+import SocialIcon from './SocialIcon.astro';
 
 const columns = [
   {
@@ -14,6 +15,7 @@ const columns = [
   {
     heading: 'Company',
     links: [
+      { href: '/', label: 'Home' },
       { href: '/about', label: 'About Us' },
       { href: '/work', label: 'Our Work' },
       { href: '/blog', label: 'Blog' },
@@ -30,6 +32,7 @@ const columns = [
     ],
   },
 ];
+const socials = activeSocials();
 const year = new Date().getFullYear();
 ---
 <footer class="ftr ra-dark">
@@ -44,6 +47,23 @@ const year = new Date().getFullYear();
           <a href={`tel:${SITE.phoneE164}`}>{SITE.phoneDisplay}</a>
           <span>{SITE.location}</span>
         </address>
+
+        {socials.length > 0 && (
+          <ul class="ftr__social" role="list">
+            {socials.map(({ network, label, url }) => (
+              <li>
+                {/*
+                  * The visible content is an icon, so the accessible name has
+                  * to come from the label — an icon-only link with no name is
+                  * announced as just "link".
+                  */}
+                <a href={url} rel="noopener noreferrer" target="_blank" aria-label={`${SITE.name} on ${label}`}>
+                  <SocialIcon network={network} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {columns.map(({ heading, links }) => (
@@ -100,6 +120,31 @@ const year = new Date().getFullYear();
     margin-bottom: var(--ra-space-m);
   }
   .ftr__col ul { display: grid; gap: var(--ra-space-xs); list-style: none; padding: 0; }
+  .ftr__social {
+    display: flex;
+    gap: var(--ra-space-xs);
+    margin-top: var(--ra-space-l);
+    padding: 0;
+    list-style: none;
+  }
+  .ftr__social a {
+    display: grid;
+    place-items: center;
+    /* 44px is the tap minimum; the icon inside is 20px. */
+    width: var(--ra-tap-min);
+    height: var(--ra-tap-min);
+    border-radius: var(--ra-radius-s);
+    color: var(--ra-navy-200);
+    box-shadow: inset 0 0 0 1px var(--ra-navy-700);
+    transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  }
+  /* On navy, gold is legible — so here the icon itself turns gold. */
+  .ftr__social a:hover {
+    color: var(--ra-navy-900);
+    background: var(--ra-gold-500);
+    box-shadow: inset 0 0 0 1px var(--ra-gold-500);
+  }
+
   .ftr__col a {
     display: inline-flex;
     align-items: center;

@@ -18,6 +18,31 @@ const services = defineCollection({
   }),
 });
 
+/*
+ * Blog posts. Schema follows the spec's `posts` table: title, date, excerpt,
+ * cover image, body, tags. `draft` is additional — it keeps unfinished writing
+ * in the repo without publishing it, which matters once the CMS lands and
+ * posts are authored by someone who is not running the build.
+ */
+const posts = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/posts' }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    excerpt: z.string().min(70).max(200),
+    tags: z.array(z.string()).default([]),
+    coverImage: z.string().optional(),
+    coverAlt: z.string().optional(),
+    draft: z.boolean().default(false),
+  })
+  // A cover image with no alt text would fail the build's accessibility gate
+  // at render time; catching it here names the offending file instead.
+  .refine((d) => !d.coverImage || !!d.coverAlt, {
+    message: 'coverAlt is required whenever coverImage is set',
+    path: ['coverAlt'],
+  }),
+});
+
 const settings = defineCollection({
   loader: file('./src/content/settings/site.json'),
   schema: z.object({
@@ -26,4 +51,4 @@ const settings = defineCollection({
   }),
 });
 
-export const collections = { services, settings };
+export const collections = { services, posts, settings };

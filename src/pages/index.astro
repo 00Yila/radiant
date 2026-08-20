@@ -5,8 +5,13 @@ import Section from '../components/Section.astro';
 import Button from '../components/Button.astro';
 import ServiceGlyph from '../components/ServiceGlyph.astro';
 import HeroFigure from '../components/HeroFigure.astro';
+import PostCard from '../components/PostCard.astro';
 import { formatNaira } from '../lib/format';
+import { getPublishedPosts } from '../lib/posts';
 import { SITE } from '../lib/site';
+
+/* Newest three; the section hides itself entirely when there are none. */
+const latestPosts = (await getPublishedPosts()).slice(0, 3);
 
 const leadServices = (await getCollection('services'))
   .filter((s) => s.data.lead)
@@ -223,6 +228,23 @@ const expectations = [
     </div>
   </Section>
 
+  {latestPosts.length > 0 && (
+    <Section class="insights">
+      <div class="insights__head">
+        <div>
+          <h2>Latest writing</h2>
+          <p class="ra-sub">
+            What things cost, how long they take, and what is worth paying for.
+          </p>
+        </div>
+        <a class="insights__all" href="/blog">All articles &rarr;</a>
+      </div>
+      <ul class="ra-cards ra-cards--three" role="list">
+        {latestPosts.map((post) => <PostCard post={post} />)}
+      </ul>
+    </Section>
+  )}
+
   <Section register="dark" class="ra-backdrop-nodes">
     <h2 class="ra-display">Ready to grow your business?</h2>
     <p class="ra-lede">
@@ -351,6 +373,15 @@ const expectations = [
 
   .more { margin-top: var(--ra-space-l); font-weight: 600; }
   .shop-cta { margin-top: var(--ra-space-l); }
+
+  .insights__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ra-space-m);
+    align-items: end;
+    justify-content: space-between;
+  }
+  .insights__all { font-weight: 600; white-space: nowrap; }
 
   .products__grid { display: grid; gap: var(--ra-space-xl); align-items: center; }
   @media (min-width: 900px) {

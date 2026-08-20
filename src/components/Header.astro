@@ -1,10 +1,14 @@
 ---
+/*
+ * Blog lives in the footer, not here. It earns its traffic from search rather
+ * than from the primary nav, and dropping it keeps the bar short enough that
+ * the CTA at the end reads as the one emphasised action.
+ */
 const links = [
   { href: '/services', label: 'Services' },
   { href: '/shop', label: 'Shop' },
   { href: '/work', label: 'Work' },
   { href: '/about', label: 'About' },
-  { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ];
 const current = Astro.url.pathname;
@@ -38,6 +42,9 @@ const current = Astro.url.pathname;
             </a>
           </li>
         ))}
+        <li class="hdr__cta-item">
+          <a href="/contact" class="hdr__cta">Start Your Project</a>
+        </li>
       </ul>
     </nav>
   </div>
@@ -138,6 +145,32 @@ const current = Astro.url.pathname;
     color: var(--ra-navy-900);
   }
 
+  /*
+   * The one emphasised action in the bar. Gold fill with navy text — the same
+   * pairing the hero CTA uses, and the only way gold is legible on the light
+   * header. Because every other nav item turns gold on hover, this one darkens
+   * instead: filling it gold again would leave hover indistinguishable.
+   */
+  .hdr__cta {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    font-weight: 700;
+    padding-inline: var(--ra-space-l);
+    border-radius: var(--ra-radius-m);
+    white-space: nowrap;
+  }
+  .hdr__nav .hdr__cta:hover {
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+  }
+  .hdr__nav .hdr__cta:active { background: var(--ra-navy-800); }
+  .hdr__cta:focus-visible { outline-color: var(--ra-navy-900); }
+
+  @media (min-width: 901px) {
+    /* Sits off the end of the link run, not inside its rhythm. */
+    .hdr__cta-item { margin-left: var(--ra-space-xs); }
+  }
+
   @media (max-width: 900px) {
     .hdr__nav {
       display: none;
@@ -152,6 +185,13 @@ const current = Astro.url.pathname;
     .hdr__nav ul { flex-direction: column; gap: 0; }
     .hdr__nav li + li { border-top: 1px solid var(--ra-border); }
     .hdr__nav a { width: 100%; }
+
+    /* In the drawer it becomes a full-width button under a clear break. */
+    .hdr__nav .hdr__cta-item {
+      border-top: 0;
+      margin-top: var(--ra-space-m);
+    }
+    .hdr__nav .hdr__cta { justify-content: center; }
   }
 
   @media (min-width: 901px) {
