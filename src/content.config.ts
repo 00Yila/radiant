@@ -58,9 +58,6 @@ const products = defineCollection({
   schema: z.object({
     id: z.string(),
     model: z.string(),
-    storage: z.string().regex(/^\d+GB$/),
-    price: z.number().int().positive(),
-    ref: z.string(),
     generation: z.number().int(),
     conditionTier: z.enum([
       'new',
@@ -70,12 +67,42 @@ const products = defineCollection({
     ]),
     conditionLabel: z.string(),
     tierRank: z.number().int().min(1).max(4),
+
+    /*
+     * One entry per buyable configuration. Storage is the only axis with real
+     * data today; colour and condition are declared so the shape does not have
+     * to change when the supplier confirms them, and are simply absent until
+     * then rather than invented.
+     *
+     * Every variant needs its own ref, because that is what goes into the
+     * WhatsApp order message and later identifies which unit was sold.
+     */
+    variants: z
+      .array(
+        z.object({
+          storage: z.string().regex(/^\d+GB$/),
+          price: z.number().int().positive(),
+          ref: z.string(),
+          colour: z.string().optional(),
+          condition: z.string().optional(),
+        })
+      )
+      .min(1),
+
+    /** Colourways offered across the model. Empty until the supplier confirms. */
+    colours: z.array(z.string()).default([]),
+
     image: z.string().optional(),
     imageAlt: z.string().optional(),
-  }).refine((d) => !d.image || !!d.imageAlt, {
-    message: 'imageAlt is required whenever image is set',
-    path: ['imageAlt'],
-  }),
+  })
+    .refine((d) => !d.image || !!d.imageAlt, {
+      message: 'imageAlt is required whenever image is set',
+      path: ['imageAlt'],
+    })
+    .refine(
+      (d) => new Set(d.variants.map((v) => v.ref)).size === d.variants.length,
+      { message: 'variant refs must be unique within a model', path: ['variants'] }
+    ),
 });
 
 const settings = defineCollection({

@@ -9,7 +9,7 @@ const PAGES = [
   // other routes never exercise.
   '/blog/what-a-business-website-costs-in-nigeria',
   // One product page: the shop's densest layout, and the only spec table.
-  '/shop/iphone-15-pro-max-256gb',
+  '/shop/iphone-15-pro-max',
 ];
 
 for (const path of PAGES) {

@@ -12,12 +12,16 @@ const shop = (await getEntry('settings', 'site'))!.data;
 const products = (await getCollection('products')).map((p) => p.data);
 
 /*
- * Newest generation first, then cheapest within a generation. A buyer scanning
- * a 53-row catalogue is almost always anchored on a model, and the price
- * ordering inside each group makes the storage tiers read as a ladder.
+ * One tile per model, not per configuration: a buyer is anchored on "iPhone 15
+ * Pro Max", and splitting that across two tiles differing only in storage made
+ * the grid longer without helping anyone choose. Storage is picked on the
+ * product page instead. Newest generation first, cheapest model within it.
  */
+const priceFrom = (p: (typeof products)[number]) =>
+  Math.min(...p.variants.map((v) => v.price));
+
 const sorted = [...products].sort(
-  (a, b) => b.generation - a.generation || a.price - b.price
+  (a, b) => b.generation - a.generation || priceFrom(a) - priceFrom(b)
 );
 
 const groups = [
@@ -33,14 +37,15 @@ const groups = [
   .map((group) => ({ ...group, items: sorted.filter((p) => p.generation === group.g) }))
   .filter((group) => group.items.length > 0);
 
-const cheapest = Math.min(...products.map((p) => p.price));
+const cheapest = Math.min(...products.flatMap((p) => p.variants.map((v) => v.price)));
+const listingCount = products.reduce((n, p) => n + p.variants.length, 0);
 const waUrl = buildWhatsAppUrl({
   message: "Hi Radiant Alpha, I'd like to ask about a device in your shop.",
 });
 ---
 <Base
   title="Shop"
-  description={`${products.length} iPhone models on pre-order from Radiant Alpha, from ${formatNaira(cheapest)}. Condition, network lock and warranty stated on every listing before you order.`}
+  description={`${products.length} iPhone models — ${listingCount} configurations — on pre-order from Radiant Alpha, from ${formatNaira(cheapest)}. Condition, network lock and warranty stated before you order.`}
   path="/shop"
 >
   <Section register="dark" class="ra-backdrop-photo shop-hero">
@@ -55,9 +60,10 @@ const waUrl = buildWhatsAppUrl({
     <p class="ra-eyebrow">Shop · pre-order</p>
     <h1 class="ra-display">{products.length} iPhones, described honestly.</h1>
     <p class="ra-lede">
-      Every device is supplied on pre-order — allow {shop.preOrderLeadTime} from order
-      confirmation. Prices are what you pay; condition and network lock are stated
-      before you order, not after the box is open.
+      {listingCount} configurations across {products.length} models, all supplied on
+      pre-order — allow {shop.preOrderLeadTime} from order confirmation. Prices are
+      what you pay; condition and network lock are stated before you order, not after
+      the box is open.
     </p>
   </Section>
 
@@ -101,7 +107,7 @@ const waUrl = buildWhatsAppUrl({
       <div class="grp__head">
         <h2 id={`gen-${g}`}>{name}</h2>
         <p class="grp__count ra-numeric">
-          {items.length} {items.length === 1 ? 'listing' : 'listings'}
+          {items.length} {items.length === 1 ? 'model' : 'models'}
           {note && <span class="grp__note"> · {note}</span>}
         </p>
       </div>
@@ -111,15 +117,20 @@ const waUrl = buildWhatsAppUrl({
           <li class="ra-card tile">
             <PhoneFigure
               model={p.model}
-              storage={p.storage}
+              storage={p.variants[0].storage}
               generation={p.generation}
               image={p.image}
               imageAlt={p.imageAlt}
               class="tile__img"
             />
             <h3><a href={`/shop/${p.id}`}>{p.model}</a></h3>
-            <p class="tile__storage">{p.storage} · {p.conditionLabel}</p>
-            <p class="tile__price ra-numeric">{formatNaira(p.price)}</p>
+            <p class="tile__storage">
+              {p.variants.map((v) => v.storage).join(' · ')} · {p.conditionLabel}
+            </p>
+            <p class="tile__price ra-numeric">
+              {p.variants.length > 1 && <span class="tile__from">From </span>}
+              {formatNaira(priceFrom(p))}
+            </p>
           </li>
         ))}
       </ul>
@@ -193,6 +204,7 @@ const waUrl = buildWhatsAppUrl({
     font-size: var(--ra-step--1);
     margin-top: 2px;
   }
+  .tile__from { font-weight: 400; color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
   .tile__price {
     margin-top: auto;
     padding-top: var(--ra-space-m);

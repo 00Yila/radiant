@@ -20,46 +20,60 @@ const { product } = Astro.props;
 const shop = (await getEntry('settings', 'site'))!.data;
 
 const all = (await getCollection('products')).map((p) => p.data);
-const alsoIn = all
-  .filter((p) => p.model === product.model && p.id !== product.id)
-  .sort((a, b) => a.price - b.price);
+const priceFrom = (p: (typeof all)[number]) =>
+  Math.min(...p.variants.map((v) => v.price));
+
 const similar = all
-  .filter((p) => p.generation === product.generation && p.model !== product.model)
-  .sort((a, b) => a.price - b.price)
+  .filter((p) => p.generation === product.generation && p.id !== product.id)
+  .sort((a, b) => priceFrom(a) - priceFrom(b))
   .slice(0, 4);
 
-/*
- * The pre-order message is the revenue mechanism — it has to carry everything
- * the buyer just agreed to, so neither side can later disagree about what was
- * ordered or when it arrives.
- */
-const message = [
-  `Hi Radiant Alpha, I'd like to pre-order:`,
-  `${product.model} — ${product.storage} — ${formatNaira(product.price)}`,
-  `Ref: ${product.ref}`,
-  `I understand delivery is ${shop.preOrderLeadTime} from order confirmation.`,
-].join('\n');
-const waUrl = buildWhatsAppUrl({ message });
+const variants = product.variants;
+const cheapest = priceFrom(product);
 
-// US-market iPhone 14 and newer ship with no SIM tray at all. eSIM support
-// across MTN, Airtel and Glo is uneven, so this cannot wait until delivery day.
+/*
+ * Each configuration gets its own pre-written order message. It carries the
+ * exact storage, price, reference and lead time, so neither side can later
+ * disagree about what was ordered — this link is the whole revenue mechanism.
+ */
+const buy = variants.map((v) => ({
+  ...v,
+  waUrl: buildWhatsAppUrl({
+    message: [
+      `Hi Radiant Alpha, I'd like to pre-order:`,
+      `${product.model} — ${v.storage}${v.colour ? ` — ${v.colour}` : ''} — ${formatNaira(v.price)}`,
+      `Ref: ${v.ref}`,
+      `I understand delivery is ${shop.preOrderLeadTime} from order confirmation.`,
+    ].join('\n'),
+  }),
+}));
+
+// US-market iPhone 14 and newer ship with no SIM tray. eSIM support across MTN,
+// Airtel and Glo is uneven, so this cannot wait until delivery day.
 const eSimCaution = product.generation >= 14;
 
 const productSchema = {
   '@context': 'https://schema.org',
-  '@type': 'Product',
-  name: `${product.model} ${product.storage}`,
-  sku: product.ref,
+  '@type': 'ProductGroup',
+  name: product.model,
   brand: { '@type': 'Brand', name: 'Apple' },
   category: 'Mobile Phones',
-  offers: {
-    '@type': 'Offer',
-    price: product.price,
-    priceCurrency: 'NGN',
-    availability: 'https://schema.org/PreOrder',
-    url: new URL(`/shop/${product.id}`, SITE.domain).href,
-    seller: { '@type': 'Organization', name: SITE.legalName },
-  },
+  productGroupID: product.id,
+  variesBy: ['https://schema.org/size'],
+  hasVariant: variants.map((v) => ({
+    '@type': 'Product',
+    name: `${product.model} ${v.storage}`,
+    sku: v.ref,
+    size: v.storage,
+    offers: {
+      '@type': 'Offer',
+      price: v.price,
+      priceCurrency: 'NGN',
+      availability: 'https://schema.org/PreOrder',
+      url: new URL(`/shop/${product.id}`, SITE.domain).href,
+      seller: { '@type': 'Organization', name: SITE.legalName },
+    },
+  })),
 };
 
 const crumbSchema = {
@@ -68,13 +82,15 @@ const crumbSchema = {
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.domain },
     { '@type': 'ListItem', position: 2, name: 'Shop', item: new URL('/shop', SITE.domain).href },
-    { '@type': 'ListItem', position: 3, name: `${product.model} ${product.storage}` },
+    { '@type': 'ListItem', position: 3, name: product.model },
   ],
 };
+
+const storageList = variants.map((v) => v.storage).join(', ');
 ---
 <Base
-  title={`${product.model} ${product.storage}`}
-  description={`${product.model} ${product.storage} on pre-order at ${formatNaira(product.price)}. ${product.conditionLabel}. ${shop.networkLock}. Delivery ${shop.preOrderLeadTime} from confirmation.`}
+  title={product.model}
+  description={`${product.model} on pre-order from ${formatNaira(cheapest)} — ${storageList}. ${product.conditionLabel}. ${shop.networkLock}. Delivery ${shop.preOrderLeadTime} from confirmation.`}
   path={`/shop/${product.id}`}
 >
   <Fragment slot="head">
@@ -87,7 +103,7 @@ const crumbSchema = {
       <ol>
         <li><a href="/">Home</a></li>
         <li><a href="/shop">Shop</a></li>
-        <li aria-current="page">{product.model} {product.storage}</li>
+        <li aria-current="page">{product.model}</li>
       </ol>
     </nav>
 
@@ -95,7 +111,7 @@ const crumbSchema = {
       <div class="pdp__media">
         <PhoneFigure
           model={product.model}
-          storage={product.storage}
+          storage={variants[0].storage}
           generation={product.generation}
           image={product.image}
           imageAlt={product.imageAlt}
@@ -111,17 +127,69 @@ const crumbSchema = {
 
       <div class="pdp__detail">
         <h1 class="pdp__title">{product.model}</h1>
-        <p class="pdp__storage">{product.storage} · Ref {product.ref}</p>
-        <p class="pdp__price ra-numeric">{formatNaira(product.price)}</p>
+        <p class="pdp__cond">{product.conditionLabel}</p>
 
-        <p class="pdp__notice">
-          <strong>Pre-order:</strong> allow {shop.preOrderLeadTime} from order
-          confirmation for delivery.
-        </p>
+        {/*
+          * Radios plus CSS sibling selectors, so choosing a storage size needs
+          * no JavaScript at all. Each panel carries its own price, reference
+          * and pre-written WhatsApp link; only the checked one is shown.
+          */}
+        <div class="buy">
+          {buy.map((v, i) => (
+            <input
+              class="buy__radio"
+              type="radio"
+              name="variant"
+              id={`v-${i}`}
+              checked={i === 0}
+            />
+          ))}
+
+          {variants.length > 1 && (
+            <fieldset class="buy__chips">
+              <legend>Storage</legend>
+              {buy.map((v, i) => (
+                <label for={`v-${i}`}>{v.storage}</label>
+              ))}
+            </fieldset>
+          )}
+
+          <div class="buy__panels">
+            {buy.map((v) => (
+              <div class="buy__panel">
+                <p class="buy__price ra-numeric">{formatNaira(v.price)}</p>
+                <p class="buy__ref">
+                  {v.storage}{v.colour ? ` · ${v.colour}` : ''} · Ref {v.ref}
+                </p>
+
+                <p class="pdp__notice">
+                  <strong>Pre-order:</strong> allow {shop.preOrderLeadTime} from order
+                  confirmation for delivery.
+                </p>
+
+                <Button href={v.waUrl} variant="gold" external>
+                  Pre-order on WhatsApp
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <dl class="pdp__specs">
           <div><dt>Condition</dt><dd>{product.conditionLabel}</dd></div>
           <div><dt>Network</dt><dd>{shop.networkLock}</dd></div>
+          <div>
+            <dt>Storage</dt>
+            <dd>{storageList}</dd>
+          </div>
+          <div>
+            <dt>Colour</dt>
+            <dd>
+              {product.colours.length > 0
+                ? product.colours.join(', ')
+                : 'Confirmed before order'}
+            </dd>
+          </div>
           <div>
             <dt>SIM</dt>
             <dd>{eSimCaution ? 'Confirmed before order — may be eSIM-only' : 'Physical SIM'}</dd>
@@ -132,8 +200,6 @@ const crumbSchema = {
           </div>
           <div><dt>Warranty</dt><dd>{shop.warrantyDays} days</dd></div>
         </dl>
-
-        <Button href={waUrl} variant="gold" external>Pre-order on WhatsApp</Button>
 
         <p class="pdp__notice pdp__notice--repeat">
           Delivery {shop.preOrderLeadTime} from confirmation ·
@@ -157,8 +223,8 @@ const crumbSchema = {
           {product.generation <= 14 && ' Apple discontinued this model, so no unit sold today is new from any source.'}
         </li>
         <li>
-          <strong>The exact grade and battery health</strong> of your specific handset,
-          in writing, with photographs.
+          <strong>The exact grade, colour and battery health</strong> of your specific
+          handset, in writing, with photographs.
         </li>
         {eSimCaution && (
           <li>
@@ -176,28 +242,17 @@ const crumbSchema = {
     </div>
   </Section>
 
-  {alsoIn.length > 0 && (
-    <Section>
-      <h2>Other storage sizes</h2>
-      <ul class="rail" role="list">
-        {alsoIn.map((p) => (
-          <li class="ra-card">
-            <h3><a href={`/shop/${p.id}`}>{p.model} {p.storage}</a></h3>
-            <p class="rail__price ra-numeric">{formatNaira(p.price)}</p>
-          </li>
-        ))}
-      </ul>
-    </Section>
-  )}
-
   {similar.length > 0 && (
-    <Section class="ra-backdrop-hex">
+    <Section>
       <h2>Others in this generation</h2>
       <ul class="rail" role="list">
         {similar.map((p) => (
           <li class="ra-card">
-            <h3><a href={`/shop/${p.id}`}>{p.model} {p.storage}</a></h3>
-            <p class="rail__price ra-numeric">{formatNaira(p.price)}</p>
+            <h3><a href={`/shop/${p.id}`}>{p.model}</a></h3>
+            <p class="rail__price ra-numeric">
+              {p.variants.length > 1 && <span class="rail__from">From </span>}
+              {formatNaira(priceFrom(p))}
+            </p>
           </li>
         ))}
       </ul>
@@ -216,13 +271,95 @@ const crumbSchema = {
     color: var(--ra-fg-muted);
   }
   .pdp__title { font-size: var(--ra-step-3); }
-  .pdp__storage { color: var(--ra-fg-muted); margin-top: var(--ra-space-2xs); }
-  .pdp__price {
+  .pdp__cond { color: var(--ra-fg-muted); margin-top: var(--ra-space-2xs); }
+
+  /* ---- variant picker: radios drive everything, no script ---- */
+  .buy { margin-top: var(--ra-space-l); }
+  /* Off-screen rather than display:none, so they stay keyboard-focusable. */
+  .buy__radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .buy__chips {
+    border: 0;
+    padding: 0;
+    margin: 0 0 var(--ra-space-l);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ra-space-xs);
+  }
+  .buy__chips legend {
+    font-size: var(--ra-step--1);
+    font-weight: 600;
+    color: var(--ra-fg-muted);
+    margin-bottom: var(--ra-space-xs);
+  }
+  .buy__chips label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--ra-tap-min);
+    min-width: 5.5rem;
+    padding-inline: var(--ra-space-m);
+    border-radius: var(--ra-radius-m);
+    box-shadow: inset 0 0 0 1.5px var(--ra-border);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  }
+  .buy__chips label:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow: inset 0 0 0 1.5px var(--ra-gold-500);
+  }
+
+  .buy__panel { display: none; }
+
+  /*
+   * One pair of rules per position. Four covers the catalogue — the widest
+   * model offers three storage sizes — and catalogue.test.ts fails if any
+   * model ever exceeds four, which would otherwise leave a panel unreachable.
+   */
+  .buy__radio:nth-of-type(1):checked ~ .buy__panels .buy__panel:nth-child(1),
+  .buy__radio:nth-of-type(2):checked ~ .buy__panels .buy__panel:nth-child(2),
+  .buy__radio:nth-of-type(3):checked ~ .buy__panels .buy__panel:nth-child(3),
+  .buy__radio:nth-of-type(4):checked ~ .buy__panels .buy__panel:nth-child(4) {
+    display: block;
+  }
+
+  .buy__radio:nth-of-type(1):checked ~ .buy__chips label:nth-of-type(1),
+  .buy__radio:nth-of-type(2):checked ~ .buy__chips label:nth-of-type(2),
+  .buy__radio:nth-of-type(3):checked ~ .buy__chips label:nth-of-type(3),
+  .buy__radio:nth-of-type(4):checked ~ .buy__chips label:nth-of-type(4) {
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    box-shadow: inset 0 0 0 1.5px var(--ra-navy-600);
+  }
+
+  /* The radio is off-screen, so its focus ring has to land on the label. */
+  .buy__radio:nth-of-type(1):focus-visible ~ .buy__chips label:nth-of-type(1),
+  .buy__radio:nth-of-type(2):focus-visible ~ .buy__chips label:nth-of-type(2),
+  .buy__radio:nth-of-type(3):focus-visible ~ .buy__chips label:nth-of-type(3),
+  .buy__radio:nth-of-type(4):focus-visible ~ .buy__chips label:nth-of-type(4) {
+    outline: 3px solid var(--ra-gold-500);
+    outline-offset: 2px;
+  }
+
+  .buy__price {
     font-size: var(--ra-step-3);
     font-weight: 700;
     color: var(--ra-navy-600);
-    margin-block: var(--ra-space-m);
   }
+  .buy__ref {
+    color: var(--ra-fg-muted);
+    font-size: var(--ra-step--1);
+    margin-bottom: var(--ra-space-m);
+  }
+
   .pdp__notice {
     background: var(--ra-navy-50);
     border-left: 3px solid var(--ra-gold-500);
@@ -231,11 +368,12 @@ const crumbSchema = {
     font-size: var(--ra-step--1);
     margin-bottom: var(--ra-space-l);
   }
-  .pdp__notice--repeat { margin-top: var(--ra-space-m); margin-bottom: 0; }
+  .pdp__notice--repeat { margin-top: var(--ra-space-l); margin-bottom: 0; }
+
   .pdp__specs {
     display: grid;
     gap: var(--ra-space-xs);
-    margin-bottom: var(--ra-space-l);
+    margin-top: var(--ra-space-xl);
     padding-block: var(--ra-space-m);
     border-block: 1px solid var(--ra-rule);
   }
@@ -259,5 +397,6 @@ const crumbSchema = {
   .rail h3 { font-size: var(--ra-step-0); }
   .rail h3 a { text-decoration: none; }
   .rail h3 a:hover { text-decoration: underline; }
+  .rail__from { font-weight: 400; color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
   .rail__price { margin-top: var(--ra-space-xs); font-weight: 700; color: var(--ra-navy-600); }
 </style>

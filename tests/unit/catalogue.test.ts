@@ -2,16 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { formatNaira } from '../../src/lib/format';
 
+type Variant = { storage: string; price: number; ref: string; colour?: string };
 type Product = {
   id: string;
   model: string;
-  storage: string;
-  price: number;
-  ref: string;
   generation: number;
   conditionTier: string;
   conditionLabel: string;
   tierRank: number;
+  variants: Variant[];
+  colours: string[];
 };
 
 const products: Product[] = JSON.parse(
@@ -37,26 +37,36 @@ function pricesFromBrief(): Map<string, number> {
   return found;
 }
 
+/** Every buyable configuration, flattened back out of the model grouping. */
+const listings = products.flatMap((p) =>
+  p.variants.map((v) => ({ ...v, model: p.model, id: p.id }))
+);
+
 describe('phone catalogue', () => {
   const brief = pricesFromBrief();
 
-  it('carries every listing in the brief, and no extras', () => {
-    expect(products).toHaveLength(53);
+  it('groups the 53 listings into one page per model', () => {
+    expect(products).toHaveLength(28);
+    expect(listings).toHaveLength(53);
     expect(brief.size).toBe(53);
-    const ours = new Set(products.map((p) => `${p.model} ${p.storage}`));
+  });
+
+  it('carries every listing in the brief, and no extras', () => {
+    const ours = new Set(listings.map((l) => `${l.model} ${l.storage}`));
     expect([...brief.keys()].filter((k) => !ours.has(k))).toEqual([]);
+    expect([...ours].filter((k) => !brief.has(k))).toEqual([]);
   });
 
   it('prices match the brief exactly', () => {
-    const wrong = products
-      .filter((p) => brief.get(`${p.model} ${p.storage}`) !== p.price)
-      .map((p) => `${p.model} ${p.storage}: ${p.price} != ${brief.get(`${p.model} ${p.storage}`)}`);
+    const wrong = listings
+      .filter((l) => brief.get(`${l.model} ${l.storage}`) !== l.price)
+      .map((l) => `${l.model} ${l.storage}: ${l.price} != ${brief.get(`${l.model} ${l.storage}`)}`);
     expect(wrong).toEqual([]);
   });
 
-  it('has unique ids and unique stock references', () => {
+  it('has unique page ids and unique stock references', () => {
     expect(new Set(products.map((p) => p.id)).size).toBe(products.length);
-    expect(new Set(products.map((p) => p.ref)).size).toBe(products.length);
+    expect(new Set(listings.map((l) => l.ref)).size).toBe(listings.length);
   });
 
   it('uses URL-safe ids', () => {
@@ -64,9 +74,32 @@ describe('phone catalogue', () => {
     expect(bad.map((p) => p.id)).toEqual([]);
   });
 
-  it('formats every price without breaking the naira formatter', () => {
+  it('gives every model at least one variant', () => {
+    expect(products.filter((p) => p.variants.length === 0)).toEqual([]);
+  });
+
+  /*
+   * The variant picker is pure CSS — one :nth-of-type rule per position, and
+   * [product].astro writes four. A fifth variant would render a chip whose
+   * panel could never be shown, so the ceiling is asserted rather than trusted.
+   */
+  it('never exceeds the four variants the CSS picker can address', () => {
+    const over = products
+      .filter((p) => p.variants.length > 4)
+      .map((p) => `${p.model}: ${p.variants.length}`);
+    expect(over).toEqual([]);
+  });
+
+  it('orders variants cheapest first', () => {
     for (const p of products) {
-      expect(formatNaira(p.price)).toMatch(/^₦[\d,]+$/);
+      const prices = p.variants.map((v) => v.price);
+      expect(prices, p.model).toEqual([...prices].sort((a, b) => a - b));
+    }
+  });
+
+  it('formats every price without breaking the naira formatter', () => {
+    for (const l of listings) {
+      expect(formatNaira(l.price)).toMatch(/^₦[\d,]+$/);
     }
   });
 });
@@ -78,10 +111,13 @@ describe('phone catalogue', () => {
  * table so a later edit cannot quietly relabel a used handset as new.
  */
 describe('condition tiers match the spec', () => {
+  /* The spec's table counts listings, not model pages, so flatten first. */
   const count = (tier: string) =>
-    products.filter((p) => p.conditionTier === tier).length;
+    products
+      .filter((p) => p.conditionTier === tier)
+      .reduce((n, p) => n + p.variants.length, 0);
 
-  it('splits 33 / 8 / 8 / 4 across the four tiers', () => {
+  it('splits 33 / 8 / 8 / 4 listings across the four tiers', () => {
     expect(count('used-or-refurbished')).toBe(33);
     expect(count('refurbished-or-nos')).toBe(8);
     expect(count('unconfirmed')).toBe(8);
