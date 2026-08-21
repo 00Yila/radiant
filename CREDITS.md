@@ -30,11 +30,15 @@ on a company page implies a relationship with that institution.
 
 ## Product imagery — why there are no Apple photographs
 
-The 53 phone listings use generated placeholder figures from
-`src/components/PhoneFigure.astro`: the correct silhouette per generation,
-in the brand's navy and gold, with the storage size as the distinguishing mark.
+Every listing uses a generated placeholder figure from
+`src/components/ProductFigure.astro`: one silhouette per category — phone,
+laptop, power bank, accessory, solar panel — in the brand's navy and gold, with
+the variant label as the distinguishing mark. Apple phones additionally get the
+right notch or Dynamic Island for their generation.
 
-Apple's official product renders are **not** used, for two separate reasons:
+Manufacturers' official product renders are **not** used, for two separate
+reasons. Apple is the worked example because it is the whole catalogue today,
+but the same applies to any brand we stock:
 
 1. **Licence.** Apple supplies product imagery to authorised resellers and
    channel partners under its marketing guidelines. Outside that relationship
@@ -42,7 +46,7 @@ Apple's official product renders are **not** used, for two separate reasons:
    resale site is exactly the use Apple enforces against. The design spec made
    this call deliberately: "launch legally clean rather than rely on
    non-enforcement."
-2. **Accuracy.** 33 of the 53 listings are used or refurbished handsets. A
+2. **Accuracy.** 33 of the 53 phone configurations are used or refurbished. A
    pristine studio render misrepresents the actual item, on a site whose whole
    pitch is that it describes stock honestly.
 
@@ -50,7 +54,7 @@ Every product has an optional `image` field. Setting it replaces the generated
 figure for that one listing — a per-product edit, not a rebuild. Use it for:
 
 - **Photographs of your own stock.** The strongest option by far, and the only
-  one that shows the buyer the actual handset.
+  one that shows the buyer the actual item.
 - **Apple's official assets, if you are an Apple Authorised Reseller.** Then you
   have legitimate access through Apple's channel marketing resources, and the
   licence question goes away. The accuracy point still applies to used units.

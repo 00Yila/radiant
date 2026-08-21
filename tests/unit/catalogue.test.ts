@@ -135,7 +135,7 @@ describe('condition tiers match the spec', () => {
     const wrong = phones.filter(
       (p) => (p.appleGeneration ?? 99) <= 15 && p.conditionTier === 'new'
     );
-    expect(wrong.map((p) => `${p.model} ${p.storage}`)).toEqual([]);
+    expect(wrong.map((p) => p.model)).toEqual([]);
   });
 
   it('only the current generation is marked new', () => {

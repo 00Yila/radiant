@@ -247,15 +247,17 @@ const waUrl = buildWhatsAppUrl({
   @media (min-width: 960px) { .terms__list { grid-template-columns: repeat(4, 1fr); } }
   .terms__k { font-weight: 700; font-size: var(--ra-step-1); color: var(--ra-gold-ink); }
   .terms__v { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: 2px; }
+  /* Same notice treatment as the product page: hairline panel, gold-ink lead-in. */
   .terms__pending {
     margin-top: var(--ra-space-xl);
     padding: var(--ra-space-m) var(--ra-space-l);
-    border-left: 3px solid var(--ra-gold-500);
-    border-radius: 0 var(--ra-radius-s) var(--ra-radius-s) 0;
+    border: 1px solid rgb(239 180 46 / 0.4);
+    border-radius: var(--ra-radius-s);
     background: var(--ra-navy-50);
     max-width: 78ch;
     font-size: var(--ra-step--1);
   }
+  .terms__pending strong { color: var(--ra-gold-ink); }
 
   /* ---- filter bar ---- */
   .filters { padding-block: 0; }

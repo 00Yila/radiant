@@ -348,14 +348,20 @@ const variantList = variants.map((v) => v.label).join(', ');
     margin-bottom: var(--ra-space-m);
   }
 
+  /*
+   * A tinted panel with a hairline all the way round, rather than a thick bar
+   * down one edge. The bold lead-in in gold ink is what marks this as a notice;
+   * gold-500 would be 1.8:1 here, so the darker ink does that job.
+   */
   .pdp__notice {
     background: var(--ra-navy-50);
-    border-left: 3px solid var(--ra-gold-500);
-    border-radius: 0 var(--ra-radius-s) var(--ra-radius-s) 0;
+    border: 1px solid rgb(239 180 46 / 0.4);
+    border-radius: var(--ra-radius-s);
     padding: var(--ra-space-s) var(--ra-space-m);
     font-size: var(--ra-step--1);
     margin-bottom: var(--ra-space-l);
   }
+  .pdp__notice strong { color: var(--ra-gold-ink); }
   .pdp__notice--repeat { margin-top: var(--ra-space-l); margin-bottom: 0; }
 
   .pdp__specs {
