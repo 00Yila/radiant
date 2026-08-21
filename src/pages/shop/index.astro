@@ -3,29 +3,27 @@ import { getCollection, getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Section from '../../components/Section.astro';
 import Button from '../../components/Button.astro';
-import ProductFigure from '../../components/ProductFigure.astro';
+import ProductTile from '../../components/ProductTile.astro';
 import { formatNaira } from '../../lib/format';
 import { buildWhatsAppUrl } from '../../lib/whatsapp';
-import { CATEGORY_LABELS, priceFrom, sortProducts } from '../../lib/catalogue';
+import { CATEGORY_LABELS, featuredProducts, sortProducts } from '../../lib/catalogue';
 
 const shop = (await getEntry('settings', 'site'))!.data;
 const products = (await getCollection('products')).map((p) => p.data);
 
-/*
- * Sections follow the order in CATEGORY_LABELS, and only categories that
- * actually have stock are rendered — an empty "Solar" heading advertises a
- * range we cannot yet supply.
- */
-const sections = (Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>)
-  .map((key) => ({
-    key,
-    ...CATEGORY_LABELS[key],
-    items: sortProducts(products.filter((p) => p.category === key)),
-  }))
-  .filter((s) => s.items.length > 0);
+const featured = featuredProducts(products);
+const all = sortProducts(products);
+
+/* Only offer a chip for a category that has stock. */
+const categories = (Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>)
+  .filter((key) => products.some((p) => p.category === key))
+  .map((key) => ({ key, ...CATEGORY_LABELS[key] }));
 
 const listingCount = products.reduce((n, p) => n + p.variants.length, 0);
 const cheapest = Math.min(...products.flatMap((p) => p.variants.map((v) => v.price)));
+
+const PAGE_SIZES = [5, 10, 15] as const;
+const DEFAULT_PAGE_SIZE = 10;
 
 const waUrl = buildWhatsAppUrl({
   message: "Hi Radiant Alpha, I'd like to ask about something in your shop.",
@@ -49,8 +47,8 @@ const waUrl = buildWhatsAppUrl({
     <h1 class="ra-display">Technology, described honestly.</h1>
     <p class="ra-lede">
       {products.length} products in {listingCount} configurations, supplied on
-      pre-order — allow {shop.preOrderLeadTime} from order confirmation. Condition and
-      network lock are stated before you order, not after the box is open.
+      pre-order — allow {shop.preOrderLeadTime} from order confirmation. Condition is
+      stated before you order, not after the box is open.
     </p>
   </Section>
 
@@ -84,74 +82,66 @@ const waUrl = buildWhatsAppUrl({
     )}
   </Section>
 
+  {featured.length > 0 && (
+    <Section class="ra-backdrop-hex feat">
+      <div class="grp__head">
+        <h2 id="featured">Featured</h2>
+        <p class="grp__count">Latest releases and the models we are asked for most.</p>
+      </div>
+      <ul class="grid" role="list" aria-labelledby="featured">
+        {featured.map((p, i) => <ProductTile product={p} eager={i < 4} />)}
+      </ul>
+    </Section>
+  )}
+
   {/*
-    * Filter bar. Hidden in the markup and revealed by the script, so without
-    * JavaScript a visitor gets the complete catalogue and working section
-    * headings rather than controls that do nothing.
+    * Filter bar and pagination both ship hidden and are revealed by the
+    * script, so without JavaScript a visitor gets the complete catalogue
+    * rather than controls that do nothing.
     */}
-  <Section class="filters">
+  <Section class="browse">
+    <div class="grp__head">
+      <h2 id="everything">All products</h2>
+      <p class="grp__count ra-numeric" id="result-count">{all.length} products</p>
+    </div>
+
     <form id="shop-filter" class="filter" hidden>
-      <div class="filter__search">
-        <label for="q">Search the shop</label>
-        <input id="q" type="search" name="q" placeholder="iPhone 13, 256GB, keyboard…" autocomplete="off" />
+      <div class="filter__row">
+        <div class="filter__search">
+          <label for="q">Search</label>
+          <input id="q" type="search" name="q" placeholder="iPhone 13, 256GB, keyboard…" autocomplete="off" />
+        </div>
+
+        <div class="filter__size">
+          <label for="per-load">Load at a time</label>
+          <select id="per-load" name="per-load">
+            {PAGE_SIZES.map((n) => (
+              <option value={n} selected={n === DEFAULT_PAGE_SIZE}>{n}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <fieldset class="filter__cats">
         <legend>Category</legend>
         <button type="button" class="chip is-on" data-cat="">All</button>
-        {sections.map((s) => (
-          <button type="button" class="chip" data-cat={s.key}>{s.short}</button>
+        {categories.map((c) => (
+          <button type="button" class="chip" data-cat={c.key}>{c.short}</button>
         ))}
       </fieldset>
-
-      <p class="filter__count" role="status" aria-live="polite"></p>
     </form>
-  </Section>
 
-  {sections.map((s) => (
-    <Section class="grp" data-section={s.key}>
-      <div class="grp__head">
-        <h2 id={`cat-${s.key}`}>{s.label}</h2>
-        <p class="grp__count ra-numeric">
-          {s.items.length} {s.items.length === 1 ? 'product' : 'products'}
-          {s.note && <span class="grp__note"> · {s.note}</span>}
-        </p>
-      </div>
+    <ul class="grid" id="catalogue" role="list" aria-labelledby="everything">
+      {all.map((p) => <ProductTile product={p} />)}
+    </ul>
 
-      <ul class="grid" role="list" aria-labelledby={`cat-${s.key}`}>
-        {s.items.map((p) => (
-          <li
-            class="ra-card tile"
-            data-category={p.category}
-            data-search={`${p.brand} ${p.model} ${p.variants.map((v) => v.label).join(' ')} ${s.short}`.toLowerCase()}
-          >
-            <ProductFigure
-              category={p.category}
-              model={p.model}
-              badge={p.variants[0].label}
-              appleGeneration={p.appleGeneration}
-              image={p.image}
-              imageAlt={p.imageAlt}
-              class="tile__img"
-            />
-            <p class="tile__brand">{p.brand}</p>
-            <h3><a href={`/shop/${p.id}`}>{p.model}</a></h3>
-            <p class="tile__meta">
-              {p.variants.map((v) => v.label).join(' · ')} · {p.conditionLabel}
-            </p>
-            <p class="tile__price ra-numeric">
-              {p.variants.length > 1 && <span class="tile__from">From </span>}
-              {formatNaira(priceFrom(p))}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </Section>
-  ))}
+    <div class="more" hidden>
+      <button type="button" id="show-more" class="ra-btn ra-btn--secondary">Show more</button>
+      <p class="more__status ra-numeric" role="status" aria-live="polite"></p>
+    </div>
 
-  <Section class="noresults" id="no-results" hidden>
-    <div class="ra-measure">
-      <h2>Nothing matches that.</h2>
+    <div class="noresults" id="no-results" hidden>
+      <h3>Nothing matches that.</h3>
       <p class="ra-sub">
         Try a shorter search, or clear the filters. If we do not list it we can
         usually still source it — ask and we will quote you.
@@ -172,49 +162,79 @@ const waUrl = buildWhatsAppUrl({
 
 <script>
   /*
-   * Filtering runs over markup that is already complete: every product is in
-   * the HTML, so search engines and no-JS visitors get the whole catalogue.
-   * The form starts hidden and is revealed here, so the controls only appear
-   * when they can actually work.
+   * Search, category filter and "show more" all operate on markup that is
+   * already complete: every product is in the HTML, so search engines and
+   * no-JS visitors see the whole catalogue. Controls are revealed here so they
+   * only ever appear when they can actually work.
    */
   const form = document.getElementById('shop-filter') as HTMLFormElement | null;
+  const grid = document.getElementById('catalogue');
 
-  if (form) {
+  if (form && grid) {
+    const more = document.querySelector<HTMLElement>('.more')!;
     form.hidden = false;
+    more.hidden = false;
 
     const input = form.querySelector<HTMLInputElement>('#q')!;
+    const perLoad = form.querySelector<HTMLSelectElement>('#per-load')!;
     const chips = [...form.querySelectorAll<HTMLButtonElement>('.chip')];
-    const count = form.querySelector<HTMLElement>('.filter__count')!;
-    const tiles = [...document.querySelectorAll<HTMLElement>('.tile')];
-    const sections = [...document.querySelectorAll<HTMLElement>('[data-section]')];
+    const button = document.getElementById('show-more') as HTMLButtonElement;
+    const status = more.querySelector<HTMLElement>('.more__status')!;
+    const resultCount = document.getElementById('result-count')!;
     const empty = document.getElementById('no-results')!;
+    const tiles = [...grid.querySelectorAll<HTMLElement>('.tile')];
 
     let category = '';
+    let step = Number(perLoad.value);
+    let limit = step;
 
-    const apply = () => {
-      const q = input.value.trim().toLowerCase();
-      let shown = 0;
+    const matches = () =>
+      tiles.filter((t) => {
+        const q = input.value.trim().toLowerCase();
+        const okCat = !category || t.dataset.category === category;
+        const okText = !q || (t.dataset.search ?? '').includes(q);
+        return okCat && okText;
+      });
 
-      for (const tile of tiles) {
-        const okCat = !category || tile.dataset.category === category;
-        const okText = !q || (tile.dataset.search ?? '').includes(q);
-        tile.hidden = !(okCat && okText);
-        if (!tile.hidden) shown++;
-      }
+    function render() {
+      const found = matches();
 
-      // A heading with nothing under it is worse than no heading.
-      for (const section of sections) {
-        section.hidden = !section.querySelector('.tile:not([hidden])');
-      }
+      // Hide everything, then reveal only the current page of matches. Doing
+      // it in one pass keeps a tile from flickering visible between states.
+      for (const t of tiles) t.hidden = true;
+      for (const t of found.slice(0, limit)) t.hidden = false;
 
-      empty.hidden = shown > 0;
-      count.textContent =
-        shown === tiles.length
-          ? `${tiles.length} products`
-          : `${shown} of ${tiles.length} products`;
+      const shown = Math.min(limit, found.length);
+      resultCount.textContent = `${found.length} products`;
+      empty.hidden = found.length > 0;
+
+      const exhausted = shown >= found.length;
+      button.hidden = exhausted;
+      status.textContent = found.length ? `Showing ${shown} of ${found.length}` : '';
+      more.hidden = found.length === 0;
+    }
+
+    // Any change to the result set starts the page count over — otherwise a
+    // narrower search can leave you scrolled past the end of its own results.
+    const reset = () => {
+      limit = step;
+      render();
     };
 
-    input.addEventListener('input', apply);
+    input.addEventListener('input', reset);
+
+    perLoad.addEventListener('change', () => {
+      step = Number(perLoad.value);
+      reset();
+    });
+
+    button.addEventListener('click', () => {
+      limit += step;
+      render();
+      // Move focus to the first newly revealed card so a keyboard user is not
+      // dropped back at the top of the list.
+      matches()[limit - step]?.querySelector('a')?.focus();
+    });
 
     for (const chip of chips) {
       chip.setAttribute('aria-pressed', String(chip.classList.contains('is-on')));
@@ -225,14 +245,12 @@ const waUrl = buildWhatsAppUrl({
           c.classList.toggle('is-on', on);
           c.setAttribute('aria-pressed', String(on));
         }
-        apply();
+        reset();
       });
     }
 
-    // Enter would otherwise reload the page and drop the filter.
     form.addEventListener('submit', (e) => e.preventDefault());
-
-    apply();
+    render();
   }
 </script>
 
@@ -247,7 +265,11 @@ const waUrl = buildWhatsAppUrl({
   @media (min-width: 960px) { .terms__list { grid-template-columns: repeat(4, 1fr); } }
   .terms__k { font-weight: 700; font-size: var(--ra-step-1); color: var(--ra-gold-ink); }
   .terms__v { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: 2px; }
-  /* Same notice treatment as the product page: hairline panel, gold-ink lead-in. */
+  /*
+   * Same device as .pdp__notice on the product page: tinted panel, full
+   * hairline in gold at low alpha. A thick rule down one edge reads as
+   * decoration bolted on; the ring lets the tint carry the signal.
+   */
   .terms__pending {
     margin-top: var(--ra-space-xl);
     padding: var(--ra-space-m) var(--ra-space-l);
@@ -259,36 +281,46 @@ const waUrl = buildWhatsAppUrl({
   }
   .terms__pending strong { color: var(--ra-gold-ink); }
 
-  /* ---- filter bar ---- */
-  .filters { padding-block: 0; }
-  /*
-   * `display: grid` below outranks the user-agent's `[hidden] { display: none }`,
-   * so without this the filter bar stays on screen for a no-JS visitor as a set
-   * of controls that do nothing. Same trap as .tile[hidden] further down.
-   */
-  .filter[hidden] { display: none; }
-
-  .filter {
-    position: sticky;
-    /* Clears the sticky header, so the two never overlap while scrolling. */
-    top: 68px;
-    z-index: 5;
-    display: grid;
-    gap: var(--ra-space-m);
-    padding: var(--ra-space-m) 0;
-    background: var(--ra-bg);
+  .grp__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--ra-space-s) var(--ra-space-m);
+    justify-content: space-between;
+    padding-bottom: var(--ra-space-s);
     border-bottom: 1px solid var(--ra-border);
   }
-  .filter__search { display: grid; gap: var(--ra-space-2xs); max-width: 26rem; }
-  .filter__search label { font-size: var(--ra-step--1); font-weight: 600; }
-  .filter__search input {
+  .grp__head h2 { font-size: var(--ra-step-2); }
+  .grp__count { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
+
+  .feat { padding-bottom: var(--ra-space-xl); }
+  .browse { padding-top: var(--ra-space-xl); }
+
+  /* ---- filter bar ---- */
+  /* display:grid outranks the user agent's [hidden] { display: none }. */
+  .filter[hidden] { display: none; }
+  .filter {
+    display: grid;
+    gap: var(--ra-space-m);
+    margin-top: var(--ra-space-l);
+  }
+  .filter__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ra-space-m);
+    align-items: end;
+  }
+  .filter__search { display: grid; gap: var(--ra-space-2xs); flex: 1 1 18rem; }
+  .filter__size { display: grid; gap: var(--ra-space-2xs); }
+  .filter label { font-size: var(--ra-step--1); font-weight: 600; }
+  .filter input, .filter select {
     min-height: var(--ra-tap-min);
     padding: var(--ra-space-s) var(--ra-space-m);
     border: 1px solid var(--ra-border);
     border-radius: var(--ra-radius-s);
     background: var(--ra-surface);
   }
-  .filter__search input:focus-visible { border-color: var(--ra-navy-500); }
+  .filter input:focus-visible, .filter select:focus-visible { border-color: var(--ra-navy-500); }
 
   .filter__cats {
     border: 0;
@@ -324,21 +356,6 @@ const waUrl = buildWhatsAppUrl({
     color: var(--ra-surface);
     box-shadow: inset 0 0 0 1.5px var(--ra-navy-600);
   }
-  .filter__count { font-size: var(--ra-step--1); color: var(--ra-fg-muted); }
-
-  /* ---- catalogue ---- */
-  .grp { padding-block: var(--ra-space-xl); }
-  .grp__head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--ra-space-s) var(--ra-space-m);
-    padding-bottom: var(--ra-space-s);
-    border-bottom: 1px solid var(--ra-border);
-  }
-  .grp__head h2 { font-size: var(--ra-step-2); }
-  .grp__count { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
-  .grp__note { color: var(--ra-fg-muted); }
 
   .grid {
     display: grid;
@@ -348,29 +365,18 @@ const waUrl = buildWhatsAppUrl({
     list-style: none;
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   }
-  .tile { display: flex; flex-direction: column; }
-  /* [hidden] loses to display:flex without this. */
-  .tile[hidden] { display: none; }
-  .tile__img { margin-bottom: var(--ra-space-m); }
-  .tile__brand {
-    font-size: var(--ra-step--1);
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ra-gold-ink);
-  }
-  .tile h3 { font-size: var(--ra-step-0); margin-top: 2px; }
-  .tile h3 a { text-decoration: none; }
-  .tile h3 a:hover { text-decoration: underline; }
-  .tile__meta { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: 2px; }
-  .tile__from { font-weight: 400; color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
-  .tile__price {
-    margin-top: auto;
-    padding-top: var(--ra-space-m);
-    font-weight: 700;
-    color: var(--ra-navy-600);
-  }
 
-  .noresults h2 { font-size: var(--ra-step-2); }
+  .more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--ra-space-s);
+    margin-top: var(--ra-space-xl);
+  }
+  .more[hidden] { display: none; }
+  .more__status { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
+
+  .noresults { margin-top: var(--ra-space-xl); max-width: 60ch; }
+  .noresults h3 { font-size: var(--ra-step-1); }
   .noresults__cta { margin-top: var(--ra-space-l); }
 </style>

@@ -31,6 +31,12 @@ const SUCCESS_URL = '/contact/thanks/';
 const ERROR_URL = '/contact/?error=send';
 const INVALID_URL = '/contact/?error=invalid';
 
+/*
+ * Must match SUBJECTS in src/lib/contact.ts exactly — a submission carrying
+ * anything else is bounced as invalid. tests/unit/contact.test.ts parses this
+ * array and compares the two, because the failure is otherwise invisible:
+ * the form offers an option the handler silently refuses.
+ */
 const SUBJECTS = [
     'Website design & development',
     'Software development',
@@ -38,6 +44,7 @@ const SUBJECTS = [
     'Digital marketing',
     'IT consulting',
     'Networking & infrastructure',
+    'Solar & PV installation',
     'Technology products',
     'Something else',
 ];

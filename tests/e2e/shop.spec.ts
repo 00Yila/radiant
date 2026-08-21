@@ -35,28 +35,47 @@ test('every model page renders exactly one price at a time', async ({ page }) =>
   }
 });
 
-test.describe('shop search and filter', () => {
-  test('narrows the catalogue and reports how many match', async ({ page }) => {
+test.describe('shop search, filter and paging', () => {
+  test('shows ten by default and pages through the rest', async ({ page }) => {
     await page.goto('/shop');
-    const tiles = page.locator('.tile');
+    const tiles = page.locator('#catalogue .tile');
     const total = await tiles.count();
 
     await expect(page.locator('#shop-filter')).toBeVisible();
-    await expect(page.locator('.filter__count')).toHaveText(`${total} products`);
+    await expect(tiles.locator('visible=true')).toHaveCount(10);
+    await expect(page.locator('.more__status')).toHaveText(`Showing 10 of ${total}`);
 
-    await page.getByLabel('Search the shop').fill('pro max');
-    await expect(tiles.locator('visible=true')).not.toHaveCount(total);
+    await page.getByRole('button', { name: 'Show more' }).click();
+    await expect(tiles.locator('visible=true')).toHaveCount(20);
+  });
+
+  test('the page size control changes how many load at a time', async ({ page }) => {
+    await page.goto('/shop');
+    const tiles = page.locator('#catalogue .tile');
+
+    await page.getByLabel('Load at a time').selectOption('5');
+    await expect(tiles.locator('visible=true')).toHaveCount(5);
+
+    await page.getByRole('button', { name: 'Show more' }).click();
+    await expect(tiles.locator('visible=true')).toHaveCount(10);
+
+    await page.getByLabel('Load at a time').selectOption('15');
+    await expect(tiles.locator('visible=true')).toHaveCount(15);
+  });
+
+  test('search narrows the catalogue and hides paging once everything fits', async ({ page }) => {
+    await page.goto('/shop');
+    const tiles = page.locator('#catalogue .tile');
+
+    await page.getByLabel('Search').fill('pro max');
     for (const name of await tiles.locator('visible=true').locator('h3').allTextContents()) {
       expect(name.toLowerCase()).toContain('pro max');
     }
+    await expect(page.getByRole('button', { name: 'Show more' })).toBeHidden();
 
-    // A search matching nothing shows the empty state, not a wall of headings.
-    await page.getByLabel('Search the shop').fill('qqqq');
+    await page.getByLabel('Search').fill('qqqq');
     await expect(page.locator('#no-results')).toBeVisible();
-    await expect(page.locator('[data-section]')).toBeHidden();
-
-    await page.getByLabel('Search the shop').fill('');
-    await expect(page.locator('.filter__count')).toHaveText(`${total} products`);
+    await expect(tiles.locator('visible=true')).toHaveCount(0);
   });
 
   test('category chips filter and report pressed state', async ({ page }) => {
@@ -66,17 +85,49 @@ test.describe('shop search and filter', () => {
     await expect(phones).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'false');
   });
+
+  test('featured products are shown outside the paged list', async ({ page }) => {
+    await page.goto('/shop');
+    await expect(page.locator('.feat .tile')).toHaveCount(5);
+    // The rail is a shortcut, not a filter — paging must not hide it.
+    await expect(page.locator('.feat .tile').first()).toBeVisible();
+  });
 });
 
 test.describe('the catalogue is complete without JavaScript', () => {
   test.use({ javaScriptEnabled: false });
 
-  test('all products render and the dead filter UI stays hidden', async ({ page }) => {
+  test('every product renders and the dead controls stay hidden', async ({ page }) => {
     await page.goto('/shop');
-    // Every product is in the HTML — this is what search engines index.
-    await expect(page.locator('.tile')).toHaveCount(28);
+    // All 28 are in the HTML — this is what search engines index.
+    await expect(page.locator('#catalogue .tile')).toHaveCount(28);
+    await expect(page.locator('#catalogue .tile').last()).toBeVisible();
     // Controls that cannot work must not be offered.
     await expect(page.locator('#shop-filter')).toBeHidden();
+    await expect(page.locator('.more')).toBeHidden();
     await expect(page.locator('#no-results')).toBeHidden();
+  });
+});
+
+test.describe('service CTAs preselect their subject', () => {
+  test('a service link opens the form on that service', async ({ page }) => {
+    await page.goto('/services/solar-pv-installation');
+    // The header CTA carries the same label, so scope to the page's own hero.
+    await page.locator('.ra-actions').first()
+      .getByRole('link', { name: 'Start Your Project' }).click();
+
+    await expect(page).toHaveURL(/\/contact/);
+    await expect(page.getByLabel('What can we help with?')).toHaveValue('Solar & PV installation');
+    // A prompt, not a value: the visitor writes their own message.
+    await expect(page.getByLabel('Tell us about your project')).toHaveValue('');
+    await expect(page.getByLabel('Tell us about your project')).toHaveAttribute(
+      'placeholder',
+      /without the grid/
+    );
+  });
+
+  test('an unknown subject leaves the form untouched rather than half-set', async ({ page }) => {
+    await page.goto('/contact?subject=not-a-service');
+    await expect(page.getByLabel('What can we help with?')).toHaveValue('');
   });
 });

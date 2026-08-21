@@ -1,0 +1,67 @@
+---
+/*
+ * One catalogue card. Extracted because the featured rail and the main grid
+ * render the same thing — two copies would have drifted the moment either
+ * gained a field.
+ */
+import ProductFigure from './ProductFigure.astro';
+import { formatNaira } from '../lib/format';
+import { CATEGORY_LABELS, priceFrom, type Product } from '../lib/catalogue';
+
+interface Props {
+  product: Product;
+  eager?: boolean;
+}
+const { product: p, eager = false } = Astro.props;
+const cat = CATEGORY_LABELS[p.category];
+---
+<li
+  class="ra-card tile"
+  data-category={p.category}
+  data-search={`${p.brand} ${p.model} ${p.variants.map((v) => v.label).join(' ')} ${cat.short}`.toLowerCase()}
+>
+  <ProductFigure
+    category={p.category}
+    model={p.model}
+    badge={p.variants[0].label}
+    appleGeneration={p.appleGeneration}
+    image={p.image}
+    imageAlt={p.imageAlt}
+    eager={eager}
+    class="tile__img"
+  />
+  <p class="tile__brand">{p.brand}</p>
+  <h3><a href={`/shop/${p.id}`}>{p.model}</a></h3>
+  <p class="tile__meta">
+    {p.variants.map((v) => v.label).join(' · ')} · {p.conditionLabel}
+  </p>
+  <p class="tile__price ra-numeric">
+    {p.variants.length > 1 && <span class="tile__from">From </span>}
+    {formatNaira(priceFrom(p))}
+  </p>
+</li>
+
+<style>
+  .tile { display: flex; flex-direction: column; }
+  /* display:flex outranks the user agent's [hidden] { display: none }. */
+  .tile[hidden] { display: none; }
+  .tile__img { margin-bottom: var(--ra-space-m); }
+  .tile__brand {
+    font-size: var(--ra-step--1);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ra-gold-ink);
+  }
+  .tile h3 { font-size: var(--ra-step-0); margin-top: 2px; }
+  .tile h3 a { text-decoration: none; }
+  .tile h3 a:hover { text-decoration: underline; }
+  .tile__meta { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: 2px; }
+  .tile__from { font-weight: 400; color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
+  .tile__price {
+    margin-top: auto;
+    padding-top: var(--ra-space-m);
+    font-weight: 700;
+    color: var(--ra-navy-600);
+  }
+</style>

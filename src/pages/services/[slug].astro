@@ -5,6 +5,7 @@ import Section from '../../components/Section.astro';
 import Button from '../../components/Button.astro';
 import { formatNaira } from '../../lib/format';
 import { buildWhatsAppUrl, buildEnquiryMessage } from '../../lib/whatsapp';
+import { contactUrlForService } from '../../lib/contact';
 import { SITE } from '../../lib/site';
 
 export async function getStaticPaths() {
@@ -21,6 +22,8 @@ const { title, summary, startingFrom, faqs } = service.data;
 
 const path = `/services/${service.id}`;
 const waUrl = buildWhatsAppUrl({ message: buildEnquiryMessage(title) });
+/* Carries the service through, so the form opens on the right subject. */
+const contactUrl = contactUrlForService(service.id);
 
 const others = (await getCollection('services'))
   .filter((s) => s.id !== service.id)
@@ -86,7 +89,7 @@ const breadcrumbSchema = {
       <p class="from ra-numeric">Starting from {formatNaira(startingFrom)}</p>
     )}
     <div class="ra-actions">
-      <Button href="/contact" variant="gold">Start Your Project</Button>
+      <Button href={contactUrl} variant="gold">Start Your Project</Button>
       <Button href={waUrl} variant="secondary" external>Ask on WhatsApp</Button>
     </div>
   </Section>
@@ -131,7 +134,7 @@ const breadcrumbSchema = {
       Tell us about your project and we will come back with a clear scope and price.
     </p>
     <div class="ra-actions">
-      <Button href="/contact" variant="gold">Get in Touch</Button>
+      <Button href={contactUrl} variant="gold">Get in Touch</Button>
       <Button href={waUrl} variant="secondary" external>Message on WhatsApp</Button>
     </div>
   </Section>

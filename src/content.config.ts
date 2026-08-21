@@ -109,6 +109,13 @@ const products = defineCollection({
       // Four is the ceiling the CSS variant picker can address.
       .max(4),
 
+    /*
+     * Surfaced in the shop's featured rail. Seeded with the current
+     * generation because "latest release" is verifiable; nothing is flagged
+     * as best-selling, which would need sales this business has not made yet.
+     */
+    featured: z.boolean().default(false),
+
     /** Extra spec rows beyond the ones the category already provides. */
     specs: z.array(z.object({ label: z.string(), value: z.string() })).default([]),
 

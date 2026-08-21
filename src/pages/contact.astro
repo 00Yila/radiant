@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import Section from '../components/Section.astro';
 import { buildWhatsAppUrl } from '../lib/whatsapp';
 import { SITE } from '../lib/site';
+import { SUBJECTS, SUBJECT_BY_SERVICE, MESSAGE_PROMPT } from '../lib/contact';
 
 const waUrl = buildWhatsAppUrl({
   message: "Hi Radiant Alpha, I'd like to discuss a project.",
@@ -105,14 +106,7 @@ const waUrl = buildWhatsAppUrl({
             <label for="subject">What can we help with?</label>
             <select id="subject" name="subject" required>
               <option value="">Choose one…</option>
-              <option>Website design &amp; development</option>
-              <option>Software development</option>
-              <option>E-commerce</option>
-              <option>Digital marketing</option>
-              <option>IT consulting</option>
-              <option>Networking &amp; infrastructure</option>
-              <option>Technology products</option>
-              <option>Something else</option>
+              {SUBJECTS.map((s) => <option>{s}</option>)}
             </select>
           </div>
 
@@ -134,6 +128,13 @@ const waUrl = buildWhatsAppUrl({
   </Section>
 </Base>
 
+<script
+  is:inline
+  type="application/json"
+  id="subject-map"
+  set:html={JSON.stringify({ subjects: SUBJECT_BY_SERVICE, prompts: MESSAGE_PROMPT })}
+/>
+
 <script>
   // Reveals the banner contact.php redirected back for, then strips ?error=
   // from the URL so a refresh does not resurrect a message already dealt with.
@@ -146,6 +147,39 @@ const waUrl = buildWhatsAppUrl({
       (line as HTMLElement).hidden = false;
       box.scrollIntoView({ block: 'center' });
     }
+    history.replaceState(null, '', location.pathname);
+  }
+
+  /*
+   * A service page's CTA arrives as /contact?subject=<service id>. Preselect
+   * that option and prompt the message box with the question we would
+   * otherwise have to email back and ask.
+   *
+   * The prompt is a placeholder, never a value: filling the textarea would put
+   * words in someone's mouth, and half of them would send our sentence instead
+   * of their problem.
+   */
+  const wanted = new URLSearchParams(location.search).get('subject');
+  const mapEl = document.getElementById('subject-map');
+
+  if (wanted && mapEl) {
+    const { subjects, prompts } = JSON.parse(mapEl.textContent ?? '{}') as {
+      subjects: Record<string, string>;
+      prompts: Record<string, string>;
+    };
+    const option = subjects[wanted];
+    const select = document.getElementById('subject') as HTMLSelectElement | null;
+
+    if (option && select) {
+      // Only ever selects an option that already exists — an unknown value
+      // would otherwise leave the required field silently blank.
+      const match = [...select.options].find((o) => o.text === option);
+      if (match) select.value = match.value || match.text;
+
+      const message = document.getElementById('message') as HTMLTextAreaElement | null;
+      if (message && prompts[wanted]) message.placeholder = prompts[wanted];
+    }
+
     history.replaceState(null, '', location.pathname);
   }
 </script>

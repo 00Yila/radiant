@@ -1,4 +1,5 @@
 ---
+import { nextFigureId } from '../lib/figure-id';
 /*
  * Product imagery, per spec: "Designed placeholder cards: correct silhouette,
  * model name, storage, colourway, in navy and gold. Systematic rather than
@@ -43,7 +44,12 @@ const hasNotch = gen >= 10 && gen < 14;
 const radius = gen >= 12 || gen === 0 ? 13 : 17;
 const cameraCount = /Pro|Max/.test(model) && gen >= 11 ? 3 : 2;
 
-const uid = `${category}-${(badge ?? model).replace(/\W+/g, '')}`;
+/*
+ * A per-render counter, not a slug of the props: the featured rail and the
+ * main grid render the same product twice, which made two <linearGradient>
+ * elements share one id — invalid HTML, and a fragile reference besides.
+ */
+const uid = `${category}-${nextFigureId()}`;
 ---
 {image ? (
   <img

@@ -21,7 +21,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 10
+    "appleGeneration": 10,
+    "featured": false
   },
   {
     "id": "iphone-x",
@@ -45,7 +46,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 10
+    "appleGeneration": 10,
+    "featured": false
   },
   {
     "id": "iphone-xr",
@@ -74,7 +76,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 10
+    "appleGeneration": 10,
+    "featured": false
   },
   {
     "id": "iphone-11",
@@ -98,7 +101,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 11
+    "appleGeneration": 11,
+    "featured": false
   },
   {
     "id": "iphone-11-pro",
@@ -122,7 +126,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 11
+    "appleGeneration": 11,
+    "featured": false
   },
   {
     "id": "iphone-11-pro-max",
@@ -146,7 +151,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 11
+    "appleGeneration": 11,
+    "featured": false
   },
   {
     "id": "iphone-12",
@@ -170,7 +176,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 12
+    "appleGeneration": 12,
+    "featured": false
   },
   {
     "id": "iphone-12-pro",
@@ -194,7 +201,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 12
+    "appleGeneration": 12,
+    "featured": false
   },
   {
     "id": "iphone-12-pro-max",
@@ -218,7 +226,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 12
+    "appleGeneration": 12,
+    "featured": false
   },
   {
     "id": "iphone-13",
@@ -242,7 +251,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 13
+    "appleGeneration": 13,
+    "featured": false
   },
   {
     "id": "iphone-13-pro",
@@ -266,7 +276,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 13
+    "appleGeneration": 13,
+    "featured": false
   },
   {
     "id": "iphone-13-pro-max",
@@ -290,7 +301,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 13
+    "appleGeneration": 13,
+    "featured": false
   },
   {
     "id": "iphone-14",
@@ -314,7 +326,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 14
+    "appleGeneration": 14,
+    "featured": false
   },
   {
     "id": "iphone-14-plus",
@@ -338,7 +351,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 14
+    "appleGeneration": 14,
+    "featured": false
   },
   {
     "id": "iphone-14-pro",
@@ -362,7 +376,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 14
+    "appleGeneration": 14,
+    "featured": false
   },
   {
     "id": "iphone-14-pro-max",
@@ -386,7 +401,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 14
+    "appleGeneration": 14,
+    "featured": false
   },
   {
     "id": "iphone-15",
@@ -410,7 +426,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 15
+    "appleGeneration": 15,
+    "featured": false
   },
   {
     "id": "iphone-15-plus",
@@ -434,7 +451,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 15
+    "appleGeneration": 15,
+    "featured": false
   },
   {
     "id": "iphone-15-pro",
@@ -458,7 +476,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 15
+    "appleGeneration": 15,
+    "featured": false
   },
   {
     "id": "iphone-15-pro-max",
@@ -482,7 +501,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 15
+    "appleGeneration": 15,
+    "featured": false
   },
   {
     "id": "iphone-16",
@@ -506,7 +526,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 16
+    "appleGeneration": 16,
+    "featured": false
   },
   {
     "id": "iphone-16-pro",
@@ -530,7 +551,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 16
+    "appleGeneration": 16,
+    "featured": false
   },
   {
     "id": "iphone-16-pro-max",
@@ -554,7 +576,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 16
+    "appleGeneration": 16,
+    "featured": true
   },
   {
     "id": "iphone-16-plus",
@@ -578,7 +601,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 16
+    "appleGeneration": 16,
+    "featured": false
   },
   {
     "id": "iphone-17",
@@ -597,7 +621,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 17
+    "appleGeneration": 17,
+    "featured": true
   },
   {
     "id": "iphone-air",
@@ -616,7 +641,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 17
+    "appleGeneration": 17,
+    "featured": true
   },
   {
     "id": "iphone-17-pro",
@@ -635,7 +661,8 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 17
+    "appleGeneration": 17,
+    "featured": true
   },
   {
     "id": "iphone-17-pro-max",
@@ -654,6 +681,7 @@
       }
     ],
     "colours": [],
-    "appleGeneration": 17
+    "appleGeneration": 17,
+    "featured": true
   }
 ]
