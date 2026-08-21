@@ -45,9 +45,9 @@ const radius = gen >= 12 || gen === 0 ? 13 : 17;
 const cameraCount = /Pro|Max/.test(model) && gen >= 11 ? 3 : 2;
 
 /*
- * A per-render counter, not a slug of the props: the featured rail and the
- * main grid render the same product twice, which made two <linearGradient>
- * elements share one id — invalid HTML, and a fragile reference besides.
+ * A per-render counter, not a slug of the props. Two figures sharing an id is
+ * invalid HTML and makes url(#…) resolve to whichever comes first — which bit
+ * once already, when a rail rendered the same product as the grid below it.
  */
 const uid = `${category}-${nextFigureId()}`;
 ---

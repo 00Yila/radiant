@@ -86,12 +86,6 @@ test.describe('shop search, filter and paging', () => {
     await expect(page.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'false');
   });
 
-  test('featured products are shown outside the paged list', async ({ page }) => {
-    await page.goto('/shop');
-    await expect(page.locator('.feat .tile')).toHaveCount(5);
-    // The rail is a shortcut, not a filter — paging must not hide it.
-    await expect(page.locator('.feat .tile').first()).toBeVisible();
-  });
 });
 
 test.describe('the catalogue is complete without JavaScript', () => {

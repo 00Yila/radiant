@@ -6,12 +6,11 @@ import Button from '../../components/Button.astro';
 import ProductTile from '../../components/ProductTile.astro';
 import { formatNaira } from '../../lib/format';
 import { buildWhatsAppUrl } from '../../lib/whatsapp';
-import { CATEGORY_LABELS, featuredProducts, sortProducts } from '../../lib/catalogue';
+import { CATEGORY_LABELS, sortProducts } from '../../lib/catalogue';
 
 const shop = (await getEntry('settings', 'site'))!.data;
 const products = (await getCollection('products')).map((p) => p.data);
 
-const featured = featuredProducts(products);
 const all = sortProducts(products);
 
 /* Only offer a chip for a category that has stock. */
@@ -82,18 +81,6 @@ const waUrl = buildWhatsAppUrl({
     )}
   </Section>
 
-  {featured.length > 0 && (
-    <Section class="ra-backdrop-hex feat">
-      <div class="grp__head">
-        <h2 id="featured">Featured</h2>
-        <p class="grp__count">Latest releases and the models we are asked for most.</p>
-      </div>
-      <ul class="grid" role="list" aria-labelledby="featured">
-        {featured.map((p, i) => <ProductTile product={p} eager={i < 4} />)}
-      </ul>
-    </Section>
-  )}
-
   {/*
     * Filter bar and pagination both ship hidden and are revealed by the
     * script, so without JavaScript a visitor gets the complete catalogue
@@ -132,7 +119,7 @@ const waUrl = buildWhatsAppUrl({
     </form>
 
     <ul class="grid" id="catalogue" role="list" aria-labelledby="everything">
-      {all.map((p) => <ProductTile product={p} />)}
+      {all.map((p, i) => <ProductTile product={p} eager={i < 4} />)}
     </ul>
 
     <div class="more" hidden>
@@ -293,7 +280,6 @@ const waUrl = buildWhatsAppUrl({
   .grp__head h2 { font-size: var(--ra-step-2); }
   .grp__count { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
 
-  .feat { padding-bottom: var(--ra-space-xl); }
   .browse { padding-top: var(--ra-space-xl); }
 
   /* ---- filter bar ---- */

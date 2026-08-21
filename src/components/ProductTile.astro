@@ -1,8 +1,8 @@
 ---
 /*
- * One catalogue card. Extracted because the featured rail and the main grid
- * render the same thing — two copies would have drifted the moment either
- * gained a field.
+ * One catalogue card. A component rather than inline markup so that any second
+ * place products are listed — a rail, a related strip, a category page — shows
+ * the same card rather than a copy that drifts.
  */
 import ProductFigure from './ProductFigure.astro';
 import { formatNaira } from '../lib/format';

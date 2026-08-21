@@ -38,10 +38,6 @@ export const CATEGORY_LABELS: Record<
   },
 };
 
-/** Products flagged for the featured rail, in the shop's normal sort order. */
-export const featuredProducts = (products: Product[]): Product[] =>
-  sortProducts(products.filter((p) => p.featured));
-
 /** Cheapest configuration — what the index shows as the "From" price. */
 export const priceFrom = (p: Product): number =>
   Math.min(...p.variants.map((v) => v.price));
