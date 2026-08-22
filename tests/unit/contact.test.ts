@@ -5,6 +5,7 @@ import {
   SUBJECT_BY_SERVICE,
   MESSAGE_PROMPT,
   contactUrlForService,
+  startProjectUrlForService,
 } from '../../src/lib/contact';
 
 /** Service ids, from the filenames the collection is built out of. */
@@ -47,6 +48,48 @@ describe('service CTAs resolve to a real form option', () => {
     expect(contactUrlForService('solar-pv-installation')).toBe(
       '/contact?subject=solar-pv-installation'
     );
+  });
+
+  it('sends "Start Your Project" to the guided intake, not the plain form', () => {
+    expect(startProjectUrlForService('solar-pv-installation')).toBe(
+      '/start-project?subject=solar-pv-installation'
+    );
+  });
+});
+
+/*
+ * contact.php redirects on a hidden `form` field, looked up against a fixed
+ * map rather than trusted directly — a tampered value could otherwise send a
+ * visitor to an arbitrary path. Both real destinations are asserted here so a
+ * typo in the map (`/start-project/?eror=`) fails a test instead of silently
+ * bouncing a failed submission to a 404.
+ */
+describe('contact.php redirects each form to its own pages', () => {
+  const php = readFileSync('public/contact.php', 'utf8');
+
+  const formsBlock = php.match(/const FORMS = \[([\s\S]*?)\n\];/)?.[1] ?? '';
+
+  it('finds the FORMS map in the PHP handler', () => {
+    expect(formsBlock, 'could not parse FORMS out of contact.php').not.toBe('');
+  });
+
+  it('routes the plain contact form back to /contact', () => {
+    const block = formsBlock.match(/'contact' => \[([\s\S]*?)\],\n {4}'start-project'/)?.[1] ?? '';
+    expect(block).toMatch(/'success' => '\/contact\/thanks\/'/);
+    expect(block).toMatch(/'error' => '\/contact\/\?error=send'/);
+    expect(block).toMatch(/'invalid' => '\/contact\/\?error=invalid'/);
+  });
+
+  it('routes the guided intake back to /start-project on failure', () => {
+    const block = formsBlock.match(/'start-project' => \[([\s\S]*?)\],\n\];?$/)?.[1]
+      ?? formsBlock.split("'start-project' =>")[1] ?? '';
+    expect(block).toMatch(/'success' => '\/contact\/thanks\/'/);
+    expect(block).toMatch(/'error' => '\/start-project\/\?error=send'/);
+    expect(block).toMatch(/'invalid' => '\/start-project\/\?error=invalid'/);
+  });
+
+  it('falls back to the contact form for an unrecognised form value', () => {
+    expect(php).toMatch(/if \(!array_key_exists\(\$formKey, FORMS\)\)\s*\{\s*\$formKey = 'contact';/);
   });
 });
 

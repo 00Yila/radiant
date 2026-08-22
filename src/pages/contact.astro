@@ -82,6 +82,7 @@ const waUrl = buildWhatsAppUrl({
           * than an error, because nobody learns the enquiry was lost.
           */}
         <form name="contact" method="POST" action="/contact.php" class="form">
+          <input type="hidden" name="form" value="contact" />
           {/*
             * The usability review's own note: four of five fields are
             * compulsory and none said so. Marking only the exception
@@ -175,6 +176,8 @@ const waUrl = buildWhatsAppUrl({
 />
 
 <script>
+  import { enhanceFormValidation } from '../lib/client/form-validation';
+
   // Reveals the banner contact.php redirected back for, then strips ?error=
   // from the URL so a refresh does not resurrect a message already dealt with.
   const code = new URLSearchParams(location.search).get('error');
@@ -227,92 +230,15 @@ const waUrl = buildWhatsAppUrl({
     history.replaceState(null, '', location.pathname);
   }
 
-  /*
-   * The review's own defect: a failed submit leaned entirely on the browser's
-   * built-in bubble, which shows only the FIRST empty field, fades on its
-   * own, and is barely visible on iOS Safari. This does not replace native
-   * validation — required/maxlength/pattern still block submission exactly
-   * as before, which is what protects a visitor with JavaScript disabled —
-   * it only adds a persistent, readable message next to every field that
-   * failed, not just the first.
-   *
-   * Listening for the native 'invalid' event rather than intercepting submit
-   * keeps this additive: nothing here can accidentally let a bad submission
-   * through, because the browser's own gate never moves.
-   */
+  // Per-field error messages and submit busy-state — shared with
+  // start-project.astro so the two forms cannot silently drift apart.
   const contactForm = document.querySelector<HTMLFormElement>('form[name="contact"]');
   if (contactForm) {
-    const helpFor: Record<string, string> = {
+    enhanceFormValidation(contactForm, {
       name: 'Please tell us your name so we know who we are replying to.',
       email: 'Please enter an email address we can reply to, like name@example.com.',
       subject: 'Please choose what you would like help with.',
       message: 'Please tell us a little about what you need.',
-    };
-
-    type Validatable = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-
-    function messageFor(field: Validatable): string {
-      const v = field.validity;
-      if (v.valueMissing) return helpFor[field.id] ?? 'This field is required.';
-      if (v.tooLong && 'maxLength' in field) {
-        return `Please shorten this to ${field.maxLength} characters.`;
-      }
-      if (v.typeMismatch || v.patternMismatch) {
-        return 'That does not look like a complete email address.';
-      }
-      return field.validationMessage;
-    }
-
-    function showFieldError(field: Validatable) {
-      const id = `${field.id}-error`;
-      let msg = document.getElementById(id);
-      if (!msg) {
-        msg = document.createElement('p');
-        msg.id = id;
-        msg.className = 'field__error';
-        field.insertAdjacentElement('afterend', msg);
-      }
-      msg.textContent = messageFor(field);
-      field.setAttribute('aria-invalid', 'true');
-      const described = field.getAttribute('aria-describedby');
-      if (!described || !described.includes(id)) {
-        field.setAttribute('aria-describedby', [described, id].filter(Boolean).join(' '));
-      }
-    }
-
-    function clearFieldError(field: Validatable) {
-      const id = `${field.id}-error`;
-      document.getElementById(id)?.remove();
-      field.removeAttribute('aria-invalid');
-      const described = field.getAttribute('aria-describedby');
-      if (described) {
-        const rest = described.split(' ').filter((token) => token !== id).join(' ');
-        if (rest) field.setAttribute('aria-describedby', rest);
-        else field.removeAttribute('aria-describedby');
-      }
-    }
-
-    const validatable = [...contactForm.querySelectorAll<Validatable>('input, select, textarea')]
-      .filter((el) => el.id && el.id !== 'bot-field');
-
-    for (const field of validatable) {
-      field.addEventListener('invalid', () => showFieldError(field));
-      field.addEventListener('input', () => {
-        if (field.checkValidity()) clearFieldError(field);
-      });
-    }
-
-    // Pressing Send on a slow connection with no feedback invites a second
-    // press, which sends the enquiry twice. Only fires once native validation
-    // has already passed, so it never masks a blocked, invalid submission.
-    contactForm.addEventListener('submit', () => {
-      if (!contactForm.checkValidity()) return;
-      const submitBtn = contactForm.querySelector<HTMLButtonElement>('button[type="submit"]');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending…';
-      }
-      contactForm.setAttribute('aria-busy', 'true');
     });
   }
 </script>

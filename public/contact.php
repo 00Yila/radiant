@@ -27,9 +27,28 @@ const MAIL_TO = 'help@radiantalphadigital.com';
 const MAIL_FROM = 'help@radiantalphadigital.com';
 const MAIL_FROM_NAME = 'Radiant Alpha website';
 
-const SUCCESS_URL = '/contact/thanks/';
-const ERROR_URL = '/contact/?error=send';
-const INVALID_URL = '/contact/?error=invalid';
+/*
+ * Two forms post here: the plain contact form, and the guided project brief
+ * at /start-project. Both need their own error page to bounce back to on
+ * failure, so the redirect targets are keyed off a hidden `form` field rather
+ * than hardcoded — but the value is looked up in this fixed map, never
+ * concatenated into a URL, so a tampered field can only ever select one of
+ * these two known destinations rather than redirect anywhere else.
+ */
+const FORMS = [
+    'contact' => [
+        'label' => 'Website enquiry',
+        'success' => '/contact/thanks/',
+        'error' => '/contact/?error=send',
+        'invalid' => '/contact/?error=invalid',
+    ],
+    'start-project' => [
+        'label' => 'Project enquiry',
+        'success' => '/contact/thanks/',
+        'error' => '/start-project/?error=send',
+        'invalid' => '/start-project/?error=invalid',
+    ],
+];
 
 /*
  * Must match SUBJECTS in src/lib/contact.ts exactly — a submission carrying
@@ -72,11 +91,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     redirect('/contact/');
 }
 
+$formKey = field('form');
+if (!array_key_exists($formKey, FORMS)) {
+    $formKey = 'contact';
+}
+$urls = FORMS[$formKey];
+
 // Honeypot: a real person never sees this input, so anything in it is a bot.
 // Answer with the success page rather than an error — telling a bot it failed
 // only invites it to retry with the field cleared.
 if (field('bot-field') !== '') {
-    redirect(SUCCESS_URL);
+    redirect($urls['success']);
 }
 
 $name = field('name');
@@ -84,6 +109,10 @@ $email = field('email');
 $phone = field('phone');
 $subject = field('subject');
 $message = field('message');
+// Optional, and only ever present from the /start-project form — the plain
+// contact form does not ask for either, so both are blank there.
+$budget = field('budget');
+$timeline = field('timeline');
 
 $valid = $name !== ''
     && $message !== ''
@@ -91,25 +120,35 @@ $valid = $name !== ''
     && in_array($subject, SUBJECTS, true)
     && mb_strlen($name) <= 120
     && mb_strlen($phone) <= 40
-    && mb_strlen($message) <= 5000;
+    && mb_strlen($message) <= 5000
+    && mb_strlen($budget) <= 80
+    && mb_strlen($timeline) <= 80;
 
 if (!$valid) {
-    redirect(INVALID_URL);
+    redirect($urls['invalid']);
 }
 
 // ---------------------------------------------------------------- compose
 $safeName = headerSafe($name);
 $safeEmail = headerSafe($email);
 
-$mailSubject = sprintf('Website enquiry — %s', headerSafe($subject));
+$mailSubject = sprintf('%s — %s', $urls['label'], headerSafe($subject));
 
-$body = implode("\n", [
-    'New enquiry from the Radiant Alpha website.',
+$bodyLines = [
+    'New ' . strtolower($urls['label']) . ' from the Radiant Alpha website.',
     '',
     'Name:    ' . $name,
     'Email:   ' . $email,
     'Phone:   ' . ($phone !== '' ? $phone : '(not given)'),
     'Subject: ' . $subject,
+];
+if ($budget !== '') {
+    $bodyLines[] = 'Budget:  ' . $budget;
+}
+if ($timeline !== '') {
+    $bodyLines[] = 'Timeline: ' . $timeline;
+}
+$bodyLines = array_merge($bodyLines, [
     '',
     'Message:',
     $message,
@@ -117,6 +156,7 @@ $body = implode("\n", [
     '---',
     'Sent ' . gmdate('Y-m-d H:i') . ' UTC from ' . ($_SERVER['HTTP_HOST'] ?? 'the website'),
 ]);
+$body = implode("\n", $bodyLines);
 
 $headers = [
     'From' => sprintf('%s <%s>', MAIL_FROM_NAME, MAIL_FROM),
@@ -140,4 +180,4 @@ $sent = mail(
     '-f' . MAIL_FROM
 );
 
-redirect($sent ? SUCCESS_URL : ERROR_URL);
+redirect($sent ? $urls['success'] : $urls['error']);

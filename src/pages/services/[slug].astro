@@ -5,7 +5,7 @@ import Section from '../../components/Section.astro';
 import Button from '../../components/Button.astro';
 import { formatNaira } from '../../lib/format';
 import { buildWhatsAppUrl, buildEnquiryMessage } from '../../lib/whatsapp';
-import { contactUrlForService } from '../../lib/contact';
+import { contactUrlForService, startProjectUrlForService } from '../../lib/contact';
 import { SITE } from '../../lib/site';
 
 export async function getStaticPaths() {
@@ -24,6 +24,9 @@ const path = `/services/${service.id}`;
 const waUrl = buildWhatsAppUrl({ message: buildEnquiryMessage(title) });
 /* Carries the service through, so the form opens on the right subject. */
 const contactUrl = contactUrlForService(service.id);
+/* "Start Your Project" goes to the guided intake, not the plain form —
+   see startProjectUrlForService's own comment for why. */
+const startProjectUrl = startProjectUrlForService(service.id);
 
 const others = (await getCollection('services'))
   .filter((s) => s.id !== service.id)
@@ -89,7 +92,7 @@ const breadcrumbSchema = {
       <p class="from ra-numeric">Starting from {formatNaira(startingFrom)}</p>
     )}
     <div class="ra-actions">
-      <Button href={contactUrl} variant="gold">Start Your Project</Button>
+      <Button href={startProjectUrl} variant="gold">Start Your Project</Button>
       <Button href={waUrl} variant="secondary" external>Ask on WhatsApp</Button>
     </div>
   </Section>

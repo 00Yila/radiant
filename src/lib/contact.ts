@@ -62,3 +62,29 @@ export const MESSAGE_PROMPT: Record<string, string> = {
 /** Link a service CTA at the contact form with that service preselected. */
 export const contactUrlForService = (serviceId: string): string =>
   `/contact?subject=${encodeURIComponent(serviceId)}`;
+
+/**
+ * "Start Your Project" — the site's specific, commitment-toned CTA — now
+ * carries a real usability finding: clicking it set an expectation of a
+ * purpose-built project-scoping interface, distinct from Contact, and what
+ * it opened was the same five-field form under a different button. This
+ * links it to the guided intake at /start-project instead, which asks two
+ * real questions the plain contact form does not (budget, timeline) and
+ * frames the message box as a scoped step rather than one blank textarea —
+ * while still submitting through the same hardened handler, honeypot, and
+ * validation as Contact, so none of that gets rebuilt or re-tested.
+ */
+export const startProjectUrlForService = (serviceId: string): string =>
+  `/start-project?subject=${encodeURIComponent(serviceId)}`;
+
+/**
+ * Budget is asked as an open text field, not fixed bands, because the
+ * services behind it are not comparable on one scale: software development
+ * starts at ₦500,000 as a one-off, digital marketing at ₦80,000 a month, and
+ * IT consulting at ₦25,000 an hour. A single set of naira bands would have to
+ * either mix those units dishonestly or silently assume the visitor means a
+ * one-off project. Naming the real spread here keeps the field's placeholder
+ * honest without inventing a normalised scale the business has never used.
+ */
+export const BUDGET_PLACEHOLDER =
+  'e.g. ₦150,000, or "not sure yet" — projects here range from ₦25,000/hour to ₦500,000+';

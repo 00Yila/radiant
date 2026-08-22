@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 const PAGES = [
   '/', '/about', '/work', '/services', '/services/software-development',
-  '/services/digital-marketing', '/contact', '/contact/thanks', '/returns',
+  '/services/digital-marketing', '/contact', '/start-project', '/contact/thanks', '/returns',
   '/privacy', '/terms', '/shop', '/blog', '/404',
   // A post page renders authored markdown — headings, lists and a table the
   // other routes never exercise.

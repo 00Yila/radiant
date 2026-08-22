@@ -106,22 +106,10 @@ test.describe('the catalogue is complete without JavaScript', () => {
 });
 
 test.describe('service CTAs preselect their subject', () => {
-  test('a service link opens the form on that service', async ({ page }) => {
-    await page.goto('/services/solar-pv-installation');
-    // The header CTA carries the same label, so scope to the page's own hero.
-    await page.locator('.ra-actions').first()
-      .getByRole('link', { name: 'Start Your Project' }).click();
-
-    await expect(page).toHaveURL(/\/contact/);
-    await expect(page.getByLabel('What can we help with?')).toHaveValue('Solar & PV installation');
-    // A prompt, not a value: the visitor writes their own message.
-    await expect(page.getByLabel('Tell us about your project')).toHaveValue('');
-    await expect(page.getByLabel('Tell us about your project')).toHaveAttribute(
-      'placeholder',
-      /without the grid/
-    );
-  });
-
+  // "Start Your Project" now leads to /start-project — see
+  // tests/e2e/start-project.spec.ts for that path. This file keeps only what
+  // is specific to /contact itself: its own query-param handling regardless
+  // of which link sent the visitor there.
   test('an unknown subject leaves the form untouched rather than half-set', async ({ page }) => {
     await page.goto('/contact?subject=not-a-service');
     await expect(page.getByLabel('What can we help with?')).toHaveValue('');

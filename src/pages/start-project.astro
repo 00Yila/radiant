@@ -1,0 +1,436 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import { buildWhatsAppUrl } from '../lib/whatsapp';
+import { SITE } from '../lib/site';
+import { SUBJECTS, SUBJECT_BY_SERVICE, MESSAGE_PROMPT, BUDGET_PLACEHOLDER } from '../lib/contact';
+
+/*
+ * The usability finding this page exists to close: "Start Your Project" set
+ * an expectation of a purpose-built interface for discussing a project,
+ * distinct from the conventional form at Contact — and what it opened was
+ * that same five-field form under a relabelled button.
+ *
+ * This is a genuinely different flow, not a relabelled link: two extra real
+ * questions (budget, timeline) the plain contact form does not ask, the
+ * project type asked first as the primary decision rather than buried in a
+ * dropdown, and the message step framed with guidance tailored to whatever
+ * was picked — while still submitting through the exact same handler,
+ * honeypot and validation as Contact, so none of that gets rebuilt or
+ * re-tested. /contact stays as the plain, low-friction option for a general
+ * question that is not a project brief.
+ */
+
+const DEFAULT_PROMPT =
+  "Tell us what you're trying to achieve, and any constraints we should know about.";
+
+/** Service id → prompt, re-keyed by the visible label so a manual radio click
+ * can swap the guidance without a round trip through the service id. */
+const promptByLabel: Record<string, string> = {};
+for (const [id, label] of Object.entries(SUBJECT_BY_SERVICE)) {
+  if (MESSAGE_PROMPT[id]) promptByLabel[label] = MESSAGE_PROMPT[id];
+}
+
+const TIMELINES = [
+  'As soon as possible',
+  'Within a month',
+  '1–3 months',
+  'Just exploring',
+] as const;
+
+const waUrl = buildWhatsAppUrl({
+  message: "Hi Radiant Alpha, I'd like to discuss a project.",
+});
+---
+<Base
+  title="Start Your Project"
+  description="Tell us what you're building — the type of project, your budget, and your timeline — and we'll come back with a clear scope and price."
+  path="/start-project"
+>
+  <Section register="dark" class="ra-backdrop-glow">
+    <p class="ra-eyebrow">Start your project</p>
+    <h1 class="ra-display">Tell us what you&rsquo;re building.</h1>
+    <p class="ra-lede">
+      A few questions to help us scope your project properly — what it is, roughly what
+      you have to spend, and how soon you need it. If you just have a quick question
+      instead, <a href="/contact">the plain contact form</a> is faster.
+    </p>
+  </Section>
+
+  <Section>
+    <div class="layout">
+      <div>
+        <h2>What happens next</h2>
+        <p class="ra-sub">
+          We read every brief and reply <strong>within one business day</strong> with a
+          scope and a price. Nothing here commits you to anything — it just means we
+          start from the right questions instead of guessing.
+        </p>
+
+        <ul class="channels" role="list">
+          <li>
+            <span class="channels__label">WhatsApp — fastest</span>
+            <a href={waUrl} target="_blank" rel="noopener noreferrer">{SITE.phoneDisplay}</a>
+          </li>
+          <li>
+            <span class="channels__label">Email</span>
+            <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div id="form-error" class="alert" role="alert" hidden>
+          <p data-error="send" hidden>
+            Something went wrong sending that, and it did not reach us. Please try
+            again, or message us on WhatsApp so nothing is lost.
+          </p>
+          <p data-error="invalid" hidden>
+            Some details were missing or did not look right. Please check the form
+            and try again.
+          </p>
+        </div>
+
+        <form name="start-project" method="POST" action="/contact.php" class="form">
+          <input type="hidden" name="form" value="start-project" />
+
+          <p class="form-note">All fields are required unless marked optional.</p>
+
+          <p class="ra-visually-hidden" aria-hidden="true">
+            <label for="bot-field">Leave this field empty</label>
+            <input id="bot-field" name="bot-field" tabindex="-1" autocomplete="off" />
+          </p>
+
+          <fieldset class="step">
+            <legend><span class="step__num">1</span> What are you building?</legend>
+            <div class="type-grid">
+              {SUBJECTS.map((s, i) => (
+                <label class="type-card">
+                  <input type="radio" name="subject" value={s} required checked={i === 0} />
+                  <span>{s}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset class="step">
+            <legend><span class="step__num">2</span> Tell us about it</legend>
+            <div class="field">
+              <label for="message">
+                Your project
+                <span class="field-hint" id="message-hint">(up to 5,000 characters)</span>
+              </label>
+              <p class="field-guide" id="message-guide">{DEFAULT_PROMPT}</p>
+              <textarea
+                id="message"
+                name="message"
+                rows="5"
+                required
+                maxlength="5000"
+                aria-describedby="message-hint message-guide"
+              ></textarea>
+            </div>
+          </fieldset>
+
+          <fieldset class="step">
+            <legend><span class="step__num">3</span> Budget and timeline</legend>
+            <div class="field">
+              <label for="budget">
+                Rough budget <span class="optional">(optional)</span>
+              </label>
+              <input id="budget" name="budget" type="text" maxlength="80" placeholder={BUDGET_PLACEHOLDER} />
+            </div>
+
+            <div class="field">
+              <span class="field__legend">When do you need this?</span>
+              <div class="timeline-row" role="radiogroup" aria-label="When do you need this?">
+                {TIMELINES.map((t, i) => (
+                  <label class="chip-radio">
+                    <input type="radio" name="timeline" value={t} required checked={i === 0} />
+                    <span>{t}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="step">
+            <legend><span class="step__num">4</span> Your details</legend>
+
+            <div class="field">
+              <label for="name">Your name</label>
+              <input id="name" name="name" type="text" required autocomplete="name" maxlength="120" />
+            </div>
+
+            <div class="field">
+              <label for="email">Email address</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                autocomplete="email"
+                pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+              />
+            </div>
+
+            <div class="field">
+              <label for="phone">Phone or WhatsApp <span class="optional">(optional)</span></label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40" />
+            </div>
+          </fieldset>
+
+          <button type="submit" class="ra-btn ra-btn--primary">Send project brief</button>
+        </form>
+
+        <p class="fallback">
+          If the form doesn&rsquo;t work for any reason, message us on
+          <a href={waUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          or email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> instead.
+        </p>
+      </div>
+    </div>
+  </Section>
+</Base>
+
+<script
+  is:inline
+  type="application/json"
+  id="subject-map"
+  set:html={JSON.stringify({ subjects: SUBJECT_BY_SERVICE, promptByLabel, defaultPrompt: DEFAULT_PROMPT })}
+/>
+
+<script>
+  import { enhanceFormValidation } from '../lib/client/form-validation';
+
+  // Reveals the banner contact.php redirected back for, then strips ?error=
+  // from the URL so a refresh does not resurrect a message already dealt with.
+  const code = new URLSearchParams(location.search).get('error');
+  if (code === 'send' || code === 'invalid') {
+    const box = document.getElementById('form-error');
+    const line = box?.querySelector(`[data-error="${code}"]`);
+    if (box && line) {
+      box.hidden = false;
+      (line as HTMLElement).hidden = false;
+      box.setAttribute('tabindex', '-1');
+      box.focus();
+    }
+    history.replaceState(null, '', location.pathname);
+  }
+
+  const mapEl = document.getElementById('subject-map');
+  const { subjects, promptByLabel, defaultPrompt } = JSON.parse(mapEl?.textContent ?? '{}') as {
+    subjects: Record<string, string>;
+    promptByLabel: Record<string, string>;
+    defaultPrompt: string;
+  };
+
+  const guide = document.getElementById('message-guide');
+  const radios = [...document.querySelectorAll<HTMLInputElement>('input[name="subject"]')];
+
+  /*
+   * The guidance line updates live on every click, not only from the
+   * ?subject= link a service page arrives with — a visitor who changes their
+   * mind partway through should get a prompt that matches what they actually
+   * picked, not the one they started on.
+   */
+  function updateGuide() {
+    const checked = radios.find((r) => r.checked);
+    if (guide && checked) {
+      guide.textContent = promptByLabel[checked.value] ?? defaultPrompt;
+    }
+  }
+  for (const radio of radios) radio.addEventListener('change', updateGuide);
+
+  // A service page's CTA arrives as /start-project?subject=<service id>.
+  const wanted = new URLSearchParams(location.search).get('subject');
+  if (wanted) {
+    const label = subjects[wanted];
+    const match = label && radios.find((r) => r.value === label);
+    if (match) {
+      match.checked = true;
+      updateGuide();
+    }
+    history.replaceState(null, '', location.pathname);
+  } else {
+    updateGuide();
+  }
+
+  const form = document.querySelector<HTMLFormElement>('form[name="start-project"]');
+  if (form) {
+    enhanceFormValidation(form, {
+      subject: 'Please choose what you are building.',
+      message: 'Please tell us a little about your project.',
+      timeline: 'Please choose when you need this.',
+      name: 'Please tell us your name so we know who we are replying to.',
+      email: 'Please enter an email address we can reply to, like name@example.com.',
+    });
+  }
+</script>
+
+<style>
+  .layout { display: grid; gap: var(--ra-space-2xl); }
+  @media (min-width: 900px) { .layout { grid-template-columns: 1fr 1.2fr; } }
+
+  .channels { display: grid; gap: var(--ra-space-m); margin-top: var(--ra-space-l); }
+  .channels li {
+    display: grid;
+    gap: var(--ra-space-2xs);
+    padding-bottom: var(--ra-space-m);
+    border-bottom: 1px solid var(--ra-border);
+  }
+  .channels__label {
+    font-size: var(--ra-step--1);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ra-fg-muted);
+  }
+  .channels a { font-weight: 600; }
+
+  .form { display: grid; gap: var(--ra-space-xl); margin-top: var(--ra-space-l); }
+  .form-note { font-size: var(--ra-step--1); color: var(--ra-fg-muted); margin-top: calc(-1 * var(--ra-space-l)); }
+
+  .step { border: 0; padding: 0; margin: 0; display: grid; gap: var(--ra-space-m); }
+  .step legend {
+    display: flex;
+    align-items: center;
+    gap: var(--ra-space-s);
+    font-weight: 700;
+    font-size: var(--ra-step-0);
+    padding-bottom: var(--ra-space-s);
+    border-bottom: 1px solid var(--ra-border);
+    width: 100%;
+    margin-bottom: var(--ra-space-xs);
+  }
+  .step__num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6em;
+    height: 1.6em;
+    border-radius: 50%;
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    font-size: var(--ra-step--1);
+    flex-shrink: 0;
+  }
+
+  .field { display: grid; gap: var(--ra-space-2xs); }
+  .field label, .field__legend { font-weight: 600; font-size: var(--ra-step--1); }
+  .field-guide { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin: 0; }
+  .optional, .field-hint { font-weight: 400; color: var(--ra-fg-muted); }
+
+  input, textarea {
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-surface);
+  }
+  textarea { min-height: 8rem; resize: vertical; }
+  input:focus-visible, textarea:focus-visible { border-color: var(--ra-navy-500); }
+  input[aria-invalid='true'], textarea[aria-invalid='true'] {
+    border-color: #8F2530;
+    border-width: 2px;
+  }
+  .field__error { margin: 0; color: #6B1C24; font-size: var(--ra-step--1); }
+
+  /*
+   * Same off-screen-radio-plus-label device as the shop's variant picker:
+   * proven accessible and works with no script, so reused rather than
+   * inventing a second pattern for the same interaction.
+   */
+  .type-grid, .timeline-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ra-space-s);
+  }
+  .type-card, .chip-radio {
+    position: relative;
+    cursor: pointer;
+  }
+  .type-card input, .chip-radio input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .type-card span, .chip-radio span {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--ra-tap-min);
+    padding-inline: var(--ra-space-m);
+    border-radius: var(--ra-radius-m);
+    box-shadow: inset 0 0 0 1.5px var(--ra-border);
+    font-weight: 600;
+    font-size: var(--ra-step--1);
+    transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  }
+  .type-card:hover span, .chip-radio:hover span {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow: inset 0 0 0 1.5px var(--ra-gold-500);
+  }
+  .type-card input:checked + span, .chip-radio input:checked + span {
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    box-shadow: inset 0 0 0 1.5px var(--ra-navy-600);
+  }
+  .type-card input:focus-visible + span, .chip-radio input:focus-visible + span {
+    outline: 3px solid var(--ra-gold-500);
+    outline-offset: 2px;
+  }
+
+  /* Matches Button.astro's primary variant — same weight, same press feel. */
+  button[type='submit'] {
+    justify-self: start;
+    border: 0;
+    cursor: pointer;
+    padding: var(--ra-space-s) var(--ra-space-xl);
+    border-radius: var(--ra-radius-m);
+    font-weight: 600;
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    box-shadow: var(--ra-shadow-s);
+    transition:
+      transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 160ms ease,
+      box-shadow 160ms ease,
+      color 160ms ease;
+  }
+  button[type='submit']:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow: 0 8px 20px -8px rgb(239 180 46 / 0.6);
+    transform: translateY(-2px);
+  }
+  button[type='submit']:active {
+    background: var(--ra-gold-400);
+    color: var(--ra-navy-900);
+    box-shadow: var(--ra-shadow-s);
+    transform: translateY(0) scale(0.985);
+    transition-duration: 60ms;
+  }
+
+  .alert {
+    margin-top: var(--ra-space-l);
+    padding: var(--ra-space-m);
+    border-radius: var(--ra-radius-s);
+    border: 1px solid rgb(143 37 48 / 0.35);
+    background: #FBF1F0;
+    color: #6B1C24;
+    font-size: var(--ra-step--1);
+  }
+  .alert p { margin: 0; }
+
+  .fallback {
+    margin-top: var(--ra-space-l);
+    padding: var(--ra-space-m);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-navy-50);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+</style>
