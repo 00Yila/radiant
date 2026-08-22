@@ -1,17 +1,39 @@
 ---
+/*
+ * `as="button"` renders a real <button> instead of an <a> — added for the
+ * shop's Pay Now control, which has to submit a form rather than navigate.
+ * Every existing usage passes href with no `as`, so it keeps rendering an
+ * <a> exactly as before; nothing about the ~40 current call sites changes.
+ */
 interface Props {
-  href: string;
+  href?: string;
+  as?: 'a' | 'button';
+  type?: 'button' | 'submit';
   variant?: 'primary' | 'secondary' | 'gold';
   external?: boolean;
   class?: string;
 }
-const { href, variant = 'primary', external = false, class: className = '' } = Astro.props;
+const {
+  href,
+  as = 'a',
+  type = 'button',
+  variant = 'primary',
+  external = false,
+  class: className = '',
+} = Astro.props;
 const rel = external ? 'noopener noreferrer' : undefined;
 const target = external ? '_blank' : undefined;
+const classes = ['ra-btn', `ra-btn--${variant}`, className];
 ---
-<a href={href} rel={rel} target={target} class:list={['ra-btn', `ra-btn--${variant}`, className]}>
-  <slot />
-</a>
+{as === 'button' ? (
+  <button type={type} class:list={classes}>
+    <slot />
+  </button>
+) : (
+  <a href={href} rel={rel} target={target} class:list={classes}>
+    <slot />
+  </a>
+)}
 
 <style>
   .ra-btn {

@@ -62,3 +62,17 @@ Options -Indexes
 <FilesMatch "^\.(?!well-known)">
   Require all denied
 </FilesMatch>
+
+# Fallback deny for the secrets file, only relevant if config.php had to fall
+# back to public/config/radiant-alpha.php because the hosting account
+# restricts file access to inside public_html — see that file's docblock.
+# The .example file (no real secrets) is intentionally left servable.
+<FilesMatch "^radiant-alpha\.php$">
+  Require all denied
+</FilesMatch>
+
+# public/_lib/ holds PHP includes, never a page in its own right — nothing
+# should ever request them directly.
+<IfModule mod_alias.c>
+  RedirectMatch 404 ^/_lib/
+</IfModule>

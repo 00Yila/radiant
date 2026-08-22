@@ -1,0 +1,27 @@
+<?php
+/**
+ * Template for the real secrets file. Copy this to `radiant-alpha.php` in
+ * whichever location public/_lib/config.php resolves for your hosting setup
+ * (ideally one level above public_html — see that file's docblock) and fill
+ * in real values.
+ *
+ * NEVER commit the real file. `radiant-alpha.php` (this filename, without
+ * `.example`) is git-ignored on purpose — see .gitignore.
+ */
+return [
+    // From your Paystack dashboard → Settings → API Keys & Webhooks.
+    // Use the sk_test_/pk_test_ pair until the full checkout → webhook →
+    // admin → tracking flow has been verified end-to-end in test mode.
+    'paystack_secret_key' => 'sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'paystack_public_key' => 'pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+
+    // From hPanel → Databases → MySQL Databases.
+    'db_host' => 'localhost',
+    'db_name' => 'u123456789_radiantalpha',
+    'db_user' => 'u123456789_admin',
+    'db_pass' => 'change-me',
+
+    // Signs the admin panel's CSRF token. Generate once with:
+    //   php -r "echo bin2hex(random_bytes(32));"
+    'csrf_secret' => 'change-me',
+];

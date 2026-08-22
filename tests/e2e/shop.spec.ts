@@ -22,7 +22,7 @@ test.describe('the storage picker works without JavaScript', () => {
     await expect(visiblePanel).toContainText('₦1,225,350');
     await expect(visiblePanel).toContainText('IP15PM-512');
 
-    const href = await visiblePanel.getByRole('link', { name: /order on whatsapp/i }).getAttribute('href');
+    const href = await visiblePanel.getByRole('link', { name: /ask on whatsapp first/i }).getAttribute('href');
     expect(decodeURIComponent(href!)).toContain('512GB — ₦1,225,350');
     expect(decodeURIComponent(href!)).toContain('Ref: IP15PM-512');
   });
@@ -102,6 +102,41 @@ test.describe('the catalogue is complete without JavaScript', () => {
     await expect(page.locator('#shop-filter')).toBeHidden();
     await expect(page.locator('.more')).toBeHidden();
     await expect(page.locator('#no-results')).toBeHidden();
+  });
+});
+
+test.describe('the Pay Now form works without JavaScript', () => {
+  test.use({ javaScriptEnabled: false });
+
+  // Full purchase completion isn't testable without hitting real Paystack —
+  // this stops at "the form submits correctly natively," matching the
+  // existing no-JS variant-picker test's scope.
+  test('posts the right product, variant and price to /checkout.php', async ({ page }) => {
+    await page.goto('/shop/iphone-15-pro-max');
+
+    const visiblePanel = page.locator('.buy__panel:visible');
+    const form = visiblePanel.locator('form.buy__form');
+
+    await expect(form).toHaveAttribute('action', '/checkout.php');
+    await expect(form).toHaveAttribute('method', 'post');
+    await expect(form.locator('input[name="product"]')).toHaveValue('iphone-15-pro-max');
+    await expect(form.locator('input[name="variant"]')).toHaveValue('IP15PM-256');
+    await expect(form.getByRole('button', { name: /pay ₦1,154,150 now/i })).toBeVisible();
+
+    // The honeypot must be present but never something a sighted or
+    // keyboard user would fill in by accident.
+    const honeypot = form.locator('input[name="bot-field"]');
+    await expect(honeypot).toHaveValue('');
+    await expect(honeypot).toHaveAttribute('tabindex', '-1');
+  });
+
+  test('switching variant updates which form is reachable', async ({ page }) => {
+    await page.goto('/shop/iphone-15-pro-max');
+    await page.getByText('512GB', { exact: true }).click();
+
+    const visiblePanel = page.locator('.buy__panel:visible');
+    const form = visiblePanel.locator('form.buy__form');
+    await expect(form.locator('input[name="variant"]')).toHaveValue('IP15PM-512');
   });
 });
 

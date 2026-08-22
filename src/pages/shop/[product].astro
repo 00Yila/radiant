@@ -118,8 +118,8 @@ const variantList = variants.map((v) => v.label).join(', ');
         />
         {!product.image && (
           <p class="pdp__imgnote">
-            This is a drawing of the model, not a photo of the phone itself. Before you
-            pay, we send you real photos of the exact one you will get.
+            This is a drawing of the model, not a photo of the phone itself. Before it
+            ships, we send you real photos of the exact one you will get.
           </p>
         )}
       </div>
@@ -167,15 +167,60 @@ const variantList = variants.map((v) => v.label).join(', ');
                   {' '}{shop.preOrderLeadTime} after we confirm your order.
                 </p>
 
-                {/*
-                  * "Pre-order" read as a commitment the click itself might make —
-                  * possibly even a charge. The button only opens WhatsApp with the
-                  * order details drafted in; nothing is charged by pressing it.
-                  */}
-                <Button href={v.waUrl} variant="gold" external>
-                  Order on WhatsApp
+                <form method="post" action="/checkout.php" class="buy__form">
+                  <input type="hidden" name="product" value={product.id} />
+                  <input type="hidden" name="variant" value={v.ref} />
+
+                  {/* Same honeypot idiom as contact.astro — see that file for why
+                      aria-hidden and tabindex="-1" are both needed. IDs are
+                      namespaced per variant since several panels share one page. */}
+                  <p class="ra-visually-hidden" aria-hidden="true">
+                    <label for={`bot-field-${v.ref}`}>Leave this field empty</label>
+                    <input id={`bot-field-${v.ref}`} name="bot-field" tabindex="-1" autocomplete="off" />
+                  </p>
+
+                  <div class="buy__field">
+                    <label for={`name-${v.ref}`}>Your name</label>
+                    <input id={`name-${v.ref}`} name="name" type="text" required autocomplete="name" maxlength="120" />
+                  </div>
+                  <div class="buy__field">
+                    <label for={`email-${v.ref}`}>Email address</label>
+                    <input
+                      id={`email-${v.ref}`}
+                      name="email"
+                      type="email"
+                      required
+                      autocomplete="email"
+                      pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                    />
+                  </div>
+                  <div class="buy__field">
+                    <label for={`phone-${v.ref}`}>Phone or WhatsApp number</label>
+                    <input id={`phone-${v.ref}`} name="phone" type="tel" required autocomplete="tel" maxlength="40" />
+                  </div>
+
+                  <Button as="button" type="submit" variant="gold">
+                    Pay {formatNaira(v.price)} now
+                  </Button>
+                  <p class="buy__note">
+                    You&rsquo;ll pay on Paystack&rsquo;s own secure page — we never see your
+                    card details — then get a confirmation and a tracking link.
+                  </p>
+                </form>
+
+                <p class="buy__divider"><span>or</span></p>
+
+                {/* The pre-payment path, for anyone who wants the exact battery,
+                    colour confirmed before committing money. Nothing is charged
+                    by pressing this — it only opens WhatsApp with the order
+                    details drafted in. */}
+                <Button href={v.waUrl} variant="secondary" external>
+                  Ask on WhatsApp first
                 </Button>
-                <p class="buy__note">Opens WhatsApp with these details ready to send — no payment yet.</p>
+                <p class="buy__note">
+                  Want the exact battery and colour confirmed before you pay? Message us
+                  here first — no payment yet.
+                </p>
               </div>
             ))}
           </div>
@@ -198,21 +243,24 @@ const variantList = variants.map((v) => v.label).join(', ');
 
   <Section class="ra-backdrop-hex">
     <div class="honest ra-measure">
-      <h2>What we confirm before you pay</h2>
+      <h2>What&rsquo;s confirmed, and when</h2>
       <p>
         In this trade, sellers usually stay quiet about condition until the box is
-        already open and the money is gone. We do it the other way round: you see the
-        real thing before any money moves, and you can walk away if it is not right.
+        already open and the money is gone. We do it differently: everything a listing
+        can tell you upfront, it does — before you ever pay. What only the specific
+        phone we send you can answer, we confirm in writing before it ships, and back
+        with a {shop.inspectionWindowHours}-hour inspection window: a full refund or
+        replacement if it isn&rsquo;t as described.
       </p>
       <ul>
         <li>
           <strong>Is this phone new?</strong>{' '}
           {isDiscontinued(product) ? (
-            'No — Apple stopped making this model, so nobody, including us, can sell it brand new. This one is used or refurbished, and we tell you which before you pay.'
+            'No — Apple stopped making this model, so nobody, including us, can sell it brand new. This one is used or refurbished, as stated on this listing.'
           ) : product.conditionTier === 'new' ? (
             'Yes — brand new and sealed.'
           ) : (
-            `${product.conditionLabel}. We tell you the exact condition before you pay.`
+            `${product.conditionLabel}. We confirm the exact grade before dispatch, backed by our ${shop.inspectionWindowHours}-hour inspection window.`
           )}
         </li>
         <li>
@@ -221,15 +269,18 @@ const variantList = variants.map((v) => v.label).join(', ');
           <strong>The condition and colour of the actual phone</strong> you are
           buying, not the model in general — graded New, Grade A (excellent,
           minimal wear) or Grade B (light wear, fully working){product.category === 'phones' && ', plus its battery health'}.
-          We send this in writing, with photographs, before you pay.
+          We confirm this in writing, with photographs, before your order ships — and
+          if it doesn&rsquo;t match, our {shop.inspectionWindowHours}-hour inspection
+          window covers a full refund or replacement.
         </li>
         {eSimCaution && (
           <li>
             <strong>Will your SIM card fit?</strong> Some units of this model were made
             for the American market with no SIM card slot at all — the line has to be
             set up digitally instead, and MTN, Airtel, Glo and 9mobile do not all
-            support that reliably yet. We check the actual phone and tell you which
-            kind it is before you pay.
+            support that reliably yet. We check the actual phone and confirm which kind
+            it is before dispatch, covered by the same inspection window if we get it
+            wrong.
           </li>
         )}
         <li>
@@ -372,6 +423,39 @@ const variantList = variants.map((v) => v.label).join(', ');
     margin-top: var(--ra-space-xs);
     color: var(--ra-fg-muted);
     font-size: var(--ra-step--1);
+  }
+
+  .buy__form {
+    display: grid;
+    gap: var(--ra-space-s);
+    margin-bottom: var(--ra-space-m);
+  }
+  .buy__field { display: grid; gap: var(--ra-space-2xs); }
+  .buy__field label { font-weight: 600; font-size: var(--ra-step--1); }
+  .buy__field input {
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-surface);
+  }
+
+  /* A short rule either side of "or", not a bare word — reads as a genuine
+     fork between two ways to buy rather than a leftover label. */
+  .buy__divider {
+    display: flex;
+    align-items: center;
+    gap: var(--ra-space-s);
+    margin-block: var(--ra-space-m);
+    color: var(--ra-fg-muted);
+    font-size: var(--ra-step--1);
+  }
+  .buy__divider::before,
+  .buy__divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--ra-rule);
   }
 
   /*

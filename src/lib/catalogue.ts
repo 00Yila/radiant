@@ -74,15 +74,26 @@ export function sortProducts(products: Product[]): Product[] {
  */
 export function specRows(
   p: Product,
-  shop: { networkLock: string; batteryMinimum: string; warrantyDays: number; conditionConfirmed: boolean }
+  shop: {
+    networkLock: string;
+    batteryMinimum: string;
+    warrantyDays: number;
+    inspectionWindowHours: number;
+    conditionConfirmed: boolean;
+  }
 ): Array<{ label: string; value: string }> {
   /*
    * Two rules keep this from turning a plain-English pass into invented
    * policy: never state a specific grade, colour or battery figure the
    * supplier has not actually confirmed, and never claim delivery started
    * before the moment the site's returns page actually anchors it to.
+   *
+   * Checkout is instant, so unit-specific facts (battery, colour, SIM type)
+   * can only be confirmed after payment, not before it — this fallback says
+   * so plainly rather than repeating a "before you pay" promise the payment
+   * flow no longer keeps.
    */
-  const unconfirmed = 'We confirm this in writing before you pay';
+  const unconfirmed = `We confirm this in writing before dispatch — covered by our ${shop.inspectionWindowHours}-hour inspection window`;
 
   const rows: Array<{ label: string; value: string }> = [
     { label: 'Condition', value: p.conditionLabel },
@@ -99,7 +110,7 @@ export function specRows(
       {
         label: 'SIM card',
         value: isEsimRisk(p)
-          ? 'Some units of this model have no SIM card slot at all — we check the exact phone and tell you which kind it is before you pay'
+          ? 'Some units of this model have no SIM card slot at all — we check the exact phone and confirm which kind it is before dispatch'
           : 'Takes a normal SIM card',
       },
       { label: 'Battery', value: shop.conditionConfirmed ? `${shop.batteryMinimum} of original capacity` : unconfirmed }

@@ -63,7 +63,7 @@ const waUrl = buildWhatsAppUrl({
 ---
 <Base
   title="Shop"
-  description={`${stockedList} on pre-order from Radiant Alpha, from ${formatNaira(cheapest)}. Condition stated on every listing, confirmed in writing before you pay.`}
+  description={`${stockedList} on pre-order from Radiant Alpha, from ${formatNaira(cheapest)}. Condition stated on every listing, exact unit confirmed in writing before dispatch.`}
   path="/shop"
 >
   <Section register="dark" class="ra-backdrop-photo shop-hero">
@@ -112,18 +112,21 @@ const waUrl = buildWhatsAppUrl({
       <p class="terms__pending">
         {/*
           * Rewritten against real usability feedback: "whether the model can
-          * be new" read as a riddle, "grade" was undefined, "specific unit"
-          * read as warehouse language, and the timing word did not match the
-          * "before you pay" used everywhere else on the shop. The grading
+          * be new" read as a riddle, "grade" was undefined, and "specific
+          * unit" read as warehouse language. Rewritten again for instant
+          * checkout: payment now comes before the exact-unit confirmation,
+          * not after, so the guarantee that covers the gap has to be named
+          * here rather than the old "before you pay" promise. The grading
           * vocabulary below is the site's own — see the design spec — not
           * invented for this paragraph.
           */}
         <strong>About condition:</strong> older models are no longer made, so nobody can
         sell them brand new — every listing says plainly whether it is used, refurbished,
-        or new. Once you message us, we send the exact condition of your actual phone in
+        or new. Once you pay, we confirm the exact condition of your actual phone in
         writing — graded New, Grade A (excellent, minimal wear) or Grade B (light wear,
-        fully working) — along with its battery health and SIM type, before you pay
-        anything.
+        fully working) — along with its battery health and SIM type, before we ship it.
+        If it isn&rsquo;t as described, our {shop.inspectionWindowHours}-hour inspection
+        window covers a full refund or replacement.
       </p>
     )}
   </Section>
