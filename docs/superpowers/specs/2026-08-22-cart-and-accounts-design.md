@@ -181,25 +181,41 @@ sends outbound mail today.
 - `public/account/logout.php` — destroys the session, redirects to
   `/account/login/`.
 
-### Tracking gets folded into the same rendering path
+### Tracking: generalized to N items, still a static result page
 
 The current guest-tracking flow (`order-status.php` redirects to
-`track/result.astro`, which reads a flattened query string) doesn't scale
-to "N items, each with its own status and dates" — cramming that into a
-URL is exactly the kind of fragile encoding worth avoiding.
+`track/result.astro`, which reads a flattened one-item query string)
+doesn't scale to "N items, each with its own status and dates" — cramming
+that into individual query params is exactly the kind of fragile encoding
+worth avoiding.
 
-Since accounts now need a PHP page that renders "an order plus its line
-items plus their statuses" anyway, guest tracking is rebuilt to render
-the same way instead of round-tripping through query params:
+**Revised from the original draft of this spec** (which proposed folding
+this into a PHP-rendered page shared with the account view): this project
+has no PHP runtime in its dev/CI environment, ever, and leans on
+Playwright against the built static `dist/` output as its only
+verification method throughout. Moving the result page's rendering into
+PHP would make it untestable until a real deploy — too large a
+testability loss for a cosmetic-only benefit (shared markup). Decision:
+keep the result page static, generalized to carry multiple items in one
+encoded parameter instead of one status's worth of flattened fields.
 
 - `src/pages/track/index.astro` stays as-is (the no-JS lookup form).
-- It now posts to `public/track.php` instead of `order-status.php`.
-- `public/track.php` does the reference+email lookup (identical
-  not-found response either way, exactly as today) and, on success,
-  renders the order directly — same per-item status list markup as
-  `account/orders.php`, factored into one shared render function in
-  `public/_lib/orders_view.php` so the two pages can't drift apart.
-- `order-status.php` and `track/result.astro` are removed.
+- It now posts to `public/order-status.php` (unchanged endpoint name;
+  only its output shape changes).
+- `order-status.php` does the reference+email lookup (identical
+  not-found response either way, exactly as today), builds a JSON array
+  of `{product_label, variant_label, quantity, status, status_dates}`
+  per item, base64url-encodes it, and redirects to
+  `/track/result/?ref=...&items=<encoded>`.
+- `track/result.astro` decodes and renders the array client-side —
+  same per-item timeline treatment the original single-item version had,
+  looped once per item instead of assumed-singular.
+- `account/orders.php` (PHP-rendered, since it's session-gated and needs
+  a live DB read regardless) implements its own — smaller — rendering of
+  the same underlying data. The two are not required to share a render
+  function; any visual drift between them is a copy-editing concern, not
+  a correctness one, since both read from the same `order_items` /
+  `order_item_status_history` tables.
 
 ### What's reused unchanged
 
