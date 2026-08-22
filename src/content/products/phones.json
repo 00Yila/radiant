@@ -1,0 +1,659 @@
+[
+  {
+    "id": "iphone-xs-max",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone XS Max",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "64GB",
+        "price": 285670,
+        "ref": "IPXSM-64"
+      },
+      {
+        "label": "256GB",
+        "price": 330150,
+        "ref": "IPXSM-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 10
+  },
+  {
+    "id": "iphone-x",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone X",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "64GB",
+        "price": 200950,
+        "ref": "IPX-64"
+      },
+      {
+        "label": "256GB",
+        "price": 250550,
+        "ref": "IPX-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 10
+  },
+  {
+    "id": "iphone-xr",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone XR",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "64GB",
+        "price": 250150,
+        "ref": "IPXR-64"
+      },
+      {
+        "label": "128GB",
+        "price": 279550,
+        "ref": "IPXR-128"
+      },
+      {
+        "label": "256GB",
+        "price": 319950,
+        "ref": "IPXR-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 10
+  },
+  {
+    "id": "iphone-11",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 11",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "64GB",
+        "price": 279950,
+        "ref": "IP11-64"
+      },
+      {
+        "label": "128GB",
+        "price": 300350,
+        "ref": "IP11-128"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 11
+  },
+  {
+    "id": "iphone-11-pro",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 11 Pro",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "64GB",
+        "price": 350950,
+        "ref": "IP11P-64"
+      },
+      {
+        "label": "256GB",
+        "price": 381550,
+        "ref": "IP11P-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 11
+  },
+  {
+    "id": "iphone-11-pro-max",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 11 Pro Max",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "64GB",
+        "price": 381550,
+        "ref": "IP11PM-64"
+      },
+      {
+        "label": "256GB",
+        "price": 432150,
+        "ref": "IP11PM-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 11
+  },
+  {
+    "id": "iphone-12",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 12",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "64GB",
+        "price": 365750,
+        "ref": "IP12-64"
+      },
+      {
+        "label": "128GB",
+        "price": 396350,
+        "ref": "IP12-128"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 12
+  },
+  {
+    "id": "iphone-12-pro",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 12 Pro",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 462550,
+        "ref": "IP12P-128"
+      },
+      {
+        "label": "256GB",
+        "price": 482950,
+        "ref": "IP12P-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 12
+  },
+  {
+    "id": "iphone-12-pro-max",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 12 Pro Max",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 488150,
+        "ref": "IP12PM-128"
+      },
+      {
+        "label": "256GB",
+        "price": 553950,
+        "ref": "IP12PM-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 12
+  },
+  {
+    "id": "iphone-13",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 13",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 492870,
+        "ref": "IP13-128"
+      },
+      {
+        "label": "256GB",
+        "price": 513550,
+        "ref": "IP13-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 13
+  },
+  {
+    "id": "iphone-13-pro",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 13 Pro",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 564550,
+        "ref": "IP13P-128"
+      },
+      {
+        "label": "256GB",
+        "price": 597150,
+        "ref": "IP13P-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 13
+  },
+  {
+    "id": "iphone-13-pro-max",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 13 Pro Max",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 684550,
+        "ref": "IP13PM-128"
+      },
+      {
+        "label": "256GB",
+        "price": 725350,
+        "ref": "IP13PM-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 13
+  },
+  {
+    "id": "iphone-14",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 14",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 543750,
+        "ref": "IP14-128"
+      },
+      {
+        "label": "256GB",
+        "price": 594550,
+        "ref": "IP14-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 14
+  },
+  {
+    "id": "iphone-14-plus",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 14 Plus",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 595350,
+        "ref": "IP14PL-128"
+      },
+      {
+        "label": "256GB",
+        "price": 656350,
+        "ref": "IP14PL-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 14
+  },
+  {
+    "id": "iphone-14-pro",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 14 Pro",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 705550,
+        "ref": "IP14P-128"
+      },
+      {
+        "label": "256GB",
+        "price": 757550,
+        "ref": "IP14P-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 14
+  },
+  {
+    "id": "iphone-14-pro-max",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 14 Pro Max",
+    "conditionTier": "used-or-refurbished",
+    "conditionLabel": "Used or refurbished",
+    "tierRank": 1,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 798150,
+        "ref": "IP14PM-128"
+      },
+      {
+        "label": "256GB",
+        "price": 829350,
+        "ref": "IP14PM-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 14
+  },
+  {
+    "id": "iphone-15",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 15",
+    "conditionTier": "refurbished-or-nos",
+    "conditionLabel": "Refurbished, or new from older stock",
+    "tierRank": 2,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 696950,
+        "ref": "IP15-128"
+      },
+      {
+        "label": "256GB",
+        "price": 737750,
+        "ref": "IP15-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 15
+  },
+  {
+    "id": "iphone-15-plus",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 15 Plus",
+    "conditionTier": "refurbished-or-nos",
+    "conditionLabel": "Refurbished, or new from older stock",
+    "tierRank": 2,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 717350,
+        "ref": "IP15PL-128"
+      },
+      {
+        "label": "256GB",
+        "price": 768150,
+        "ref": "IP15PL-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 15
+  },
+  {
+    "id": "iphone-15-pro",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 15 Pro",
+    "conditionTier": "refurbished-or-nos",
+    "conditionLabel": "Refurbished, or new from older stock",
+    "tierRank": 2,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 848150,
+        "ref": "IP15P-128"
+      },
+      {
+        "label": "256GB",
+        "price": 879750,
+        "ref": "IP15P-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 15
+  },
+  {
+    "id": "iphone-15-pro-max",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 15 Pro Max",
+    "conditionTier": "refurbished-or-nos",
+    "conditionLabel": "Refurbished, or new from older stock",
+    "tierRank": 2,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "256GB",
+        "price": 1154150,
+        "ref": "IP15PM-256"
+      },
+      {
+        "label": "512GB",
+        "price": 1225350,
+        "ref": "IP15PM-512"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 15
+  },
+  {
+    "id": "iphone-16",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 16",
+    "conditionTier": "unconfirmed",
+    "conditionLabel": "Condition to be confirmed",
+    "tierRank": 3,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 969350,
+        "ref": "IP16-128"
+      },
+      {
+        "label": "256GB",
+        "price": 1070550,
+        "ref": "IP16-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 16
+  },
+  {
+    "id": "iphone-16-pro",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 16 Pro",
+    "conditionTier": "unconfirmed",
+    "conditionLabel": "Condition to be confirmed",
+    "tierRank": 3,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 1354150,
+        "ref": "IP16P-128"
+      },
+      {
+        "label": "256GB",
+        "price": 1435750,
+        "ref": "IP16P-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 16
+  },
+  {
+    "id": "iphone-16-pro-max",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 16 Pro Max",
+    "conditionTier": "unconfirmed",
+    "conditionLabel": "Condition to be confirmed",
+    "tierRank": 3,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "256GB",
+        "price": 1478150,
+        "ref": "IP16PM-256"
+      },
+      {
+        "label": "512GB",
+        "price": 1549750,
+        "ref": "IP16PM-512"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 16
+  },
+  {
+    "id": "iphone-16-plus",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 16 Plus",
+    "conditionTier": "unconfirmed",
+    "conditionLabel": "Condition to be confirmed",
+    "tierRank": 3,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "128GB",
+        "price": 1054150,
+        "ref": "IP16PL-128"
+      },
+      {
+        "label": "256GB",
+        "price": 1165750,
+        "ref": "IP16PL-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 16
+  },
+  {
+    "id": "iphone-17",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 17",
+    "conditionTier": "new",
+    "conditionLabel": "New",
+    "tierRank": 4,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "256GB",
+        "price": 1458150,
+        "ref": "IP17-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 17
+  },
+  {
+    "id": "iphone-air",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone Air",
+    "conditionTier": "new",
+    "conditionLabel": "New",
+    "tierRank": 4,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "256GB",
+        "price": 1823350,
+        "ref": "IPAIR-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 17
+  },
+  {
+    "id": "iphone-17-pro",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 17 Pro",
+    "conditionTier": "new",
+    "conditionLabel": "New",
+    "tierRank": 4,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "256GB",
+        "price": 2166150,
+        "ref": "IP17P-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 17
+  },
+  {
+    "id": "iphone-17-pro-max",
+    "category": "phones",
+    "brand": "Apple",
+    "model": "iPhone 17 Pro Max",
+    "conditionTier": "new",
+    "conditionLabel": "New",
+    "tierRank": 4,
+    "variantAxis": "Storage",
+    "variants": [
+      {
+        "label": "256GB",
+        "price": 2392550,
+        "ref": "IP17PM-256"
+      }
+    ],
+    "colours": [],
+    "appleGeneration": 17
+  }
+]

@@ -1,0 +1,84 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import { SITE } from '../lib/site';
+---
+<Base
+  title="Terms of Service"
+  description="The terms that apply when you order products or commission services from Radiant Alpha Digital Services Ltd."
+  path="/terms"
+>
+  <Section register="dark">
+    <h1 class="ra-display">Terms of Service</h1>
+    <p class="ra-lede lede--tight">The terms that apply when you buy from us or commission work.</p>
+  </Section>
+
+  <Section>
+    <div class="ra-measure ra-prose">
+      <h2>Who we are</h2>
+      <p>
+        {SITE.legalName}, RC {SITE.rcNumber}, registered with the Corporate Affairs
+        Commission of Nigeria and based in {SITE.location}.
+      </p>
+
+      <h2>Pre-order terms</h2>
+      <p>
+        All products in our shop are supplied on a pre-order basis. We source your device
+        after your order is confirmed, which is what allows us to price competitively.
+        <strong> Please allow {SITE.preOrderLeadTime} from order confirmation for
+        delivery.</strong>
+      </p>
+      <p>
+        Prices are quoted in Nigerian Naira and may change without notice. The price that
+        applies to your order is the price confirmed with you at the point of order.
+      </p>
+      <p>
+        Once procurement and shipping have begun, an order cannot be cancelled. Your
+        rights if something arrives damaged, defective, or not as described are set out in
+        our <a href="/returns">Returns &amp; Warranty</a> policy.
+      </p>
+
+      <h2>Product descriptions</h2>
+      <p>
+        We state the condition, grade, network lock status, SIM type, battery health, and
+        warranty of every device before you order. We describe our stock as accurately as
+        we can. If a device arrives significantly different from its description, the
+        48-hour inspection window in our returns policy applies.
+      </p>
+
+      <h2>Services</h2>
+      <p>
+        Prices shown on our services pages are indicative starting points, not quotations.
+        Each project is scoped and quoted individually, with deliverables, milestones, and
+        payment terms agreed in writing before work begins.
+      </p>
+      <p>
+        On final payment, ownership of the delivered work transfers to you, including
+        source files and code, unless we have agreed otherwise in writing.
+      </p>
+
+      <h2>Limitation of liability</h2>
+      <p>
+        Our liability in connection with any order or project is limited to the amount you
+        paid us for it. Nothing in these terms limits any right you have under the Federal
+        Competition and Consumer Protection Act or other applicable Nigerian law.
+      </p>
+
+      <h2>Changes to these terms</h2>
+      <p>
+        We may update these terms. The version published on this page at the time you
+        place an order is the version that applies to that order.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions: <a href={`mailto:${SITE.email}`}>{SITE.email}</a> or
+        {' '}{SITE.phoneDisplay}.
+      </p>
+    </div>
+  </Section>
+</Base>
+
+<style>
+  .lede--tight { margin-block: var(--ra-space-m) 0; }
+</style>

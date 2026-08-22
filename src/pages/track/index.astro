@@ -1,0 +1,78 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+
+/*
+ * Plain GET form to /order-status.php — works with zero JavaScript, and a
+ * lookup is naturally bookmarkable/shareable since the reference and email
+ * just become query params. order/confirmed.astro links here with
+ * ?reference= prefilled; the field below reads it client-side since Astro
+ * has no access to the query string at build time.
+ */
+---
+<Base
+  title="Track your order"
+  description="Look up your order status using your order reference and the email you paid with."
+  path="/track"
+  noindex
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Track your order</p>
+    <h1 class="ra-display">Where&rsquo;s my order?</h1>
+    <p class="ra-lede">
+      Enter your order reference and the email address you paid with. We&rsquo;ll show you
+      exactly where your order is.
+    </p>
+  </Section>
+
+  <Section>
+    <form method="get" action="/order-status.php" class="lookup ra-measure">
+      <p class="error" id="error" hidden>
+        We couldn&rsquo;t find an order matching those details. Double-check your reference
+        and the email you paid with, or message us if you&rsquo;re still stuck.
+      </p>
+
+      <div class="field">
+        <label for="reference">Order reference</label>
+        <input id="reference" name="reference" type="text" required autocomplete="off" placeholder="RA-xxxxxxxxxxxxxxxx" />
+      </div>
+
+      <div class="field">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" required autocomplete="email" />
+      </div>
+
+      <button type="submit" class="ra-btn ra-btn--primary">Track order</button>
+    </form>
+  </Section>
+</Base>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const refInput = document.getElementById('reference') as HTMLInputElement | null;
+  const prefill = params.get('reference');
+  if (refInput && prefill) refInput.value = prefill;
+
+  const errorBox = document.getElementById('error');
+  if (errorBox && params.get('error') === 'missing') errorBox.hidden = false;
+</script>
+
+<style>
+  .lookup { display: grid; gap: var(--ra-space-m); max-width: 32rem; }
+  .field { display: grid; gap: var(--ra-space-2xs); }
+  .field label { font-weight: 600; font-size: var(--ra-step--1); }
+  .field input {
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-surface);
+  }
+  .error {
+    background: var(--ra-navy-50);
+    border: 1px solid rgb(239 180 46 / 0.4);
+    border-radius: var(--ra-radius-s);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    font-size: var(--ra-step--1);
+  }
+</style>

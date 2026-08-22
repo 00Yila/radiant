@@ -1,0 +1,42 @@
+---
+import { formatPostDate, toIsoDate, type Post } from '../lib/posts';
+
+interface Props {
+  post: Post;
+}
+const { post } = Astro.props;
+const { title, date, excerpt, tags } = post.data;
+---
+<li class="ra-card post">
+  {tags.length > 0 && <p class="post__tag">{tags[0]}</p>}
+  <h3>
+    {/*
+      * The whole card is not a link: a card-wide anchor swallows the date and
+      * tag into the accessible name, which then reads as one long run of text
+      * in a screen reader's link list. The title alone is the link.
+      */}
+    <a href={`/blog/${post.id}`}>{title}</a>
+  </h3>
+  <p>{excerpt}</p>
+  <time class="post__date" datetime={toIsoDate(date)}>{formatPostDate(date)}</time>
+</li>
+
+<style>
+  .post { display: flex; flex-direction: column; }
+  .post__tag {
+    color: var(--ra-gold-ink);
+    font-size: var(--ra-step--1);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: var(--ra-space-xs);
+  }
+  .post h3 { font-size: var(--ra-step-1); }
+  .post p { margin-top: var(--ra-space-xs); }
+  .post__date {
+    margin-top: auto;
+    padding-top: var(--ra-space-m);
+    color: var(--ra-fg-muted);
+    font-size: var(--ra-step--1);
+  }
+</style>

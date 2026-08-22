@@ -1,0 +1,127 @@
+---
+/*
+ * `as="button"` renders a real <button> instead of an <a> — added for the
+ * shop's Pay Now control, which has to submit a form rather than navigate.
+ * Every existing usage passes href with no `as`, so it keeps rendering an
+ * <a> exactly as before; nothing about the ~40 current call sites changes.
+ */
+interface Props {
+  href?: string;
+  as?: 'a' | 'button';
+  type?: 'button' | 'submit';
+  variant?: 'primary' | 'secondary' | 'gold';
+  external?: boolean;
+  class?: string;
+}
+const {
+  href,
+  as = 'a',
+  type = 'button',
+  variant = 'primary',
+  external = false,
+  class: className = '',
+} = Astro.props;
+const rel = external ? 'noopener noreferrer' : undefined;
+const target = external ? '_blank' : undefined;
+const classes = ['ra-btn', `ra-btn--${variant}`, className];
+---
+{as === 'button' ? (
+  <button type={type} class:list={classes}>
+    <slot />
+  </button>
+) : (
+  <a href={href} rel={rel} target={target} class:list={classes}>
+    <slot />
+  </a>
+)}
+
+<style>
+  .ra-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ra-space-xs);
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-l);
+    border-radius: var(--ra-radius-m);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 160ms ease,
+      box-shadow 160ms ease,
+      color 160ms ease;
+  }
+  .ra-btn:hover { transform: translateY(-2px); }
+  /* Press reads as the button taking the weight — fast, so it feels mechanical. */
+  .ra-btn:active {
+    transform: translateY(0) scale(0.985);
+    transition-duration: 60ms;
+  }
+
+  /*
+   * Every variant rests in its own colour and turns gold on hover. Gold fill
+   * always carries navy text — white on gold measures 1.87:1 — so the hover
+   * state is AA on both the light and the dark register.
+   */
+  .ra-btn--primary {
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    box-shadow: var(--ra-shadow-s);
+  }
+  .ra-btn--primary:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow:
+      0 8px 20px -8px rgb(239 180 46 / 0.6),
+      0 2px 4px rgb(10 25 48 / 0.15);
+  }
+  .ra-btn--primary:active {
+    background: var(--ra-gold-400);
+    color: var(--ra-navy-900);
+    box-shadow: var(--ra-shadow-s);
+  }
+
+  .ra-btn--secondary {
+    background: transparent;
+    color: var(--ra-fg);
+    box-shadow: inset 0 0 0 1.5px var(--ra-rule);
+  }
+  .ra-btn--secondary:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow:
+      inset 0 0 0 1.5px var(--ra-gold-500),
+      0 8px 20px -8px rgb(239 180 46 / 0.6);
+  }
+  .ra-btn--secondary:active {
+    background: var(--ra-gold-400);
+    color: var(--ra-navy-900);
+    box-shadow: inset 0 0 0 1.5px var(--ra-gold-400);
+  }
+
+  /* Gold fill always carries navy text. White on gold measures 1.87:1. */
+  .ra-btn--gold {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow: 0 1px 2px rgb(10 25 48 / 0.18);
+  }
+  .ra-btn--gold:hover {
+    background: var(--ra-gold-400);
+    box-shadow:
+      0 8px 20px -8px rgb(239 180 46 / 0.7),
+      0 2px 4px rgb(10 25 48 / 0.15);
+  }
+  .ra-btn--gold:active {
+    background: var(--ra-gold-500);
+    box-shadow: 0 1px 2px rgb(10 25 48 / 0.2);
+  }
+
+  /*
+   * The global focus ring is gold, which disappears against a gold button.
+   * Swap it for whichever of navy/white contrasts with the register behind it.
+   */
+  .ra-btn--gold:focus-visible { outline-color: var(--ra-navy-900); }
+  :global(.ra-dark) .ra-btn--gold:focus-visible { outline-color: var(--ra-surface); }
+</style>

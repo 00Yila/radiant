@@ -1,0 +1,188 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import { formatNaira } from '../../lib/format';
+import { buildWhatsAppUrl, buildEnquiryMessage } from '../../lib/whatsapp';
+import { contactUrlForService, startProjectUrlForService } from '../../lib/contact';
+import { SITE } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const services = await getCollection('services');
+  return services.map((service) => ({
+    params: { slug: service.id },
+    props: { service },
+  }));
+}
+
+const { service } = Astro.props;
+const { Content } = await render(service);
+const { title, summary, startingFrom, faqs } = service.data;
+
+const path = `/services/${service.id}`;
+const waUrl = buildWhatsAppUrl({ message: buildEnquiryMessage(title) });
+/* Carries the service through, so the form opens on the right subject. */
+const contactUrl = contactUrlForService(service.id);
+/* "Start Your Project" goes to the guided intake, not the plain form —
+   see startProjectUrlForService's own comment for why. */
+const startProjectUrl = startProjectUrlForService(service.id);
+
+const others = (await getCollection('services'))
+  .filter((s) => s.id !== service.id)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+
+const serviceSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: title,
+  description: summary,
+  serviceType: title,
+  provider: { '@type': 'Organization', name: SITE.legalName, url: SITE.domain },
+  areaServed: { '@type': 'Country', name: 'Nigeria' },
+  ...(startingFrom && {
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'NGN',
+      price: startingFrom,
+      url: new URL(path, SITE.domain).href,
+    },
+  }),
+};
+
+const faqSchema = faqs.length > 0 ? {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+} : null;
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.domain },
+    { '@type': 'ListItem', position: 2, name: 'Services', item: `${SITE.domain}/services` },
+    { '@type': 'ListItem', position: 3, name: title, item: new URL(path, SITE.domain).href },
+  ],
+};
+---
+<Base title={title} description={summary} path={path}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(serviceSchema)} />
+    {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  </Fragment>
+
+  <Section register="dark">
+    <nav aria-label="Breadcrumb" class="ra-crumbs">
+      <ol role="list">
+        <li><a href="/">Home</a></li>
+        <li><a href="/services">Services</a></li>
+        <li aria-current="page">{title}</li>
+      </ol>
+    </nav>
+    <h1 class="ra-display">{title}</h1>
+    <p class="ra-lede lede--tight">{summary}</p>
+    {startingFrom && (
+      <p class="from ra-numeric">Starting from {formatNaira(startingFrom)}</p>
+    )}
+    <div class="ra-actions">
+      <Button href={startProjectUrl} variant="gold">Start Your Project</Button>
+      <Button href={waUrl} variant="secondary" external>Ask on WhatsApp</Button>
+    </div>
+  </Section>
+
+  <Section>
+    <div class="prose ra-measure">
+      <Content />
+    </div>
+  </Section>
+
+  {faqs.length > 0 && (
+    <Section>
+      <h2>Common questions</h2>
+      <dl class="faqs ra-measure">
+        {faqs.map(({ question, answer }) => (
+          <div class="faq">
+            <dt>{question}</dt>
+            <dd>{answer}</dd>
+          </div>
+        ))}
+      </dl>
+    </Section>
+  )}
+
+  <Section>
+    <h2>Other services</h2>
+    <ul class="related" role="list">
+      {others.map((other) => (
+        <li>
+          <a href={`/services/${other.id}`}>
+            <strong>{other.data.shortTitle}</strong>
+            <span>{other.data.summary}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section register="dark">
+    <h2 class="ra-display">Let&rsquo;s build something remarkable together.</h2>
+    <p class="ra-lede">
+      Tell us about your project and we will come back with a clear scope and price.
+    </p>
+    <div class="ra-actions">
+      <Button href={contactUrl} variant="gold">Get in Touch</Button>
+      <Button href={waUrl} variant="secondary" external>Message on WhatsApp</Button>
+    </div>
+  </Section>
+</Base>
+
+<style>
+  .lede--tight { margin-block-end: var(--ra-space-l); }
+  .from {
+    font-weight: 700;
+    color: var(--ra-gold-500);
+    margin-bottom: var(--ra-space-l);
+  }
+
+  .prose :global(h2) { font-size: var(--ra-step-2); margin-top: var(--ra-space-xl); }
+  .prose :global(h2:first-child) { margin-top: 0; }
+  .prose :global(p) { margin-top: var(--ra-space-m); color: var(--ra-fg-muted); }
+  .prose :global(ul) { margin-top: var(--ra-space-m); padding-left: 1.2em; }
+  .prose :global(li) { margin-top: var(--ra-space-2xs); color: var(--ra-fg-muted); }
+
+  .faqs { margin-top: var(--ra-space-l); }
+  .faq { padding-block: var(--ra-space-m); border-bottom: 1px solid var(--ra-border); }
+  .faq dt { font-weight: 700; margin-bottom: var(--ra-space-2xs); }
+  .faq dd { margin: 0; color: var(--ra-fg-muted); }
+
+  .related {
+    display: grid;
+    gap: var(--ra-space-m);
+    margin-top: var(--ra-space-l);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 800px) { .related { grid-template-columns: repeat(3, 1fr); } }
+  .related a {
+    display: grid;
+    gap: var(--ra-space-2xs);
+    padding: var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-m);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+  }
+  /* A gold edge, not a gold fill — the card's body text has to stay readable. */
+  .related a:hover {
+    border-color: var(--ra-gold-500);
+    box-shadow: 0 0 0 1px var(--ra-gold-500);
+  }
+  .related span { font-size: var(--ra-step--1); color: var(--ra-fg-muted); }
+</style>

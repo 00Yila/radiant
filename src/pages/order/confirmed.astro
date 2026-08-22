@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+
+/*
+ * order-callback.php redirects here only after verifying payment server-side
+ * via Paystack's Verify Transaction API — never on the strength of the
+ * redirect alone. This page itself does no verification and holds no
+ * database access; it only reads ?ref= from the URL to show it back to the
+ * customer and link them to /track/.
+ */
+---
+<Base
+  title="Payment confirmed"
+  description="Your payment has been confirmed. Here is your order reference and how to track it."
+  path="/order/confirmed"
+  noindex
+>
+  <Section register="dark" class="ra-backdrop-glow">
+    <p class="ra-eyebrow">Payment confirmed</p>
+    <h1 class="ra-display">Thank you — your order is in.</h1>
+    <p class="ra-lede">
+      Your order reference is <strong id="ref">&nbsp;</strong>. We&rsquo;ll email you as
+      soon as it&rsquo;s confirmed, and you can check its status any time using this
+      reference and the email you paid with.
+    </p>
+    <div class="ra-actions">
+      <a id="track-link" href="/track/" class="ra-btn ra-btn--gold">Track your order</a>
+      <Button href="/shop" variant="secondary">Continue shopping</Button>
+    </div>
+  </Section>
+</Base>
+
+<script>
+  const ref = new URLSearchParams(location.search).get('ref');
+  const refEl = document.getElementById('ref');
+  const trackLink = document.getElementById('track-link') as HTMLAnchorElement | null;
+
+  if (ref) {
+    if (refEl) refEl.textContent = ref;
+    if (trackLink) trackLink.href = `/track/?reference=${encodeURIComponent(ref)}`;
+  } else if (refEl) {
+    refEl.textContent = '(check your confirmation email)';
+  }
+</script>

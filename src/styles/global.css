@@ -1,0 +1,156 @@
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/fraunces';
+@import './reset.css';
+@import './tokens.css';
+@import './backdrops.css';
+
+:root {
+  --ra-font-sans: 'Plus Jakarta Sans Variable', system-ui, -apple-system, sans-serif;
+  --ra-font-display: 'Fraunces Variable', Georgia, serif;
+}
+
+body {
+  font-family: var(--ra-font-sans);
+  font-size: var(--ra-step-0);
+  background: var(--ra-bg);
+  color: var(--ra-fg);
+}
+
+h1, h2, h3, h4 {
+  color: var(--ra-heading);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: var(--ra-step-5); }
+h2 { font-size: var(--ra-step-4); }
+h3 { font-size: var(--ra-step-2); }
+h4 { font-size: var(--ra-step-1); }
+
+/* Display face — dark register only. Never used on shop pages. */
+.ra-display {
+  font-family: var(--ra-font-display);
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 20, 'WONK' 0;
+  letter-spacing: -0.01em;
+}
+
+/* Prices and any figure that aligns in a column. */
+.ra-numeric { font-variant-numeric: tabular-nums; }
+
+a { color: var(--ra-navy-600); text-underline-offset: 0.2em; }
+.ra-dark a { color: var(--ra-gold-500); }
+
+:focus-visible {
+  outline: 3px solid var(--ra-gold-500);
+  outline-offset: 2px;
+  border-radius: var(--ra-radius-s);
+}
+.ra-dark :focus-visible { outline-color: var(--ra-gold-400); }
+
+.ra-container {
+  width: min(100% - 2 * var(--ra-space-l), var(--ra-container));
+  margin-inline: auto;
+}
+
+.ra-measure { max-width: var(--ra-measure); }
+
+/* ---------------------------------------------------------------------
+   Shared page composition classes.
+   Declared once here because Home, Services, Service detail, About, Work,
+   Contact, Returns, Privacy, Terms and 404 all use them. Page <style>
+   blocks must NOT redeclare these — they add only page-specific rules.
+   --------------------------------------------------------------------- */
+
+.ra-eyebrow {
+  color: var(--ra-gold-500);
+  font-size: var(--ra-step--1);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--ra-space-m);
+}
+
+.ra-lede {
+  max-width: 56ch;
+  font-size: var(--ra-step-1);
+  color: var(--ra-fg-muted);
+  margin-block: var(--ra-space-l) var(--ra-space-xl);
+}
+
+.ra-sub { color: var(--ra-fg-muted); margin-top: var(--ra-space-s); }
+
+.ra-actions { display: flex; flex-wrap: wrap; gap: var(--ra-space-m); }
+
+.ra-cards {
+  display: grid;
+  gap: var(--ra-space-l);
+  margin-top: var(--ra-space-xl);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) { .ra-cards { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .ra-cards--three { grid-template-columns: repeat(3, 1fr); } }
+
+.ra-card {
+  padding: var(--ra-space-l);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-m);
+  background: var(--ra-surface);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+/* A gold edge, not a gold fill — the card's body text has to stay readable. */
+.ra-card:hover {
+  border-color: var(--ra-gold-500);
+  box-shadow: var(--ra-shadow-m);
+}
+.ra-card .card__glyph { color: var(--ra-navy-600); margin-bottom: var(--ra-space-m); }
+.ra-card h3 { font-size: var(--ra-step-1); margin-bottom: var(--ra-space-xs); }
+.ra-card h3 a { text-decoration: none; }
+.ra-card h3 a:hover { text-decoration: underline; }
+.ra-card p { color: var(--ra-fg-muted); }
+.ra-card__price { margin-top: var(--ra-space-m); font-weight: 700; color: var(--ra-navy-600); }
+
+.ra-prose h2 { font-size: var(--ra-step-2); margin-top: var(--ra-space-xl); }
+.ra-prose h2:first-child { margin-top: 0; }
+.ra-prose p { margin-top: var(--ra-space-m); color: var(--ra-fg-muted); }
+.ra-prose ul { margin-top: var(--ra-space-m); padding-left: 1.2em; }
+.ra-prose li { margin-top: var(--ra-space-2xs); color: var(--ra-fg-muted); }
+
+.ra-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ra-space-xs);
+  list-style: none;
+  padding: 0;
+  margin-bottom: var(--ra-space-l);
+  font-size: var(--ra-step--1);
+  color: var(--ra-fg-muted);
+}
+.ra-crumbs li + li::before { content: '/'; margin-right: var(--ra-space-xs); opacity: 0.5; }
+
+.ra-visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+.ra-skip-link {
+  position: absolute; top: 0; left: 0;
+  padding: var(--ra-space-s) var(--ra-space-m);
+  background: var(--ra-navy-900); color: var(--ra-surface);
+  transform: translateY(-120%);
+}
+.ra-skip-link:focus-visible { transform: translateY(0); }
+
+/* Every interactive target meets the 44px minimum. */
+a[class*='ra-btn'], button, [role='button'] { min-height: var(--ra-tap-min); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

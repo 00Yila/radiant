@@ -1,0 +1,173 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import ServiceGlyph from '../../components/ServiceGlyph.astro';
+import { formatNaira } from '../../lib/format';
+
+const services = (await getCollection('services')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+/*
+ * Seven services in one flat grid reads as a list of whatever we happen to
+ * offer. Grouped into Build → Grow → Equip it reads as a progression, and a
+ * visitor can find their own stage in it.
+ */
+const tiers = [
+  {
+    n: 1,
+    name: 'Build',
+    blurb: 'The thing itself — the software, site, or store your customers use.',
+  },
+  {
+    n: 2,
+    name: 'Grow',
+    blurb: 'Getting it in front of people, and making sound decisions about it.',
+  },
+  {
+    n: 3,
+    name: 'Equip',
+    blurb: 'The networks and hardware everything else runs on.',
+  },
+] as const;
+
+const byTier = tiers.map((tier) => ({
+  ...tier,
+  services: services.filter((s) => s.data.tier === tier.n),
+}));
+
+const pricing = [
+  { service: 'Business Website', from: 150000, unit: '' },
+  { service: 'E-commerce Website', from: 300000, unit: '' },
+  { service: 'Custom Web Application', from: 500000, unit: '' },
+  { service: 'Website Maintenance', from: 30000, unit: '/month' },
+  { service: 'SEO Services', from: 80000, unit: '/month' },
+  { service: 'Social Media Management', from: 100000, unit: '/month' },
+  { service: 'Branding Package', from: 120000, unit: '' },
+  { service: 'IT Consulting', from: 25000, unit: '/hour' },
+  { service: 'Network Setup', from: 100000, unit: '' },
+  { service: 'Technical Support', from: 20000, unit: '' },
+];
+---
+<Base
+  title="Services"
+  description="Software development, website design, e-commerce, digital marketing, IT consulting, and networking for businesses across Nigeria. Transparent starting prices."
+  path="/services"
+>
+  <Section register="dark" class="ra-backdrop-glow">
+    <p class="ra-eyebrow">What we do</p>
+    <h1 class="ra-display">Technology services built around your business goals.</h1>
+    <p class="ra-lede">
+      From a first website to custom software and ongoing marketing — delivered by a
+      CAC-registered team in Abuja, with pricing stated up front.
+    </p>
+  </Section>
+
+  <Section class="ra-backdrop-hex">
+    {byTier.map((tier) => (
+      <div class="tier">
+        <div class="tier__head">
+          <p class="tier__label ra-numeric">Tier {tier.n}</p>
+          <h2 class="tier__name">{tier.name}</h2>
+          <p class="tier__blurb">{tier.blurb}</p>
+        </div>
+        <ul class="ra-cards ra-cards--three" role="list">
+          {tier.services.map((service) => (
+            <li class="ra-card">
+              <ServiceGlyph name={service.id} class="card__glyph" />
+              <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
+              <p>{service.data.summary}</p>
+              {service.data.startingFrom && (
+                <p class="ra-card__price ra-numeric">
+                  From {formatNaira(service.data.startingFrom)}
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </Section>
+
+  <Section>
+    <h2 id="pricing">Pricing</h2>
+    <p class="ra-measure">
+      Indicative starting prices. Final cost depends on scope — tell us what you need
+      and we will quote precisely.
+    </p>
+    {/*
+      * The table scrolls sideways on narrow screens, and a scrollable region
+      * has to be focusable or a keyboard user can never reach the second
+      * column. role+label stop it being an anonymous tab stop.
+      */}
+    <div class="table-wrap" role="region" aria-labelledby="pricing" tabindex="0">
+      <table aria-labelledby="pricing">
+        <caption class="ra-visually-hidden">Service pricing, starting from</caption>
+        <thead>
+          <tr><th scope="col">Service</th><th scope="col">Starting from</th></tr>
+        </thead>
+        <tbody>
+          {pricing.map(({ service, from, unit }) => (
+            <tr>
+              <th scope="row">{service}</th>
+              <td class="ra-numeric">{formatNaira(from)}{unit}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </Section>
+
+  <Section register="dark" class="ra-backdrop-nodes">
+    <h2 class="ra-display">Ready to grow your business?</h2>
+    <p class="ra-lede">
+      Tell us what you are trying to achieve and we will tell you what it takes.
+    </p>
+    <Button href="/start-project" variant="gold">Start Your Project</Button>
+  </Section>
+</Base>
+
+<style>
+  /*
+   * Tiers are separated by a full-width rule above each subsequent one — a
+   * section break, which is what this actually is. The gold-ink "Tier n" label
+   * below already carries the accent, so a coloured bar as well would be two
+   * markers doing one job.
+   */
+  .tier + .tier {
+    margin-top: var(--ra-space-3xl);
+    padding-top: var(--ra-space-3xl);
+    border-top: 1px solid var(--ra-border);
+  }
+
+  .tier__head { max-width: 60ch; }
+  /* Gold at text weight on the light register needs the darker ink. */
+  .tier__label {
+    color: var(--ra-gold-ink);
+    font-size: var(--ra-step--1);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tier__name { font-size: var(--ra-step-3); margin-top: var(--ra-space-2xs); }
+  .tier__blurb { color: var(--ra-fg-muted); margin-top: var(--ra-space-xs); }
+
+  .table-wrap { overflow-x: auto; margin-top: var(--ra-space-l); }
+  table { width: 100%; border-collapse: collapse; min-width: 380px; }
+  caption { text-align: left; }
+  th, td {
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border-bottom: 1px solid var(--ra-border);
+    text-align: left;
+  }
+  thead th {
+    font-size: var(--ra-step--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ra-fg-muted);
+  }
+  tbody th { font-weight: 600; }
+  td { text-align: right; font-weight: 600; color: var(--ra-navy-600); }
+</style>

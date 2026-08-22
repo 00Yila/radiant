@@ -1,0 +1,67 @@
+---
+import { SITE } from '../lib/site';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+}
+const { title, description, path, type = 'website', noindex = false } = Astro.props;
+
+/*
+ * Pages build to directories (/about/index.html), and the sitemap lists them
+ * with a trailing slash. A canonical without one disagreed with the sitemap on
+ * every page but the home page — two different preferred URLs for the same
+ * document, which is exactly the signal canonical exists to prevent.
+ */
+const canonicalPath = path.endsWith('/') ? path : `${path}/`;
+const canonical = new URL(canonicalPath, SITE.domain).href;
+
+/*
+ * twitter:card was already summary_large_image, but no image was ever
+ * declared — so every shared link rendered as a blank card. Must be an
+ * absolute URL: relative paths are silently dropped by the scrapers.
+ */
+const ogImage = new URL('/images/og-default.png', SITE.domain).href;
+const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
+const fullTitle = path === '/' ? title : `${title} | ${SITE.name}`;
+
+const organisation = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE.legalName,
+  alternateName: SITE.name,
+  url: SITE.domain,
+  email: SITE.email,
+  telephone: SITE.phoneE164,
+  foundingDate: SITE.founded,
+  identifier: { '@type': 'PropertyValue', name: 'RC Number', value: SITE.rcNumber },
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: SITE.addressLocality,
+    addressRegion: SITE.addressRegion,
+    addressCountry: SITE.addressCountry,
+  },
+};
+---
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonical} />
+<meta property="og:site_name" content={SITE.legalName} />
+<meta property="og:locale" content="en_NG" />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={ogImageAlt} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content={ogImage} />
+
+<script type="application/ld+json" set:html={JSON.stringify(organisation)} />

@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import { SITE } from '../lib/site';
+---
+<Base
+  title="Privacy Policy"
+  description="How Radiant Alpha Digital Services collects, uses, and protects the personal information you provide through our website and contact channels."
+  path="/privacy"
+>
+  <Section register="dark">
+    <h1 class="ra-display">Privacy Policy</h1>
+    <p class="ra-lede lede--tight">How we handle the information you give us.</p>
+  </Section>
+
+  <Section>
+    <div class="ra-measure ra-prose">
+      <h2>What we collect</h2>
+      <p>
+        When you use our contact form we collect your name, email address, an optional
+        phone number, and the message you write. When you contact us on WhatsApp we
+        receive your phone number and the messages you send.
+      </p>
+
+      <h2>What we use it for</h2>
+      <p>
+        We use your information solely to respond to your enquiry, to fulfil and support
+        an order you place, and to keep a record of our correspondence with you. We do
+        not use it for anything else.
+      </p>
+
+      <h2>What we do not do</h2>
+      <ul>
+        <li>We do not sell, rent, or trade your personal information</li>
+        <li>We do not share it with third parties for marketing</li>
+        <li>We do not send marketing messages you did not ask for</li>
+        <li>We do not use advertising or tracking cookies on this site</li>
+      </ul>
+
+      <h2>Service providers</h2>
+      <p>
+        Our website is hosted by Netlify, and form submissions are processed through
+        Netlify Forms. WhatsApp messages are handled by WhatsApp. Each of these providers
+        processes data under its own privacy policy.
+      </p>
+
+      <h2>How long we keep it</h2>
+      <p>
+        Enquiry records are kept for as long as needed to respond to you and maintain a
+        reasonable business record. Order records are kept for as long as required for
+        warranty, accounting, and tax purposes.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>
+        Under the Nigeria Data Protection Act, you may request a copy of the personal
+        information we hold about you, ask us to correct it, or ask us to delete it. Email
+        <a href={`mailto:${SITE.email}`}>{SITE.email}</a> and we will respond within 30
+        days.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about this policy: <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        or {SITE.phoneDisplay}. {SITE.legalName}, RC {SITE.rcNumber}, {SITE.location}.
+      </p>
+    </div>
+  </Section>
+</Base>
+
+<style>
+  .lede--tight { margin-block: var(--ra-space-m) 0; }
+</style>

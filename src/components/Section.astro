@@ -1,0 +1,44 @@
+---
+interface Props {
+  register?: 'light' | 'dark';
+  as?: 'section' | 'div' | 'header' | 'footer';
+  class?: string;
+  [key: string]: unknown;
+}
+/*
+ * Anything else — id, data-*, hidden, aria-* — is forwarded to the band. Without
+ * this those attributes are silently dropped, which is a quiet way to lose an
+ * id a script depends on: the page still builds and the selector just never
+ * matches.
+ */
+const {
+  register = 'light',
+  as: Tag = 'section',
+  class: className = '',
+  ...rest
+} = Astro.props;
+---
+<Tag class:list={['ra-section', register === 'dark' && 'ra-dark', className]} {...rest}>
+  <div class="ra-container">
+    <slot />
+  </div>
+</Tag>
+
+<style>
+  /*
+   * Band padding is a custom property rather than a fixed value so a page can
+   * override it. A page's own `.hero`-style class lands on this element via the
+   * `class` prop and so never carries that page's scope hash — a scoped rule
+   * there matches nothing, and a :global one loses to this rule's specificity.
+   * Setting the variable sidesteps both problems.
+   */
+  .ra-section {
+    --_pad: var(--ra-section-pad, var(--ra-space-3xl));
+    background: var(--ra-bg);
+    color: var(--ra-fg);
+    padding-block: var(--_pad);
+  }
+  @media (max-width: 640px) {
+    .ra-section { --_pad: var(--ra-section-pad-sm, var(--ra-space-2xl)); }
+  }
+</style>

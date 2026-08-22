@@ -1,0 +1,78 @@
+# Apache configuration for Hostinger shared hosting.
+#
+# netlify.toml does nothing here — it is read by Netlify's build system, not by
+# a web server. This file carries the same headers and caching to Apache, and
+# is copied verbatim into dist/ because everything in public/ is.
+#
+# If you later deploy to Netlify instead, this file is inert there. Keeping
+# both costs nothing and means either host works.
+
+# ---------------------------------------------------------------- HTTPS
+# Hostinger issues a free Let's Encrypt certificate. Force it once installed;
+# comment this block out if you are testing before the certificate is live.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ------------------------------------------------------------- Error page
+# Astro builds 404.html; without this Apache serves its own grey default.
+ErrorDocument 404 /404.html
+
+# --------------------------------------------------------------- Headers
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # No third-party scripts, so none of these are needed by the site itself.
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+
+  # Content-hashed filenames: safe to cache forever.
+  <FilesMatch "\.(woff2|woff|ttf|otf)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # HTML must revalidate or a deploy will not reach people who have visited.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css                  "access plus 1 year"
+  ExpiresByType application/javascript    "access plus 1 year"
+  ExpiresByType image/webp                "access plus 1 year"
+  ExpiresByType image/jpeg                "access plus 1 year"
+  ExpiresByType image/png                 "access plus 1 year"
+  ExpiresByType image/svg+xml             "access plus 1 year"
+  ExpiresByType font/woff2                "access plus 1 year"
+  ExpiresByType text/html                 "access plus 0 seconds"
+</IfModule>
+
+# ----------------------------------------------------------- Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml \
+    application/javascript application/json image/svg+xml
+</IfModule>
+
+# ------------------------------------------------------------- Hardening
+# Directory listings off, and the dotfiles a static host has no business serving.
+Options -Indexes
+<FilesMatch "^\.(?!well-known)">
+  Require all denied
+</FilesMatch>
+
+# Fallback deny for the secrets file, only relevant if config.php had to fall
+# back to public/config/radiant-alpha.php because the hosting account
+# restricts file access to inside public_html — see that file's docblock.
+# The .example file (no real secrets) is intentionally left servable.
+<FilesMatch "^radiant-alpha\.php$">
+  Require all denied
+</FilesMatch>
+
+# public/_lib/ holds PHP includes, never a page in its own right — nothing
+# should ever request them directly.
+<IfModule mod_alias.c>
+  RedirectMatch 404 ^/_lib/
+</IfModule>

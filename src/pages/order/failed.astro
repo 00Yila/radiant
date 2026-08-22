@@ -1,0 +1,30 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import { buildWhatsAppUrl } from '../../lib/whatsapp';
+
+const waUrl = buildWhatsAppUrl({
+  message: "Hi Radiant Alpha, my payment didn't go through — can you help?",
+});
+---
+<Base
+  title="Payment did not complete"
+  description="Your payment did not go through. No charge should have been made — message us if anything looks wrong."
+  path="/order/failed"
+  noindex
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Payment not completed</p>
+    <h1 class="ra-display">That payment didn&rsquo;t go through.</h1>
+    <p class="ra-lede">
+      Nothing was charged. This usually means the payment was cancelled or declined on
+      Paystack&rsquo;s page — you can try again from the product page, or message us if
+      you&rsquo;d rather sort it out directly.
+    </p>
+    <div class="ra-actions">
+      <Button href="/shop" variant="gold">Back to the shop</Button>
+      <Button href={waUrl} variant="secondary" external>Message us on WhatsApp</Button>
+    </div>
+  </Section>
+</Base>

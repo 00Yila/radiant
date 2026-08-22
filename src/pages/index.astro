@@ -1,0 +1,429 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Button from '../components/Button.astro';
+import ServiceGlyph from '../components/ServiceGlyph.astro';
+import HeroFigure from '../components/HeroFigure.astro';
+import PostCard from '../components/PostCard.astro';
+import { formatNaira } from '../lib/format';
+import { getPublishedPosts } from '../lib/posts';
+import { SITE } from '../lib/site';
+
+/* Newest three; the section hides itself entirely when there are none. */
+const latestPosts = (await getPublishedPosts()).slice(0, 3);
+
+const leadServices = (await getCollection('services'))
+  .filter((s) => s.data.lead)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const reasons = [
+  { title: 'Registered & Trusted', body: `Fully incorporated with the Corporate Affairs Commission — RC ${SITE.rcNumber}.` },
+  { title: 'Tailored Solutions', body: 'Every project is designed around your specific business goals, not a template.' },
+  { title: 'End-to-End Services', body: 'From strategy and development through deployment and ongoing support.' },
+  { title: 'Affordable Excellence', body: 'Professional work at prices that make sense for growing businesses.' },
+  { title: 'Future-Focused', body: 'Modern technology chosen for scalability, security, and performance.' },
+  { title: 'Dedicated Support', body: 'Long-term relationships built on dependable service, not one-off jobs.' },
+];
+
+/*
+ * Every figure here is verifiable: the CAC registration, the trading location,
+ * and the two timeframes published on /returns. No client counts or awards —
+ * we have neither yet, and inventing them is the one thing that would cost us
+ * the trust the rest of this page is trying to earn.
+ */
+const credentials = [
+  { figure: `RC ${SITE.rcNumber}`, label: 'Registered with the CAC' },
+  { figure: 'Abuja, FCT', label: 'Serving all of Nigeria' },
+  { figure: SITE.preOrderLeadTime, label: 'Typical pre-order delivery' },
+  { figure: '14 days', label: 'Defect warranty on hardware' },
+];
+
+/*
+ * The four questions that otherwise arrive by WhatsApp before anyone is ready
+ * to enquire. Answering them here removes the reason to hesitate, and gives
+ * the page FAQPage structured data.
+ */
+const faqs = [
+  {
+    question: 'How much does a website cost?',
+    answer:
+      'A business website starts at ₦150,000 and an online store at ₦300,000. Custom web applications start at ₦500,000. The final figure depends on how many pages you need, whether you want to edit the content yourself, and what has to connect to it. Every quote is itemised before you commit — see the full price list on our services page.',
+  },
+  {
+    question: 'How long does a project take?',
+    answer:
+      'A straightforward business website is usually two to three weeks from the point we have your content. Online stores and custom software take longer and we scope them individually. We give you a date in writing before starting, and tell you early if anything threatens it.',
+  },
+  {
+    question: 'Do you maintain the site after launch?',
+    answer:
+      'Yes. Maintenance covers updates, backups, security patches, and small content changes, from ₦30,000 a month. It is optional — you are not locked in, and we will hand over everything you need to host it elsewhere if you would rather.',
+  },
+  {
+    question: 'Can you help my business rank on Google?',
+    answer:
+      'Every site we build is technically sound for search: fast, mobile-first, with proper page titles and structured data. Ongoing SEO work — content, local listings, and link building — is a separate service from ₦80,000 a month. We will not promise a number-one position, because nobody can honestly do that.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+
+const expectations = [
+  'Professional service, quality solutions, and a team that truly understands business needs.',
+  'Reliable technology partner committed to delivering measurable results.',
+  'Excellent communication, timely delivery, and outstanding customer support.',
+];
+---
+<Base
+  title="Radiant Alpha Digital Services — Web Development & Digital Marketing in Abuja"
+  description="CAC-registered Nigerian technology company building websites, custom software, e-commerce, and digital marketing for businesses. Based in Abuja, serving all of Nigeria."
+  path="/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+
+  <Section register="dark" class="hero ra-backdrop-glow">
+    <HeroFigure />
+    <p class="ra-eyebrow">Digital services · Abuja, Nigeria</p>
+    <h1 class="ra-display hero__title">{SITE.tagline}</h1>
+    <p class="ra-lede">
+      We help businesses establish a powerful digital presence through professional web
+      development, custom software, digital marketing, IT consulting, and quality
+      technology products.
+    </p>
+    <div class="ra-actions">
+      <Button href="/start-project" variant="gold">Start Your Project</Button>
+      <Button href="/services" variant="secondary">Explore Our Services</Button>
+    </div>
+    <p class="hero__trust">{SITE.trustLine}</p>
+  </Section>
+
+  {/*
+    * A credentials strip, not a stats strip. Competitors put "500+ clients"
+    * here; we are a new company, so every figure below is one we can evidence
+    * — the registration, the location, and the two commitments we publish.
+    */}
+  <Section class="creds">
+    <ul class="creds__list" role="list">
+      {credentials.map(({ figure, label }) => (
+        <li>
+          <p class="creds__figure ra-numeric">{figure}</p>
+          <p class="creds__label">{label}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section class="ra-backdrop-hex">
+    <h2>What we do</h2>
+    <p class="ra-measure ra-sub">
+      Four core services, plus IT consulting, networking, and technology products.
+    </p>
+    <ul class="ra-cards" role="list">
+      {leadServices.map((service) => (
+        <li class="ra-card">
+          <ServiceGlyph name={service.id} class="card__glyph" />
+          <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
+          <p>{service.data.summary}</p>
+          {service.data.startingFrom && (
+            <p class="ra-card__price ra-numeric">From {formatNaira(service.data.startingFrom)}</p>
+          )}
+        </li>
+      ))}
+    </ul>
+    <p class="more"><a href="/services">See all services and pricing →</a></p>
+  </Section>
+
+  <Section register="dark">
+    <h2 class="ra-display">Why choose Radiant Alpha?</h2>
+    <ul class="reasons" role="list">
+      {reasons.map(({ title, body }) => (
+        <li>
+          <h3>{title}</h3>
+          <p>{body}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section class="products">
+    <div class="products__grid">
+      <div>
+        <h2>Technology products, described honestly</h2>
+        <p class="ra-sub">
+          Smartphones, laptops, and accessories on pre-order. Every listing states
+          condition, network lock, SIM type, battery health, and warranty before you
+          order — allow {SITE.preOrderLeadTime} for delivery from confirmation.
+        </p>
+        <p class="shop-cta"><Button href="/shop">Browse the Shop</Button></p>
+      </div>
+      {/* Dimensions are on the tag so the grid does not reflow as it loads. */}
+      <picture class="products__shot">
+        <source
+          type="image/webp"
+          srcset="/images/photos/products-iphone-640.webp 640w, /images/photos/products-iphone-1280.webp 1280w"
+          sizes="(min-width: 900px) 46vw, 100vw"
+        />
+        <img
+          src="/images/photos/products-iphone-640.jpg"
+          srcset="/images/photos/products-iphone-640.jpg 640w, /images/photos/products-iphone-1280.jpg 1280w"
+          sizes="(min-width: 900px) 46vw, 100vw"
+          width="640"
+          height="480"
+          loading="lazy"
+          decoding="async"
+          alt="The rear camera array of a modern smartphone, lit against a dark background."
+        />
+      </picture>
+    </div>
+  </Section>
+
+  <Section>
+    <h2>What you can expect</h2>
+    <p class="ra-measure ra-sub">
+      We are a new company and have not yet collected client reviews. These are
+      illustrative of the service we commit to — not quotes from real customers. We will
+      replace them with genuine reviews as soon as we have them.
+    </p>
+    {/*
+      * Not <blockquote>: nobody said these. The paragraph above states they are
+      * commitments rather than customer quotes, so marking them up as
+      * quotations would have screen readers announce a source that
+      * does not exist.
+      */}
+    <ul class="commitments" role="list">
+      {expectations.map((commitment) => (
+        <li><p>{commitment}</p></li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section>
+    <h2>Frequently asked questions</h2>
+    <p class="ra-measure ra-sub">
+      The four we are asked most. If yours is not here,
+      {' '}<a href="/contact">ask us directly</a> — we answer plainly.
+    </p>
+    {/* <details> gives a real accordion with no JavaScript and no ARIA to get wrong. */}
+    <div class="faqs">
+      {faqs.map(({ question, answer }) => (
+        <details class="faq">
+          <summary>
+            <span class="faq__q">{question}</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          <p class="faq__a">{answer}</p>
+        </details>
+      ))}
+    </div>
+  </Section>
+
+  {latestPosts.length > 0 && (
+    <Section class="insights">
+      <div class="insights__head">
+        <div>
+          <h2>Latest writing</h2>
+          <p class="ra-sub">
+            What things cost, how long they take, and what is worth paying for.
+          </p>
+        </div>
+        <a class="insights__all" href="/blog">All articles &rarr;</a>
+      </div>
+      <ul class="ra-cards ra-cards--three" role="list">
+        {latestPosts.map((post) => <PostCard post={post} />)}
+      </ul>
+    </Section>
+  )}
+
+  <Section register="dark" class="ra-backdrop-nodes">
+    <h2 class="ra-display">Ready to grow your business?</h2>
+    <p class="ra-lede">
+      Whether you need a professional website, custom software, digital marketing, IT
+      consulting, or quality technology products — let's build something remarkable together.
+    </p>
+    <Button href="/contact" variant="gold">Get in Touch</Button>
+  </Section>
+</Base>
+
+<style>
+  /*
+   * `hero` and `creds` are handed to <Section> as props, so they land on that
+   * component's root element and never receive this file's scope hash. Scoped
+   * selectors silently match nothing — these have to be :global to apply.
+   */
+  :global(.hero) {
+    --ra-section-pad: clamp(4.5rem, 15vh, 10rem);
+    position: relative;
+    overflow: hidden;
+  }
+  /* Copy rides above the decorative figure, which stays on the base layer. */
+  :global(.hero .ra-container > *:not(.figure)) {
+    position: relative;
+    z-index: 1;
+  }
+  :global(.hero .figure) { z-index: 0; }
+  /*
+   * The home headline is the one place the type should be genuinely large —
+   * a step above the global h1, tighter, and held to a narrow measure so it
+   * breaks into three stacked lines rather than running wide.
+   */
+  .hero__title {
+    max-width: 15ch;
+    font-size: clamp(2.75rem, 1.6rem + 5.2vw, 5.5rem);
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+  }
+  .hero__trust {
+    margin-top: var(--ra-space-2xl);
+    padding-top: var(--ra-space-l);
+    border-top: 1px solid var(--ra-rule);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+
+  /* Credentials strip — sits tight under the hero, so it loses the usual band padding. */
+  :global(.creds) {
+    --ra-section-pad: var(--ra-space-xl);
+    --ra-section-pad-sm: var(--ra-space-l);
+  }
+  .creds__list {
+    display: grid;
+    gap: var(--ra-space-l);
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 800px) { .creds__list { grid-template-columns: repeat(4, 1fr); } }
+  /*
+   * Column rules between the facts, not an accent bar on each — these are one
+   * row of related figures, and the gold-ink numerals already carry the brand
+   * colour. Applied only at the four-across breakpoint, where every item really
+   * is on one row; at two-across a left rule would fall mid-row.
+   */
+  @media (min-width: 800px) {
+    .creds__list li + li {
+      padding-left: var(--ra-space-l);
+      border-left: 1px solid var(--ra-border);
+    }
+  }
+  .creds__figure {
+    font-size: var(--ra-step-2);
+    font-weight: 700;
+    color: var(--ra-gold-ink);
+    line-height: 1.1;
+  }
+  .creds__label {
+    margin-top: var(--ra-space-2xs);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+
+  .faqs {
+    max-width: 78ch;
+    margin-top: var(--ra-space-xl);
+    border-top: 1px solid var(--ra-border);
+  }
+  .faq { border-bottom: 1px solid var(--ra-border); }
+  .faq summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ra-space-m);
+    min-height: var(--ra-tap-min);
+    padding-block: var(--ra-space-m);
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq__q { font-weight: 600; color: var(--ra-navy-600); }
+  .faq[open] .faq__q { color: var(--ra-gold-ink); }
+
+  /* Plus sign that becomes a minus — two rules, no icon font. */
+  .faq__icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+  }
+  .faq__icon::before,
+  .faq__icon::after {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto 0;
+    height: 2px;
+    background: var(--ra-gold-ink);
+    transition: transform 180ms ease;
+  }
+  .faq__icon::after { transform: rotate(90deg); }
+  .faq[open] .faq__icon::after { transform: rotate(0deg); }
+
+  .faq__a {
+    padding-bottom: var(--ra-space-l);
+    color: var(--ra-fg-muted);
+    max-width: 68ch;
+  }
+
+  .more { margin-top: var(--ra-space-l); font-weight: 600; }
+  .shop-cta { margin-top: var(--ra-space-l); }
+
+  .insights__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ra-space-m);
+    align-items: end;
+    justify-content: space-between;
+  }
+  .insights__all { font-weight: 600; white-space: nowrap; }
+
+  .products__grid { display: grid; gap: var(--ra-space-xl); align-items: center; }
+  @media (min-width: 900px) {
+    .products__grid { grid-template-columns: 1fr 1fr; gap: var(--ra-space-2xl); }
+  }
+  .products__shot {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--ra-radius-l);
+    /* The photo is dark on dark; a hairline keeps its edge legible on canvas. */
+    box-shadow: 0 0 0 1px var(--ra-border), var(--ra-shadow-m);
+  }
+  .products__shot img { width: 100%; height: auto; }
+
+  .reasons {
+    display: grid;
+    gap: var(--ra-space-l);
+    margin-top: var(--ra-space-xl);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 700px) { .reasons { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1000px) { .reasons { grid-template-columns: repeat(3, 1fr); } }
+  .reasons h3 { font-size: var(--ra-step-1); color: var(--ra-gold-500); }
+  .reasons p { margin-top: var(--ra-space-2xs); color: var(--ra-fg-muted); }
+
+  .commitments {
+    display: grid;
+    gap: var(--ra-space-l);
+    margin-top: var(--ra-space-xl);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 800px) { .commitments { grid-template-columns: repeat(3, 1fr); } }
+  /*
+   * Deliberately quiet. Italic, a tinted panel and a gold accent together read
+   * as a testimonial card, which would visually assert the social proof the
+   * copy directly above is at pains to disclaim.
+   */
+  .commitments li {
+    height: 100%;
+    padding: var(--ra-space-l);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-navy-50);
+    color: var(--ra-fg-muted);
+  }
+</style>

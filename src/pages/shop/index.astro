@@ -1,0 +1,440 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import ProductTile from '../../components/ProductTile.astro';
+import { formatNaira } from '../../lib/format';
+import { buildWhatsAppUrl } from '../../lib/whatsapp';
+import { CATEGORY_LABELS, sortProducts } from '../../lib/catalogue';
+
+const shop = (await getEntry('settings', 'site'))!.data;
+const products = (await getCollection('products')).map((p) => p.data);
+
+const all = sortProducts(products);
+
+/* Only offer a chip for a category that has stock. */
+const categories = (Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>)
+  .filter((key) => products.some((p) => p.category === key))
+  .map((key) => ({ key, ...CATEGORY_LABELS[key] }));
+
+/*
+ * Usability feedback caught the hero and meta description naming categories
+ * — "laptops, power banks... solar hardware" — that had zero listings. The
+ * fix is to derive both the "what we sell" and "what we don't yet" copy from
+ * the catalogue itself, so a line that is true today stays true the day a
+ * laptop actually gets added, with no page edit required.
+ */
+const notYetStocked = (Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>)
+  .filter((key) => !categories.some((c) => c.key === key))
+  .map((key) => CATEGORY_LABELS[key].label);
+
+/** "Phones", "Phones and laptops", "Phones, laptops and power banks" — no Oxford comma, matching house style. */
+function naturalList(items: string[]): string {
+  if (items.length === 0) return '';
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
+const stockedList = naturalList(categories.map((c) => c.label));
+const pluralise = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+const listingCount = products.reduce((n, p) => n + p.variants.length, 0);
+const cheapest = Math.min(...products.flatMap((p) => p.variants.map((v) => v.price)));
+
+const PAGE_SIZES = [5, 10, 15] as const;
+const DEFAULT_PAGE_SIZE = 10;
+
+/*
+ * A hardcoded "iPhone 13, 256GB, keyboard…" placeholder returned zero results
+ * once "keyboard" was typed, because the catalogue is phones-only today —
+ * the first thing a first-time visitor tried looked like a broken search.
+ * Building the example from the actual top listing keeps it truthful no
+ * matter what the catalogue holds.
+ */
+const searchExample = all[0]
+  ? `${all[0].model}, ${all[0].variants[0].label}…`
+  : 'a model or storage size…';
+
+const waUrl = buildWhatsAppUrl({
+  message: "Hi Radiant Alpha, I'd like to ask about something in your shop.",
+});
+---
+<Base
+  title="Shop"
+  description={`${stockedList} on pre-order from Radiant Alpha, from ${formatNaira(cheapest)}. Condition stated on every listing, exact unit confirmed in writing before dispatch.`}
+  path="/shop"
+>
+  <Section register="dark" class="ra-backdrop-photo shop-hero">
+    <picture class="ra-backdrop__img">
+      <source
+        type="image/webp"
+        srcset="/images/photos/products-iphone-640.webp 640w, /images/photos/products-iphone-1280.webp 1280w"
+        sizes="100vw"
+      />
+      <img src="/images/photos/products-iphone-1280.jpg" width="1280" height="960" decoding="async" alt="" />
+    </picture>
+    <p class="ra-eyebrow">Shop · pre-order</p>
+    <h1 class="ra-display">Technology, described honestly.</h1>
+    <p class="ra-lede">
+      {stockedList} today — {pluralise(products.length, 'model')}, {listingCount} sizes to
+      choose from between them. Nothing sits in a warehouse: we order each one in for you,
+      and it reaches you about {shop.preOrderLeadTime} after we confirm your order. Every
+      listing says plainly what condition it is in — not after the box is open.
+    </p>
+  </Section>
+
+  <Section class="terms">
+    <ul class="terms__list" role="list">
+      <li>
+        <p class="terms__k">{shop.preOrderLeadTime}</p>
+        <p class="terms__v">From order confirmation to delivery</p>
+      </li>
+      <li>
+        {/* Matches the remedy on the returns page exactly — "arrange a
+            replacement or a full refund" — rather than naming the window
+            with no outcome attached. */}
+        <p class="terms__k">{shop.inspectionWindowHours} hours</p>
+        <p class="terms__v">To report damage — we replace it or refund you in full</p>
+      </li>
+      <li>
+        <p class="terms__k">{shop.warrantyDays} days</p>
+        <p class="terms__v">If a fault appears, we repair or replace it</p>
+      </li>
+      <li>
+        <p class="terms__k">No surprises</p>
+        <p class="terms__v">We tell you the condition, and what the warranty does not cover</p>
+      </li>
+    </ul>
+
+    {!shop.conditionConfirmed && (
+      <p class="terms__pending">
+        {/*
+          * Rewritten against real usability feedback: "whether the model can
+          * be new" read as a riddle, "grade" was undefined, and "specific
+          * unit" read as warehouse language. Rewritten again for instant
+          * checkout: payment now comes before the exact-unit confirmation,
+          * not after, so the guarantee that covers the gap has to be named
+          * here rather than the old "before you pay" promise. The grading
+          * vocabulary below is the site's own — see the design spec — not
+          * invented for this paragraph.
+          */}
+        <strong>About condition:</strong> older models are no longer made, so nobody can
+        sell them brand new — every listing says plainly whether it is used, refurbished,
+        or new. Once you pay, we confirm the exact condition of your actual phone in
+        writing — graded New, Grade A (excellent, minimal wear) or Grade B (light wear,
+        fully working) — along with its battery health and SIM type, before we ship it.
+        If it isn&rsquo;t as described, our {shop.inspectionWindowHours}-hour inspection
+        window covers a full refund or replacement.
+      </p>
+    )}
+  </Section>
+
+  {/*
+    * Filter bar and pagination both ship hidden and are revealed by the
+    * script, so without JavaScript a visitor gets the complete catalogue
+    * rather than controls that do nothing.
+    */}
+  <Section class="browse">
+    <div class="grp__head">
+      <h2 id="everything">All products</h2>
+      <p class="grp__count ra-numeric" id="result-count">{pluralise(all.length, 'product')}</p>
+    </div>
+
+    <form id="shop-filter" class="filter" hidden>
+      <div class="filter__row">
+        <div class="filter__search">
+          <label for="q">Search</label>
+          <input id="q" type="search" name="q" placeholder={searchExample} autocomplete="off" />
+        </div>
+
+        <div class="filter__size">
+          <label for="per-load">How many to show</label>
+          <select id="per-load" name="per-load">
+            {PAGE_SIZES.map((n) => (
+              <option value={n} selected={n === DEFAULT_PAGE_SIZE}>{n}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <fieldset class="filter__cats">
+        <legend>Category</legend>
+        <button type="button" class="chip is-on" data-cat="">All</button>
+        {categories.map((c) => (
+          <button type="button" class="chip" data-cat={c.key}>{c.short}</button>
+        ))}
+      </fieldset>
+    </form>
+
+    <ul class="grid" id="catalogue" role="list" aria-labelledby="everything">
+      {all.map((p, i) => <ProductTile product={p} eager={i < 4} />)}
+    </ul>
+
+    <div class="more" hidden>
+      <button type="button" id="show-more" class="ra-btn ra-btn--secondary">Show more</button>
+      <p class="more__status ra-numeric" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="noresults" id="no-results" hidden>
+      <h3>Nothing matches that.</h3>
+      <p class="ra-sub">
+        {/* "Clear the filters" pointed at a control that does not exist —
+            there is no Clear button, only the All chip. */}
+        Try fewer words, or press "All" above to see everything again. If we do
+        not have it listed, message us — we can usually still get it for you.
+      </p>
+      <p class="noresults__cta"><Button href={waUrl} external>Ask on WhatsApp</Button></p>
+    </div>
+  </Section>
+
+  {/*
+    * Was hardcoded — "Laptops, accessories, solar panels and batteries" —
+    * naming categories whether or not they had stock, and would have gone on
+    * claiming that after every category eventually got listed. Derived from
+    * the catalogue instead: renders only what genuinely is not yet stocked,
+    * and disappears entirely once nothing is left to ask about.
+    */}
+  {notYetStocked.length > 0 && (
+    <Section register="dark" class="ra-backdrop-nodes">
+      <h2 class="ra-display">Looking for something we don't list yet?</h2>
+      <p class="ra-lede">
+        We don't yet have {naturalList(notYetStocked).toLowerCase()} listed here, but we
+        can usually still get them for you. Tell us what you need on WhatsApp and we will
+        send you a price.
+      </p>
+      <Button href={waUrl} variant="gold" external>Ask on WhatsApp</Button>
+    </Section>
+  )}
+</Base>
+
+<script>
+  /*
+   * Search, category filter and "show more" all operate on markup that is
+   * already complete: every product is in the HTML, so search engines and
+   * no-JS visitors see the whole catalogue. Controls are revealed here so they
+   * only ever appear when they can actually work.
+   */
+  const form = document.getElementById('shop-filter') as HTMLFormElement | null;
+  const grid = document.getElementById('catalogue');
+
+  if (form && grid) {
+    const more = document.querySelector<HTMLElement>('.more')!;
+    form.hidden = false;
+    more.hidden = false;
+
+    const input = form.querySelector<HTMLInputElement>('#q')!;
+    const perLoad = form.querySelector<HTMLSelectElement>('#per-load')!;
+    const chips = [...form.querySelectorAll<HTMLButtonElement>('.chip')];
+    const button = document.getElementById('show-more') as HTMLButtonElement;
+    const status = more.querySelector<HTMLElement>('.more__status')!;
+    const resultCount = document.getElementById('result-count')!;
+    const empty = document.getElementById('no-results')!;
+    const tiles = [...grid.querySelectorAll<HTMLElement>('.tile')];
+
+    let category = '';
+    let step = Number(perLoad.value);
+    let limit = step;
+
+    const matches = () =>
+      tiles.filter((t) => {
+        const q = input.value.trim().toLowerCase();
+        const okCat = !category || t.dataset.category === category;
+        const okText = !q || (t.dataset.search ?? '').includes(q);
+        return okCat && okText;
+      });
+
+    // A search matching one phone rendered "1 products" — a small slip, but
+    // on a page whose whole pitch is careful precision, a grammar error is
+    // exactly the wrong place to make one.
+    const pluralise = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+    function render() {
+      const found = matches();
+
+      // Hide everything, then reveal only the current page of matches. Doing
+      // it in one pass keeps a tile from flickering visible between states.
+      for (const t of tiles) t.hidden = true;
+      for (const t of found.slice(0, limit)) t.hidden = false;
+
+      const shown = Math.min(limit, found.length);
+      resultCount.textContent = pluralise(found.length, 'product');
+      empty.hidden = found.length > 0;
+
+      const remaining = found.length - shown;
+      const exhausted = remaining <= 0;
+      button.hidden = exhausted;
+      // States how many the button actually loads, not just "more" — a
+      // button whose result is unknown is a button people hesitate to press,
+      // worse on a slow connection where every tap has a cost.
+      if (!exhausted) button.textContent = `Show ${pluralise(Math.min(step, remaining), 'more product')}`;
+      status.textContent = found.length ? `Showing ${shown} of ${found.length}` : '';
+      more.hidden = found.length === 0;
+    }
+
+    // Any change to the result set starts the page count over — otherwise a
+    // narrower search can leave you scrolled past the end of its own results.
+    const reset = () => {
+      limit = step;
+      render();
+    };
+
+    input.addEventListener('input', reset);
+
+    perLoad.addEventListener('change', () => {
+      step = Number(perLoad.value);
+      reset();
+    });
+
+    button.addEventListener('click', () => {
+      limit += step;
+      render();
+      // Move focus to the first newly revealed card so a keyboard user is not
+      // dropped back at the top of the list.
+      matches()[limit - step]?.querySelector('a')?.focus();
+    });
+
+    for (const chip of chips) {
+      chip.setAttribute('aria-pressed', String(chip.classList.contains('is-on')));
+      chip.addEventListener('click', () => {
+        category = chip.dataset.cat ?? '';
+        for (const c of chips) {
+          const on = c === chip;
+          c.classList.toggle('is-on', on);
+          c.setAttribute('aria-pressed', String(on));
+        }
+        reset();
+      });
+    }
+
+    form.addEventListener('submit', (e) => e.preventDefault());
+    render();
+  }
+</script>
+
+<style>
+  .terms__list {
+    display: grid;
+    gap: var(--ra-space-l);
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 640px) { .terms__list { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 960px) { .terms__list { grid-template-columns: repeat(4, 1fr); } }
+  .terms__k { font-weight: 700; font-size: var(--ra-step-1); color: var(--ra-gold-ink); }
+  .terms__v { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: 2px; }
+  /*
+   * Same device as .pdp__notice on the product page: tinted panel, full
+   * hairline in gold at low alpha. A thick rule down one edge reads as
+   * decoration bolted on; the ring lets the tint carry the signal.
+   */
+  .terms__pending {
+    margin-top: var(--ra-space-xl);
+    padding: var(--ra-space-m) var(--ra-space-l);
+    border: 1px solid rgb(239 180 46 / 0.4);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-navy-50);
+    max-width: 78ch;
+    font-size: var(--ra-step--1);
+  }
+  .terms__pending strong { color: var(--ra-gold-ink); }
+
+  .grp__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--ra-space-s) var(--ra-space-m);
+    justify-content: space-between;
+    padding-bottom: var(--ra-space-s);
+    border-bottom: 1px solid var(--ra-border);
+  }
+  .grp__head h2 { font-size: var(--ra-step-2); }
+  .grp__count { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
+
+  .browse { padding-top: var(--ra-space-xl); }
+
+  /* ---- filter bar ---- */
+  /* display:grid outranks the user agent's [hidden] { display: none }. */
+  .filter[hidden] { display: none; }
+  .filter {
+    display: grid;
+    gap: var(--ra-space-m);
+    margin-top: var(--ra-space-l);
+  }
+  .filter__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ra-space-m);
+    align-items: end;
+  }
+  .filter__search { display: grid; gap: var(--ra-space-2xs); flex: 1 1 18rem; }
+  .filter__size { display: grid; gap: var(--ra-space-2xs); }
+  .filter label { font-size: var(--ra-step--1); font-weight: 600; }
+  .filter input, .filter select {
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-surface);
+  }
+  .filter input:focus-visible, .filter select:focus-visible { border-color: var(--ra-navy-500); }
+
+  .filter__cats {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ra-space-xs);
+  }
+  .filter__cats legend {
+    font-size: var(--ra-step--1);
+    font-weight: 600;
+    margin-bottom: var(--ra-space-xs);
+  }
+  .chip {
+    min-height: var(--ra-tap-min);
+    padding-inline: var(--ra-space-m);
+    border: 0;
+    border-radius: var(--ra-radius-m);
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--ra-border);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  }
+  .chip:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow: inset 0 0 0 1.5px var(--ra-gold-500);
+  }
+  .chip.is-on {
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    box-shadow: inset 0 0 0 1.5px var(--ra-navy-600);
+  }
+
+  .grid {
+    display: grid;
+    gap: var(--ra-space-l);
+    margin-top: var(--ra-space-l);
+    padding: 0;
+    list-style: none;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  }
+
+  .more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--ra-space-s);
+    margin-top: var(--ra-space-xl);
+  }
+  .more[hidden] { display: none; }
+  .more__status { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
+
+  .noresults { margin-top: var(--ra-space-xl); max-width: 60ch; }
+  .noresults h3 { font-size: var(--ra-step-1); }
+  .noresults__cta { margin-top: var(--ra-space-l); }
+</style>

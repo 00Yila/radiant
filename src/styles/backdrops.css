@@ -1,0 +1,125 @@
+/*
+ * Section backdrops, built from the logo's own geometry rather than sourced:
+ * a hexagon lattice (the mark's right half) and a sun glow (its left half).
+ *
+ * All of it is inline SVG or gradients in CSS, so it costs no requests, scales
+ * to any viewport, and re-colours with the tokens. Every layer is decorative
+ * and sits behind content at low opacity — none of it may reduce text contrast,
+ * which is why the values here are as weak as they are.
+ *
+ * Applied with `.ra-backdrop-*` on a Section. Section sets position: relative
+ * only when a page asks it to, so these classes set it themselves.
+ */
+
+/* ------------------------------------------------------------------ *
+   Hex lattice — light register.
+   One tile of the honeycomb, repeated. The stroke is navy at 5%, which
+   at 1px reads as texture rather than pattern.
+ * ------------------------------------------------------------------ */
+.ra-backdrop-hex {
+  position: relative;
+  isolation: isolate;
+}
+.ra-backdrop-hex::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='96' viewBox='0 0 56 96'%3E%3Cg fill='none' stroke='%231D3E7C' stroke-opacity='0.07' stroke-width='1'%3E%3Cpath d='M28 0 L56 16 L56 48 L28 64 L0 48 L0 16 Z'/%3E%3Cpath d='M28 48 L56 64 L56 96 L28 112 L0 96 L0 64 Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 56px 96px;
+  /* Fades out downward so the pattern never fights the content below it. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 78%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 78%);
+}
+
+/* ------------------------------------------------------------------ *
+   Sun glow — dark register.
+   A single warm radial, offset right, echoing the mark's sunburst. Kept
+   under 0.1 alpha: anything stronger starts eating the headline contrast.
+ * ------------------------------------------------------------------ */
+.ra-backdrop-glow {
+  position: relative;
+  isolation: isolate;
+}
+.ra-backdrop-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(
+      44rem 30rem at 82% 42%,
+      rgb(239 180 46 / 0.10),
+      transparent 62%
+    ),
+    radial-gradient(
+      36rem 26rem at 8% 88%,
+      rgb(46 90 168 / 0.22),
+      transparent 60%
+    );
+}
+
+/* ------------------------------------------------------------------ *
+   Node constellation — dark register, for closing CTA bands.
+   Sparse dots on the same hex rhythm, suggesting the mark's node stalks.
+ * ------------------------------------------------------------------ */
+.ra-backdrop-nodes {
+  position: relative;
+  isolation: isolate;
+}
+.ra-backdrop-nodes::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%23EFB42E' fill-opacity='0.18'%3E%3Ccircle cx='20' cy='20' r='1.6'/%3E%3Ccircle cx='80' cy='44' r='1.2'/%3E%3Ccircle cx='44' cy='86' r='1.4'/%3E%3Ccircle cx='104' cy='100' r='1'/%3E%3C/g%3E%3Cg stroke='%235B84C4' stroke-opacity='0.14' stroke-width='1'%3E%3Cpath d='M20 20 L80 44'/%3E%3Cpath d='M80 44 L44 86'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  -webkit-mask-image: radial-gradient(70% 70% at 50% 50%, #000, transparent);
+  mask-image: radial-gradient(70% 70% at 50% 50%, #000, transparent);
+}
+
+/* ------------------------------------------------------------------ *
+   Photo band — a photograph behind a dark band.
+   The scrim is not optional: white text over an unmodified photograph is
+   the classic way a hero fails contrast on whichever frame is lightest.
+ * ------------------------------------------------------------------ */
+.ra-backdrop-photo {
+  position: relative;
+  isolation: isolate;
+}
+/*
+ * Descendant, not child: Section wraps its slot in .ra-container, so the
+ * <picture> is a grandchild of the band. As a child selector this matched
+ * nothing and the photograph laid out inline, at container width, unscrimmed.
+ */
+.ra-backdrop-photo .ra-backdrop__img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  display: block;
+}
+/* object-fit belongs on the <img>; on <picture> it does nothing. */
+.ra-backdrop-photo .ra-backdrop__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/*
+ * Scrim floor is 0.82 and must not go lower. Against a blown-out sky —
+ * rgb(245,248,252), which this photograph genuinely contains — gold-500 needs
+ * alpha 0.80 to clear 4.5:1 and navy-200 needs 0.72. A gentler gradient looks
+ * better and silently drops the gold eyebrow to 3.6:1, so the floor is
+ * asserted in tests/unit/contrast.test.ts.
+ */
+.ra-backdrop-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    100deg,
+    rgb(10 25 48 / 0.95) 0%,
+    rgb(10 25 48 / 0.90) 50%,
+    rgb(10 25 48 / 0.82) 100%
+  );
+}

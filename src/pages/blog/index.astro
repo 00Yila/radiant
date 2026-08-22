@@ -1,0 +1,48 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPublishedPosts } from '../../lib/posts';
+
+const posts = await getPublishedPosts();
+---
+<Base
+  title="Blog"
+  description="Practical writing on web development, pricing, SEO, and technology for Nigerian businesses — from a CAC-registered team in Abuja."
+  path="/blog"
+>
+  <Section register="dark" class="ra-backdrop-glow">
+    <p class="ra-eyebrow">Writing</p>
+    <h1 class="ra-display">Straight answers to the questions we get asked most.</h1>
+    <p class="ra-lede">
+      What things cost, how long they take, and what technology is worth paying for —
+      written for business owners rather than developers.
+    </p>
+  </Section>
+
+  <Section class="ra-backdrop-hex">
+    {posts.length > 0 ? (
+      <ul class="ra-cards ra-cards--three posts" role="list">
+        {posts.map((post) => <PostCard post={post} />)}
+      </ul>
+    ) : (
+      /* A designed empty state, per the spec — not a blank page. */
+      <div class="empty ra-measure">
+        <h2>Nothing published yet.</h2>
+        <p class="ra-sub">
+          We are writing the first few articles now. In the meantime, the questions we
+          get asked most are answered on the home page and on each service page.
+        </p>
+        <p class="empty__cta"><Button href="/services">Explore Our Services</Button></p>
+      </div>
+    )}
+  </Section>
+</Base>
+
+<style>
+  .posts { margin-top: 0; }
+  .empty { text-align: left; }
+  .empty h2 { font-size: var(--ra-step-2); }
+  .empty__cta { margin-top: var(--ra-space-l); }
+</style>

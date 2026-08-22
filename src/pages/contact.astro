@@ -1,0 +1,349 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import { buildWhatsAppUrl } from '../lib/whatsapp';
+import { SITE } from '../lib/site';
+import { SUBJECTS, SUBJECT_BY_SERVICE, MESSAGE_PROMPT } from '../lib/contact';
+
+const waUrl = buildWhatsAppUrl({
+  message: "Hi Radiant Alpha, I'd like to discuss a project.",
+});
+---
+<Base
+  title="Contact"
+  description="Get in touch with Radiant Alpha Digital Services. WhatsApp for the fastest response, or send us an email about your project. Based in Abuja, Nigeria."
+  path="/contact"
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Contact</p>
+    <h1 class="ra-display">Let&rsquo;s build something great together.</h1>
+    <p class="ra-lede lede--tight">
+      Whether you need a professional website, digital marketing, IT consulting, or
+      quality technology products, we&rsquo;re here to help.
+    </p>
+  </Section>
+
+  <Section>
+    <div class="layout">
+      <div>
+        <h2>Reach us directly</h2>
+        <p class="ra-sub">
+          For the fastest response, send us a message on WhatsApp. We&rsquo;re also available by
+          email for project enquiries and business partnerships.
+        </p>
+
+        <ul class="channels" role="list">
+          <li>
+            <span class="channels__label">WhatsApp — fastest</span>
+            <a href={waUrl} target="_blank" rel="noopener noreferrer">{SITE.phoneDisplay}</a>
+          </li>
+          <li>
+            <span class="channels__label">Phone</span>
+            <a href={`tel:${SITE.phoneE164}`}>{SITE.phoneDisplay}</a>
+          </li>
+          <li>
+            <span class="channels__label">Email</span>
+            <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+          </li>
+          <li>
+            <span class="channels__label">Alternative email</span>
+            <a href={`mailto:${SITE.emailSecondary}`}>{SITE.emailSecondary}</a>
+          </li>
+          <li>
+            <span class="channels__label">Location</span>
+            <span>{SITE.location}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Send a message</h2>
+        {/*
+          * This page is static, so Astro.url.searchParams is empty at build
+          * time — the ?error= that contact.php redirects back with can only be
+          * read in the browser. Both messages ship hidden and a few lines of
+          * inline script reveal the right one.
+          */}
+        <div id="form-error" class="alert" role="alert" hidden>
+          <p data-error="send" hidden>
+            Something went wrong sending that, and it did not reach us. Please try
+            again, or message us on WhatsApp so nothing is lost.
+          </p>
+          <p data-error="invalid" hidden>
+            Some details were missing or did not look right. Please check the form
+            and try again.
+          </p>
+        </div>
+
+        {/*
+          * Posts to a PHP handler on the host, not to Netlify Forms. The
+          * handler redirects to /contact/thanks/ only when the mail actually
+          * sent — a thank-you page shown for a message that vanished is worse
+          * than an error, because nobody learns the enquiry was lost.
+          */}
+        <form name="contact" method="POST" action="/contact.php" class="form">
+          <input type="hidden" name="form" value="contact" />
+          {/*
+            * The usability review's own note: four of five fields are
+            * compulsory and none said so. Marking only the exception
+            * ("optional") only reads as a rule once it is actually stated —
+            * this line is what makes the convention coherent.
+            */}
+          <p class="form-note">All fields are required unless marked optional.</p>
+
+          {/*
+            * tabindex="-1" already keeps this out of the Tab order for every
+            * input method, but a screen reader browsing the raw field list —
+            * rather than tabbing — still met a sixth field telling it to stay
+            * empty. aria-hidden removes it from that list too; bots reading
+            * raw HTML still see and fill it.
+            */}
+          <p class="ra-visually-hidden" aria-hidden="true">
+            <label for="bot-field">Leave this field empty</label>
+            <input id="bot-field" name="bot-field" tabindex="-1" autocomplete="off" />
+          </p>
+
+          <div class="field">
+            <label for="name">Your name</label>
+            <input id="name" name="name" type="text" required autocomplete="name" maxlength="120" />
+          </div>
+
+          <div class="field">
+            <label for="email">Email address</label>
+            {/*
+              * type="email" alone accepts "name@company" — no dot, no TLD —
+              * which the server's FILTER_VALIDATE_EMAIL then rejects. The
+              * pattern is deliberately loose, matching the server's leniency
+              * rather than tightening past it, so a real address is never
+              * refused here only to pass on the server.
+              */}
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+            />
+          </div>
+
+          <div class="field">
+            <label for="phone">Phone or WhatsApp <span class="optional">(optional)</span></label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40" />
+          </div>
+
+          <div class="field">
+            <label for="subject">What can we help with?</label>
+            <select id="subject" name="subject" required>
+              <option value="">Choose one…</option>
+              {SUBJECTS.map((s) => <option>{s}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="message">
+              Tell us about your project
+              <span class="field-hint" id="message-hint">(up to 5,000 characters)</span>
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              rows="5"
+              required
+              maxlength="5000"
+              aria-describedby="message-hint"
+            ></textarea>
+          </div>
+
+          <button type="submit" class="ra-btn ra-btn--primary">Send message</button>
+        </form>
+
+        <p class="fallback">
+          If the form doesn&rsquo;t work for any reason, message us on
+          <a href={waUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          or email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> instead.
+        </p>
+      </div>
+    </div>
+  </Section>
+</Base>
+
+<script
+  is:inline
+  type="application/json"
+  id="subject-map"
+  set:html={JSON.stringify({ subjects: SUBJECT_BY_SERVICE, prompts: MESSAGE_PROMPT })}
+/>
+
+<script>
+  import { enhanceFormValidation } from '../lib/client/form-validation';
+
+  // Reveals the banner contact.php redirected back for, then strips ?error=
+  // from the URL so a refresh does not resurrect a message already dealt with.
+  const code = new URLSearchParams(location.search).get('error');
+  if (code === 'send' || code === 'invalid') {
+    const box = document.getElementById('form-error');
+    const line = box?.querySelector(`[data-error="${code}"]`);
+    if (box && line) {
+      box.hidden = false;
+      (line as HTMLElement).hidden = false;
+      // scrollIntoView alone moves the viewport but not focus, so a keyboard
+      // or screen reader user could be left elsewhere on the page with no
+      // indication anything appeared. tabindex + focus() scrolls AND
+      // announces the banner in the same step.
+      box.setAttribute('tabindex', '-1');
+      box.focus();
+    }
+    history.replaceState(null, '', location.pathname);
+  }
+
+  /*
+   * A service page's CTA arrives as /contact?subject=<service id>. Preselect
+   * that option and prompt the message box with the question we would
+   * otherwise have to email back and ask.
+   *
+   * The prompt is a placeholder, never a value: filling the textarea would put
+   * words in someone's mouth, and half of them would send our sentence instead
+   * of their problem.
+   */
+  const wanted = new URLSearchParams(location.search).get('subject');
+  const mapEl = document.getElementById('subject-map');
+
+  if (wanted && mapEl) {
+    const { subjects, prompts } = JSON.parse(mapEl.textContent ?? '{}') as {
+      subjects: Record<string, string>;
+      prompts: Record<string, string>;
+    };
+    const option = subjects[wanted];
+    const select = document.getElementById('subject') as HTMLSelectElement | null;
+
+    if (option && select) {
+      // Only ever selects an option that already exists — an unknown value
+      // would otherwise leave the required field silently blank.
+      const match = [...select.options].find((o) => o.text === option);
+      if (match) select.value = match.value || match.text;
+
+      const message = document.getElementById('message') as HTMLTextAreaElement | null;
+      if (message && prompts[wanted]) message.placeholder = prompts[wanted];
+    }
+
+    history.replaceState(null, '', location.pathname);
+  }
+
+  // Per-field error messages and submit busy-state — shared with
+  // start-project.astro so the two forms cannot silently drift apart.
+  const contactForm = document.querySelector<HTMLFormElement>('form[name="contact"]');
+  if (contactForm) {
+    enhanceFormValidation(contactForm, {
+      name: 'Please tell us your name so we know who we are replying to.',
+      email: 'Please enter an email address we can reply to, like name@example.com.',
+      subject: 'Please choose what you would like help with.',
+      message: 'Please tell us a little about what you need.',
+    });
+  }
+</script>
+
+<style>
+  .lede--tight { margin-block-end: 0; }
+
+  .layout { display: grid; gap: var(--ra-space-2xl); }
+  @media (min-width: 900px) { .layout { grid-template-columns: 1fr 1.2fr; } }
+
+  .channels { display: grid; gap: var(--ra-space-m); margin-top: var(--ra-space-l); }
+  .channels li {
+    display: grid;
+    gap: var(--ra-space-2xs);
+    padding-bottom: var(--ra-space-m);
+    border-bottom: 1px solid var(--ra-border);
+  }
+  .channels__label {
+    font-size: var(--ra-step--1);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ra-fg-muted);
+  }
+  .channels a { font-weight: 600; }
+
+  .form { display: grid; gap: var(--ra-space-m); margin-top: var(--ra-space-l); }
+  .form-note { font-size: var(--ra-step--1); color: var(--ra-fg-muted); margin-top: calc(-1 * var(--ra-space-xs)); }
+  .field { display: grid; gap: var(--ra-space-2xs); }
+  .field label { font-weight: 600; font-size: var(--ra-step--1); }
+  .optional, .field-hint { font-weight: 400; color: var(--ra-fg-muted); }
+  input, select, textarea {
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-surface);
+  }
+  textarea { min-height: 8rem; resize: vertical; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    border-color: var(--ra-navy-500);
+  }
+  /*
+   * Set only by the submit-time validation script below, on whichever fields
+   * actually failed — so an untouched form never looks broken before anyone
+   * has pressed Send. Same red-brown as .alert, not a new colour.
+   */
+  input[aria-invalid='true'], select[aria-invalid='true'], textarea[aria-invalid='true'] {
+    border-color: #8F2530;
+    border-width: 2px;
+  }
+  .field__error {
+    margin: 0;
+    color: #6B1C24;
+    font-size: var(--ra-step--1);
+  }
+  /* Matches Button.astro's primary variant — same weight, same press feel. */
+  button[type='submit'] {
+    justify-self: start;
+    border: 0;
+    cursor: pointer;
+    padding: var(--ra-space-s) var(--ra-space-xl);
+    border-radius: var(--ra-radius-m);
+    font-weight: 600;
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    box-shadow: var(--ra-shadow-s);
+    transition:
+      transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 160ms ease,
+      box-shadow 160ms ease,
+      color 160ms ease;
+  }
+  button[type='submit']:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+    box-shadow: 0 8px 20px -8px rgb(239 180 46 / 0.6);
+    transform: translateY(-2px);
+  }
+  button[type='submit']:active {
+    background: var(--ra-gold-400);
+    color: var(--ra-navy-900);
+    box-shadow: var(--ra-shadow-s);
+    transform: translateY(0) scale(0.985);
+    transition-duration: 60ms;
+  }
+  .alert {
+    margin-top: var(--ra-space-l);
+    padding: var(--ra-space-m);
+    border-radius: var(--ra-radius-s);
+    /* Not gold: gold is the brand accent here, and a failure must not look
+       like an accent. Red-brown reads as a problem without shouting. */
+    border: 1px solid rgb(143 37 48 / 0.35);
+    background: #FBF1F0;
+    color: #6B1C24;
+    font-size: var(--ra-step--1);
+  }
+  .alert p { margin: 0; }
+
+  .fallback {
+    margin-top: var(--ra-space-l);
+    padding: var(--ra-space-m);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-navy-50);
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+</style>

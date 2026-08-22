@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /comps/
+
+Sitemap: https://radiantalphadigital.com/sitemap-index.xml
