@@ -82,24 +82,53 @@ const waUrl = buildWhatsAppUrl({
           * than an error, because nobody learns the enquiry was lost.
           */}
         <form name="contact" method="POST" action="/contact.php" class="form">
-          <p class="ra-visually-hidden">
+          {/*
+            * The usability review's own note: four of five fields are
+            * compulsory and none said so. Marking only the exception
+            * ("optional") only reads as a rule once it is actually stated —
+            * this line is what makes the convention coherent.
+            */}
+          <p class="form-note">All fields are required unless marked optional.</p>
+
+          {/*
+            * tabindex="-1" already keeps this out of the Tab order for every
+            * input method, but a screen reader browsing the raw field list —
+            * rather than tabbing — still met a sixth field telling it to stay
+            * empty. aria-hidden removes it from that list too; bots reading
+            * raw HTML still see and fill it.
+            */}
+          <p class="ra-visually-hidden" aria-hidden="true">
             <label for="bot-field">Leave this field empty</label>
             <input id="bot-field" name="bot-field" tabindex="-1" autocomplete="off" />
           </p>
 
           <div class="field">
             <label for="name">Your name</label>
-            <input id="name" name="name" type="text" required autocomplete="name" />
+            <input id="name" name="name" type="text" required autocomplete="name" maxlength="120" />
           </div>
 
           <div class="field">
             <label for="email">Email address</label>
-            <input id="email" name="email" type="email" required autocomplete="email" />
+            {/*
+              * type="email" alone accepts "name@company" — no dot, no TLD —
+              * which the server's FILTER_VALIDATE_EMAIL then rejects. The
+              * pattern is deliberately loose, matching the server's leniency
+              * rather than tightening past it, so a real address is never
+              * refused here only to pass on the server.
+              */}
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+            />
           </div>
 
           <div class="field">
             <label for="phone">Phone or WhatsApp <span class="optional">(optional)</span></label>
-            <input id="phone" name="phone" type="tel" autocomplete="tel" />
+            <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40" />
           </div>
 
           <div class="field">
@@ -111,8 +140,18 @@ const waUrl = buildWhatsAppUrl({
           </div>
 
           <div class="field">
-            <label for="message">Tell us about your project</label>
-            <textarea id="message" name="message" rows="5" required></textarea>
+            <label for="message">
+              Tell us about your project
+              <span class="field-hint" id="message-hint">(up to 5,000 characters)</span>
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              rows="5"
+              required
+              maxlength="5000"
+              aria-describedby="message-hint"
+            ></textarea>
           </div>
 
           <button type="submit" class="ra-btn ra-btn--primary">Send message</button>
@@ -145,7 +184,12 @@ const waUrl = buildWhatsAppUrl({
     if (box && line) {
       box.hidden = false;
       (line as HTMLElement).hidden = false;
-      box.scrollIntoView({ block: 'center' });
+      // scrollIntoView alone moves the viewport but not focus, so a keyboard
+      // or screen reader user could be left elsewhere on the page with no
+      // indication anything appeared. tabindex + focus() scrolls AND
+      // announces the banner in the same step.
+      box.setAttribute('tabindex', '-1');
+      box.focus();
     }
     history.replaceState(null, '', location.pathname);
   }
@@ -182,6 +226,95 @@ const waUrl = buildWhatsAppUrl({
 
     history.replaceState(null, '', location.pathname);
   }
+
+  /*
+   * The review's own defect: a failed submit leaned entirely on the browser's
+   * built-in bubble, which shows only the FIRST empty field, fades on its
+   * own, and is barely visible on iOS Safari. This does not replace native
+   * validation — required/maxlength/pattern still block submission exactly
+   * as before, which is what protects a visitor with JavaScript disabled —
+   * it only adds a persistent, readable message next to every field that
+   * failed, not just the first.
+   *
+   * Listening for the native 'invalid' event rather than intercepting submit
+   * keeps this additive: nothing here can accidentally let a bad submission
+   * through, because the browser's own gate never moves.
+   */
+  const contactForm = document.querySelector<HTMLFormElement>('form[name="contact"]');
+  if (contactForm) {
+    const helpFor: Record<string, string> = {
+      name: 'Please tell us your name so we know who we are replying to.',
+      email: 'Please enter an email address we can reply to, like name@example.com.',
+      subject: 'Please choose what you would like help with.',
+      message: 'Please tell us a little about what you need.',
+    };
+
+    type Validatable = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+    function messageFor(field: Validatable): string {
+      const v = field.validity;
+      if (v.valueMissing) return helpFor[field.id] ?? 'This field is required.';
+      if (v.tooLong && 'maxLength' in field) {
+        return `Please shorten this to ${field.maxLength} characters.`;
+      }
+      if (v.typeMismatch || v.patternMismatch) {
+        return 'That does not look like a complete email address.';
+      }
+      return field.validationMessage;
+    }
+
+    function showFieldError(field: Validatable) {
+      const id = `${field.id}-error`;
+      let msg = document.getElementById(id);
+      if (!msg) {
+        msg = document.createElement('p');
+        msg.id = id;
+        msg.className = 'field__error';
+        field.insertAdjacentElement('afterend', msg);
+      }
+      msg.textContent = messageFor(field);
+      field.setAttribute('aria-invalid', 'true');
+      const described = field.getAttribute('aria-describedby');
+      if (!described || !described.includes(id)) {
+        field.setAttribute('aria-describedby', [described, id].filter(Boolean).join(' '));
+      }
+    }
+
+    function clearFieldError(field: Validatable) {
+      const id = `${field.id}-error`;
+      document.getElementById(id)?.remove();
+      field.removeAttribute('aria-invalid');
+      const described = field.getAttribute('aria-describedby');
+      if (described) {
+        const rest = described.split(' ').filter((token) => token !== id).join(' ');
+        if (rest) field.setAttribute('aria-describedby', rest);
+        else field.removeAttribute('aria-describedby');
+      }
+    }
+
+    const validatable = [...contactForm.querySelectorAll<Validatable>('input, select, textarea')]
+      .filter((el) => el.id && el.id !== 'bot-field');
+
+    for (const field of validatable) {
+      field.addEventListener('invalid', () => showFieldError(field));
+      field.addEventListener('input', () => {
+        if (field.checkValidity()) clearFieldError(field);
+      });
+    }
+
+    // Pressing Send on a slow connection with no feedback invites a second
+    // press, which sends the enquiry twice. Only fires once native validation
+    // has already passed, so it never masks a blocked, invalid submission.
+    contactForm.addEventListener('submit', () => {
+      if (!contactForm.checkValidity()) return;
+      const submitBtn = contactForm.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending…';
+      }
+      contactForm.setAttribute('aria-busy', 'true');
+    });
+  }
 </script>
 
 <style>
@@ -207,9 +340,10 @@ const waUrl = buildWhatsAppUrl({
   .channels a { font-weight: 600; }
 
   .form { display: grid; gap: var(--ra-space-m); margin-top: var(--ra-space-l); }
+  .form-note { font-size: var(--ra-step--1); color: var(--ra-fg-muted); margin-top: calc(-1 * var(--ra-space-xs)); }
   .field { display: grid; gap: var(--ra-space-2xs); }
   .field label { font-weight: 600; font-size: var(--ra-step--1); }
-  .optional { font-weight: 400; color: var(--ra-fg-muted); }
+  .optional, .field-hint { font-weight: 400; color: var(--ra-fg-muted); }
   input, select, textarea {
     min-height: var(--ra-tap-min);
     padding: var(--ra-space-s) var(--ra-space-m);
@@ -220,6 +354,20 @@ const waUrl = buildWhatsAppUrl({
   textarea { min-height: 8rem; resize: vertical; }
   input:focus-visible, select:focus-visible, textarea:focus-visible {
     border-color: var(--ra-navy-500);
+  }
+  /*
+   * Set only by the submit-time validation script below, on whichever fields
+   * actually failed — so an untouched form never looks broken before anyone
+   * has pressed Send. Same red-brown as .alert, not a new colour.
+   */
+  input[aria-invalid='true'], select[aria-invalid='true'], textarea[aria-invalid='true'] {
+    border-color: #8F2530;
+    border-width: 2px;
+  }
+  .field__error {
+    margin: 0;
+    color: #6B1C24;
+    font-size: var(--ra-step--1);
   }
   /* Matches Button.astro's primary variant — same weight, same press feel. */
   button[type='submit'] {

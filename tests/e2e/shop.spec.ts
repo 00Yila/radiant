@@ -22,7 +22,7 @@ test.describe('the storage picker works without JavaScript', () => {
     await expect(visiblePanel).toContainText('₦1,225,350');
     await expect(visiblePanel).toContainText('IP15PM-512');
 
-    const href = await visiblePanel.getByRole('link', { name: /pre-order/i }).getAttribute('href');
+    const href = await visiblePanel.getByRole('link', { name: /order on whatsapp/i }).getAttribute('href');
     expect(decodeURIComponent(href!)).toContain('512GB — ₦1,225,350');
     expect(decodeURIComponent(href!)).toContain('Ref: IP15PM-512');
   });
@@ -45,7 +45,9 @@ test.describe('shop search, filter and paging', () => {
     await expect(tiles.locator('visible=true')).toHaveCount(10);
     await expect(page.locator('.more__status')).toHaveText(`Showing 10 of ${total}`);
 
-    await page.getByRole('button', { name: 'Show more' }).click();
+    // The button now states how many it loads, e.g. "Show 10 more products" —
+    // match loosely so the count/wording can flex without breaking the test.
+    await page.getByRole('button', { name: /^Show \d+ more/ }).click();
     await expect(tiles.locator('visible=true')).toHaveCount(20);
   });
 
@@ -53,13 +55,13 @@ test.describe('shop search, filter and paging', () => {
     await page.goto('/shop');
     const tiles = page.locator('#catalogue .tile');
 
-    await page.getByLabel('Load at a time').selectOption('5');
+    await page.getByLabel('How many to show').selectOption('5');
     await expect(tiles.locator('visible=true')).toHaveCount(5);
 
-    await page.getByRole('button', { name: 'Show more' }).click();
+    await page.getByRole('button', { name: /^Show \d+ more/ }).click();
     await expect(tiles.locator('visible=true')).toHaveCount(10);
 
-    await page.getByLabel('Load at a time').selectOption('15');
+    await page.getByLabel('How many to show').selectOption('15');
     await expect(tiles.locator('visible=true')).toHaveCount(15);
   });
 
@@ -71,7 +73,7 @@ test.describe('shop search, filter and paging', () => {
     for (const name of await tiles.locator('visible=true').locator('h3').allTextContents()) {
       expect(name.toLowerCase()).toContain('pro max');
     }
-    await expect(page.getByRole('button', { name: 'Show more' })).toBeHidden();
+    await expect(page.getByRole('button', { name: /^Show \d+ more/ })).toBeHidden();
 
     await page.getByLabel('Search').fill('qqqq');
     await expect(page.locator('#no-results')).toBeVisible();

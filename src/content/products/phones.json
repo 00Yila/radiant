@@ -394,7 +394,7 @@
     "brand": "Apple",
     "model": "iPhone 15",
     "conditionTier": "refurbished-or-nos",
-    "conditionLabel": "Refurbished or new-old-stock",
+    "conditionLabel": "Refurbished, or new from older stock",
     "tierRank": 2,
     "variantAxis": "Storage",
     "variants": [
@@ -418,7 +418,7 @@
     "brand": "Apple",
     "model": "iPhone 15 Plus",
     "conditionTier": "refurbished-or-nos",
-    "conditionLabel": "Refurbished or new-old-stock",
+    "conditionLabel": "Refurbished, or new from older stock",
     "tierRank": 2,
     "variantAxis": "Storage",
     "variants": [
@@ -442,7 +442,7 @@
     "brand": "Apple",
     "model": "iPhone 15 Pro",
     "conditionTier": "refurbished-or-nos",
-    "conditionLabel": "Refurbished or new-old-stock",
+    "conditionLabel": "Refurbished, or new from older stock",
     "tierRank": 2,
     "variantAxis": "Storage",
     "variants": [
@@ -466,7 +466,7 @@
     "brand": "Apple",
     "model": "iPhone 15 Pro Max",
     "conditionTier": "refurbished-or-nos",
-    "conditionLabel": "Refurbished or new-old-stock",
+    "conditionLabel": "Refurbished, or new from older stock",
     "tierRank": 2,
     "variantAxis": "Storage",
     "variants": [
@@ -490,7 +490,7 @@
     "brand": "Apple",
     "model": "iPhone 16",
     "conditionTier": "unconfirmed",
-    "conditionLabel": "Confirmed before dispatch",
+    "conditionLabel": "Condition confirmed before you pay",
     "tierRank": 3,
     "variantAxis": "Storage",
     "variants": [
@@ -514,7 +514,7 @@
     "brand": "Apple",
     "model": "iPhone 16 Pro",
     "conditionTier": "unconfirmed",
-    "conditionLabel": "Confirmed before dispatch",
+    "conditionLabel": "Condition confirmed before you pay",
     "tierRank": 3,
     "variantAxis": "Storage",
     "variants": [
@@ -538,7 +538,7 @@
     "brand": "Apple",
     "model": "iPhone 16 Pro Max",
     "conditionTier": "unconfirmed",
-    "conditionLabel": "Confirmed before dispatch",
+    "conditionLabel": "Condition confirmed before you pay",
     "tierRank": 3,
     "variantAxis": "Storage",
     "variants": [
@@ -562,7 +562,7 @@
     "brand": "Apple",
     "model": "iPhone 16 Plus",
     "conditionTier": "unconfirmed",
-    "conditionLabel": "Confirmed before dispatch",
+    "conditionLabel": "Condition confirmed before you pay",
     "tierRank": 3,
     "variantAxis": "Storage",
     "variants": [

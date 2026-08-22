@@ -7,7 +7,7 @@ import ProductFigure from '../../components/ProductFigure.astro';
 import { formatNaira } from '../../lib/format';
 import { buildWhatsAppUrl } from '../../lib/whatsapp';
 import { SITE } from '../../lib/site';
-import { priceFrom, specRows, isEsimRisk, isDiscontinued } from '../../lib/catalogue';
+import { priceFrom, specRows, isEsimRisk, isDiscontinued, CATEGORY_LABELS } from '../../lib/catalogue';
 
 export async function getStaticPaths() {
   const products = await getCollection('products');
@@ -118,8 +118,8 @@ const variantList = variants.map((v) => v.label).join(', ');
         />
         {!product.image && (
           <p class="pdp__imgnote">
-            Illustration, not a photograph of the actual unit. We send real photos
-            of the specific item before you pay.
+            This is a drawing of the model, not a photo of the phone itself. Before you
+            pay, we send you real photos of the exact one you will get.
           </p>
         )}
       </div>
@@ -159,17 +159,23 @@ const variantList = variants.map((v) => v.label).join(', ');
               <div class="buy__panel">
                 <p class="buy__price ra-numeric">{formatNaira(v.price)}</p>
                 <p class="buy__ref">
-                  {v.label}{v.colour ? ` · ${v.colour}` : ''} · Ref {v.ref}
+                  {v.label}{v.colour ? ` · ${v.colour}` : ''} · Order code {v.ref}
                 </p>
 
                 <p class="pdp__notice">
-                  <strong>Pre-order:</strong> allow {shop.preOrderLeadTime} from order
-                  confirmation for delivery.
+                  <strong>We order this in for you.</strong> It reaches you about
+                  {' '}{shop.preOrderLeadTime} after we confirm your order.
                 </p>
 
+                {/*
+                  * "Pre-order" read as a commitment the click itself might make —
+                  * possibly even a charge. The button only opens WhatsApp with the
+                  * order details drafted in; nothing is charged by pressing it.
+                  */}
                 <Button href={v.waUrl} variant="gold" external>
-                  Pre-order on WhatsApp
+                  Order on WhatsApp
                 </Button>
+                <p class="buy__note">Opens WhatsApp with these details ready to send — no payment yet.</p>
               </div>
             ))}
           </div>
@@ -182,8 +188,9 @@ const variantList = variants.map((v) => v.label).join(', ');
         </dl>
 
         <p class="pdp__notice pdp__notice--repeat">
-          Delivery {shop.preOrderLeadTime} from confirmation ·
-          <a href="/returns">Returns &amp; warranty</a>
+          {shop.inspectionWindowHours} hours to reject a damaged or wrong phone for a full
+          refund · {shop.warrantyDays}-day fault warranty ·{' '}
+          <a href="/returns">Read the full returns and warranty terms</a>
         </p>
       </div>
     </div>
@@ -193,31 +200,43 @@ const variantList = variants.map((v) => v.label).join(', ');
     <div class="honest ra-measure">
       <h2>What we confirm before you pay</h2>
       <p>
-        The imported-hardware market runs on vagueness — condition disclosed only
-        after the box is open. We would rather lose a sale than have you discover
-        something on delivery day, weeks after paying.
+        In this trade, sellers usually stay quiet about condition until the box is
+        already open and the money is gone. We do it the other way round: you see the
+        real thing before any money moves, and you can walk away if it is not right.
       </p>
       <ul>
         <li>
-          <strong>Whether this model can be new.</strong> {product.conditionLabel}.
-          {isDiscontinued(product) && ' This model is discontinued, so no unit sold today is new from any source.'}
+          <strong>Is this phone new?</strong>{' '}
+          {isDiscontinued(product) ? (
+            'No — Apple stopped making this model, so nobody, including us, can sell it brand new. This one is used or refurbished, and we tell you which before you pay.'
+          ) : product.conditionTier === 'new' ? (
+            'Yes — brand new and sealed.'
+          ) : (
+            `${product.conditionLabel}. We tell you the exact condition before you pay.`
+          )}
         </li>
         <li>
-          <strong>The exact grade and colour</strong> of the specific unit
-          {product.category === 'phones' && ', including battery health'}, in writing,
-          with photographs.
+          {/* "New / Grade A / Grade B" is the site's own grading vocabulary —
+              see the shop page — not invented for this bullet. */}
+          <strong>The condition and colour of the actual phone</strong> you are
+          buying, not the model in general — graded New, Grade A (excellent,
+          minimal wear) or Grade B (light wear, fully working){product.category === 'phones' && ', plus its battery health'}.
+          We send this in writing, with photographs, before you pay.
         </li>
         {eSimCaution && (
           <li>
-            <strong>Whether it has a SIM tray.</strong> US-market units of this
-            generation are eSIM-only, and eSIM support on MTN, Airtel and Glo is
-            uneven. We confirm which variant you are getting.
+            <strong>Will your SIM card fit?</strong> Some units of this model were made
+            for the American market with no SIM card slot at all — the line has to be
+            set up digitally instead, and MTN, Airtel, Glo and 9mobile do not all
+            support that reliably yet. We check the actual phone and tell you which
+            kind it is before you pay.
           </li>
         )}
         <li>
-          <strong>What the warranty excludes.</strong> {shop.warrantyDays} days on
-          hardware faults; never physical damage, water, or — on any non-new unit —
-          wear and, where fitted, battery degradation.
+          <strong>What the warranty does not cover.</strong> The {shop.warrantyDays}-day
+          warranty covers faults in the phone itself. It never covers damage you cause —
+          drops, cracks, water — and on any phone that is not brand new, it does not
+          cover normal wear or a battery that has weakened with age.
         </li>
       </ul>
     </div>
@@ -225,7 +244,9 @@ const variantList = variants.map((v) => v.label).join(', ');
 
   {similar.length > 0 && (
     <Section>
-      <h2>More in this category</h2>
+      {/* "More in this category" was website-structure language; naming the
+          actual category ("More phones we stock") reads as a shop, not a CMS. */}
+      <h2>More {CATEGORY_LABELS[product.category].label.toLowerCase()} we stock</h2>
       <ul class="rail" role="list">
         {similar.map((p) => (
           <li class="ra-card">
@@ -346,6 +367,11 @@ const variantList = variants.map((v) => v.label).join(', ');
     color: var(--ra-fg-muted);
     font-size: var(--ra-step--1);
     margin-bottom: var(--ra-space-m);
+  }
+  .buy__note {
+    margin-top: var(--ra-space-xs);
+    color: var(--ra-fg-muted);
+    font-size: var(--ra-step--1);
   }
 
   /*

@@ -32,9 +32,14 @@ const cat = CATEGORY_LABELS[p.category];
   />
   <p class="tile__brand">{p.brand}</p>
   <h3><a href={`/shop/${p.id}`}>{p.model}</a></h3>
-  <p class="tile__meta">
-    {p.variants.map((v) => v.label).join(' · ')} · {p.conditionLabel}
-  </p>
+  {/*
+    * Was one line joining sizes and condition with the same separator —
+    * "64GB · 256GB · Used or refurbished" reads as a list of three equal
+    * things, and a shopper mistook the condition for a third size. Two lines
+    * keeps "what sizes" and "what condition" visibly different questions.
+    */}
+  <p class="tile__sizes">{p.variants.map((v) => v.label).join(' or ')}</p>
+  <p class="tile__cond">{p.conditionLabel}</p>
   <p class="tile__price ra-numeric">
     {p.variants.length > 1 && <span class="tile__from">From </span>}
     {formatNaira(priceFrom(p))}
@@ -56,7 +61,8 @@ const cat = CATEGORY_LABELS[p.category];
   .tile h3 { font-size: var(--ra-step-0); margin-top: 2px; }
   .tile h3 a { text-decoration: none; }
   .tile h3 a:hover { text-decoration: underline; }
-  .tile__meta { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: 2px; }
+  .tile__sizes { color: var(--ra-fg-muted); font-size: var(--ra-step--1); margin-top: 2px; }
+  .tile__cond { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
   .tile__from { font-weight: 400; color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
   .tile__price {
     margin-top: auto;
