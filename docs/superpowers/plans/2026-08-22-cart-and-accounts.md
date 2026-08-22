@@ -1348,6 +1348,7 @@ import { formatNaira } from '../../lib/format';
 <script>
   import { readCart, updateQuantity, removeFromCart, cartTotal, type CartItem } from '../../lib/client/cart';
   import { formatNaira } from '../../lib/format';
+  import { CART_LIMITS } from '../../lib/orders';
 
   const list = document.getElementById('cart-items')!;
   const emptyNote = document.getElementById('cart-empty')!;
@@ -1375,7 +1376,7 @@ import { formatNaira } from '../../lib/format';
       li.className = 'cart-line';
       li.innerHTML = `
         <span class="cart-line__label">${item.label} <small>(${item.product})</small></span>
-        <input type="number" min="0" max="10" value="${item.quantity}" class="cart-line__qty" aria-label="Quantity" />
+        <input type="number" min="0" max="${CART_LIMITS.maxQuantity}" value="${item.quantity}" class="cart-line__qty" aria-label="Quantity" />
         <span class="cart-line__price">${formatNaira(item.price * item.quantity)}</span>
         <button type="button" class="cart-line__remove">Remove</button>
       `;
@@ -2314,8 +2315,7 @@ redirect('/track/result/?ref=' . rawurlencode($order['reference']) . '&items=' .
 import Base from '../../layouts/Base.astro';
 import Section from '../../components/Section.astro';
 import Button from '../../components/Button.astro';
-
-const STEPS = ['processing', 'shipped', 'delivered'] as const;
+import { TRACKING_STEPS } from '../../lib/orders';
 ---
 <Base
   title="Order status"
@@ -2338,7 +2338,7 @@ const STEPS = ['processing', 'shipped', 'delivered'] as const;
   </Section>
 </Base>
 
-<script define:vars={{ STEPS }}>
+<script define:vars={{ STEPS: TRACKING_STEPS }}>
   function base64UrlDecode(value) {
     const padded = value.replace(/-/g, '+').replace(/_/g, '/');
     const withPadding = padded + '='.repeat((4 - (padded.length % 4)) % 4);
