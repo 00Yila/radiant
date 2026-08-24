@@ -1,0 +1,147 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import { formatNaira } from '../../lib/format';
+---
+<Base
+  title="Your cart"
+  description="Review your cart and pay for everything in one order."
+  path="/cart"
+  noindex
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Your cart</p>
+    <h1 class="ra-display">Review your order.</h1>
+  </Section>
+
+  <Section>
+    <p id="cart-empty" class="ra-lede" hidden>
+      Your cart is empty. <a href="/shop">Browse the shop</a> to add something.
+    </p>
+
+    <ul id="cart-items" class="cart-items ra-measure" role="list"></ul>
+
+    <p id="cart-total" class="cart-total" hidden></p>
+
+    <form method="post" action="/checkout.php" id="cart-checkout-form" class="cart-form" hidden>
+      <input type="hidden" name="items" id="cart-items-field" />
+
+      <p class="ra-visually-hidden" aria-hidden="true">
+        <label for="bot-field">Leave this field empty</label>
+        <input id="bot-field" name="bot-field" tabindex="-1" autocomplete="off" />
+      </p>
+
+      <div class="cart-field">
+        <label for="name">Your name</label>
+        <input id="name" name="name" type="text" required autocomplete="name" maxlength="120" />
+      </div>
+      <div class="cart-field">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" required autocomplete="email" maxlength="190" />
+      </div>
+      <div class="cart-field">
+        <label for="phone">Phone or WhatsApp number</label>
+        <input id="phone" name="phone" type="tel" required autocomplete="tel" maxlength="40" />
+      </div>
+
+      <button type="submit" class="ra-btn ra-btn--gold">Proceed to Payment</button>
+    </form>
+  </Section>
+</Base>
+
+<script>
+  import { readCart, updateQuantity, removeFromCart, cartTotal, type CartItem } from '../../lib/client/cart';
+  import { formatNaira } from '../../lib/format';
+  import { CART_LIMITS } from '../../lib/orders';
+
+  const list = document.getElementById('cart-items')!;
+  const emptyNote = document.getElementById('cart-empty')!;
+  const totalEl = document.getElementById('cart-total')!;
+  const form = document.getElementById('cart-checkout-form') as HTMLFormElement;
+  const itemsField = document.getElementById('cart-items-field') as HTMLInputElement;
+
+  function render() {
+    const items = readCart(localStorage);
+    list.innerHTML = '';
+
+    if (items.length === 0) {
+      emptyNote.hidden = false;
+      totalEl.hidden = true;
+      form.hidden = true;
+      return;
+    }
+
+    emptyNote.hidden = true;
+    totalEl.hidden = false;
+    form.hidden = false;
+
+    for (const item of items) {
+      const li = document.createElement('li');
+      li.className = 'cart-line';
+      li.innerHTML = `
+        <span class="cart-line__label">${item.label} <small>(${item.product})</small></span>
+        <input type="number" min="0" max="${CART_LIMITS.maxQuantity}" value="${item.quantity}" class="cart-line__qty" aria-label="Quantity" />
+        <span class="cart-line__price">${formatNaira(item.price * item.quantity)}</span>
+        <button type="button" class="cart-line__remove">Remove</button>
+      `;
+
+      li.querySelector('.cart-line__qty')!.addEventListener('change', (e) => {
+        const value = Number((e.target as HTMLInputElement).value);
+        updateQuantity(localStorage, item.product, item.variant, value);
+        render();
+      });
+
+      li.querySelector('.cart-line__remove')!.addEventListener('click', () => {
+        removeFromCart(localStorage, item.product, item.variant);
+        render();
+      });
+
+      list.appendChild(li);
+    }
+
+    totalEl.textContent = `Total: ${formatNaira(cartTotal(items))}`;
+    itemsField.value = JSON.stringify(
+      items.map((i: CartItem) => ({ product: i.product, variant: i.variant, quantity: i.quantity }))
+    );
+  }
+
+  form.addEventListener('submit', () => {
+    // Re-serialize immediately before submit in case a quantity input's
+    // change event hasn't fired yet (e.g. blurred via a direct submit click).
+    itemsField.value = JSON.stringify(
+      readCart(localStorage).map((i) => ({ product: i.product, variant: i.variant, quantity: i.quantity }))
+    );
+  });
+
+  render();
+</script>
+
+<style>
+  [hidden] {
+    display: none !important;
+  }
+
+  .cart-items { list-style: none; padding: 0; display: grid; gap: var(--ra-space-m); }
+  .cart-line {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: var(--ra-space-m);
+    padding: var(--ra-space-s) 0;
+    border-bottom: 1px solid var(--ra-rule);
+  }
+  .cart-line__qty { width: 4rem; padding: var(--ra-space-2xs); }
+  .cart-line__price { font-weight: 700; color: var(--ra-navy-600); }
+  .cart-total { margin-top: var(--ra-space-l); font-size: var(--ra-step-1); font-weight: 700; }
+
+  .cart-form { display: grid; gap: var(--ra-space-s); margin-top: var(--ra-space-l); max-width: 28rem; }
+  .cart-field { display: grid; gap: var(--ra-space-2xs); }
+  .cart-field label { font-weight: 600; font-size: var(--ra-step--1); }
+  .cart-field input {
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-surface);
+  }
+</style>
