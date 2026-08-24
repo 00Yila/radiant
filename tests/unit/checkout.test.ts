@@ -129,3 +129,26 @@ describe('the tracking timeline covers exactly the post-payment statuses', () =>
     }
   });
 });
+
+describe('orders.php exposes the functions the rest of the system calls', () => {
+  const php = readFileSync('public/_lib/orders.php', 'utf8');
+
+  it.each([
+    'function createPendingOrder(PDO $pdo, array $order, array $items): int',
+    'function markOrderPaid(PDO $pdo, array $order, int $paystackTransactionId): void',
+    'function updateOrderItemStatus(PDO $pdo, int $itemId, string $status): bool',
+    'function listOrdersForEmail(PDO $pdo, string $email): array',
+    'function getOrderItems(PDO $pdo, int $orderId): array',
+  ])('declares %s', (signature) => {
+    expect(php).toContain(signature);
+  });
+
+  it('markOrderPaid cascades items inside the same idempotency guard, not a separate one', () => {
+    // Guards against a regression where the item cascade gets its own
+    // `WHERE status = 'pending'` check on order_items instead of relying on
+    // the orders-row rowCount() check — that would make the cascade run
+    // every time markOrderPaid is called instead of exactly once.
+    const fn = php.match(/function markOrderPaid[\s\S]*?\n}/)?.[0] ?? '';
+    expect(fn).toContain("rowCount() === 1");
+  });
+});
