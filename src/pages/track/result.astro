@@ -47,7 +47,8 @@ import { TRACKING_STEPS } from '../../lib/orders';
   } else {
     let items = [];
     try {
-      items = JSON.parse(base64UrlDecode(encoded));
+      const parsed = JSON.parse(base64UrlDecode(encoded));
+      items = Array.isArray(parsed) ? parsed : [];
     } catch {
       items = [];
     }
