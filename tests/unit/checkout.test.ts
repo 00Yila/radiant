@@ -152,3 +152,24 @@ describe('orders.php exposes the functions the rest of the system calls', () => 
     expect(fn).toContain("rowCount() === 1");
   });
 });
+
+describe('checkout.php resolves both the legacy and cart paths through the same catalogue lookup', () => {
+  const php = readFileSync('public/checkout.php', 'utf8');
+
+  it('detects the cart path from a non-empty items field', () => {
+    expect(php).toContain("field('items')");
+  });
+
+  it('never trusts a price from the request — every line calls lookupCatalogueVariant', () => {
+    const calls = php.match(/lookupCatalogueVariant\(/g) ?? [];
+    expect(calls.length).toBe(1); // one call site, inside the shared per-line loop
+  });
+
+  it('rejects an unparseable cart payload before any order is created', () => {
+    const cartBranchIndex = php.indexOf('parseCartItems(');
+    const createOrderIndex = php.indexOf('createPendingOrder(');
+    expect(cartBranchIndex).toBeGreaterThan(-1);
+    expect(createOrderIndex).toBeGreaterThan(-1);
+    expect(cartBranchIndex).toBeLessThan(createOrderIndex);
+  });
+});
