@@ -21,8 +21,9 @@ without it, even briefly.
 
 The status-change form on `order.php` is also protected by a stateless CSRF
 token, signed with the `csrf_secret` value from `appConfig()` (see
-`public/config/radiant-alpha.php.example`). This is unrelated to the Basic
-Auth step above — it stops a cross-site replay through an already-authenticated
-admin session, which Basic Auth alone does not prevent. No setup needed beyond
-having a real `csrf_secret` configured, which `checkout.php` and the Paystack
-endpoints already require.
+`public/config/radiant-alpha.php.example`) — one token per line item, since
+status is now tracked per item rather than per order. This is unrelated to
+the Basic Auth step above — it stops a cross-site replay through an
+already-authenticated admin session, which Basic Auth alone does not
+prevent. No setup needed beyond having a real `csrf_secret` configured,
+which `checkout.php` and the Paystack endpoints already require.
