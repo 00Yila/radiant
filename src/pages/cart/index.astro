@@ -78,20 +78,50 @@ import { formatNaira } from '../../lib/format';
     for (const item of items) {
       const li = document.createElement('li');
       li.className = 'cart-line';
-      li.innerHTML = `
-        <span class="cart-line__label">${item.label} <small>(${item.product})</small></span>
-        <input type="number" min="0" max="${CART_LIMITS.maxQuantity}" value="${item.quantity}" class="cart-line__qty" aria-label="Quantity" />
-        <span class="cart-line__price">${formatNaira(item.price * item.quantity)}</span>
-        <button type="button" class="cart-line__remove">Remove</button>
-      `;
 
-      li.querySelector('.cart-line__qty')!.addEventListener('change', (e) => {
+      // Build the label span safely using textContent for untrusted strings
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'cart-line__label';
+      labelSpan.textContent = item.label;
+      const small = document.createElement('small');
+      small.textContent = item.product;
+      labelSpan.appendChild(document.createTextNode(' '));
+      labelSpan.appendChild(small);
+
+      // Create input for quantity
+      const qtyInput = document.createElement('input');
+      qtyInput.type = 'number';
+      qtyInput.min = '0';
+      qtyInput.max = String(CART_LIMITS.maxQuantity);
+      qtyInput.value = String(item.quantity);
+      qtyInput.className = 'cart-line__qty';
+      qtyInput.setAttribute('aria-label', 'Quantity');
+
+      // Create price span with formatted total
+      const priceSpan = document.createElement('span');
+      priceSpan.className = 'cart-line__price';
+      priceSpan.textContent = formatNaira(item.price * item.quantity);
+
+      // Create remove button
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'cart-line__remove';
+      removeBtn.textContent = 'Remove';
+
+      // Append all children to the list item
+      li.appendChild(labelSpan);
+      li.appendChild(qtyInput);
+      li.appendChild(priceSpan);
+      li.appendChild(removeBtn);
+
+      // Wire up event listeners
+      qtyInput.addEventListener('change', (e) => {
         const value = Number((e.target as HTMLInputElement).value);
         updateQuantity(localStorage, item.product, item.variant, value);
         render();
       });
 
-      li.querySelector('.cart-line__remove')!.addEventListener('click', () => {
+      removeBtn.addEventListener('click', () => {
         removeFromCart(localStorage, item.product, item.variant);
         render();
       });
