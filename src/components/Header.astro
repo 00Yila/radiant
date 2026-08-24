@@ -42,6 +42,11 @@ const current = Astro.url.pathname;
             </a>
           </li>
         ))}
+        <li class="hdr__cart-item">
+          <a href="/cart/" class="hdr__cart-link">
+            Cart<span id="cart-badge" class="hdr__cart-badge" hidden>0</span>
+          </a>
+        </li>
         <li class="hdr__cta-item">
           <a href="/start-project" class="hdr__cta">Start Your Project</a>
         </li>
@@ -51,6 +56,8 @@ const current = Astro.url.pathname;
 </header>
 
 <script>
+  import { readCart, cartCount } from '../lib/client/cart';
+
   const toggle = document.querySelector<HTMLButtonElement>('.hdr__toggle');
   const nav = document.querySelector<HTMLElement>('#primary-nav');
 
@@ -69,6 +76,16 @@ const current = Astro.url.pathname;
       toggle.focus();
     }
   });
+
+  function updateCartBadge() {
+    const badge = document.getElementById('cart-badge');
+    if (!badge) return;
+    const count = cartCount(readCart(localStorage));
+    badge.textContent = String(count);
+    badge.hidden = count === 0;
+  }
+
+  updateCartBadge();
 </script>
 
 <style>
@@ -196,5 +213,35 @@ const current = Astro.url.pathname;
 
   @media (min-width: 901px) {
     .hdr__toggle { display: none; }
+  }
+
+  .hdr__cart-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ra-space-2xs);
+    min-height: var(--ra-tap-min);
+    padding-inline: var(--ra-space-s);
+    border-radius: var(--ra-radius-s);
+    color: var(--ra-ink);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+  .hdr__cart-link:hover {
+    background: var(--ra-gold-500);
+    color: var(--ra-navy-900);
+  }
+  .hdr__cart-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding-inline: 0.25rem;
+    border-radius: 999px;
+    background: var(--ra-navy-600);
+    color: var(--ra-surface);
+    font-size: var(--ra-step--2);
+    font-weight: 700;
   }
 </style>

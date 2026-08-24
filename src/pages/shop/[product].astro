@@ -221,6 +221,21 @@ const variantList = variants.map((v) => v.label).join(', ');
                   Want the exact battery and colour confirmed before you pay? Message us
                   here first — no payment yet.
                 </p>
+
+                <button
+                  type="button"
+                  class="ra-btn ra-btn--secondary buy__add-cart"
+                  data-product={product.id}
+                  data-variant={v.ref}
+                  data-label={`${v.label}${v.colour ? ` — ${v.colour}` : ''}`}
+                  data-price={v.price}
+                >
+                  Add to Cart
+                </button>
+                <p class="buy__note">
+                  Buying more than one item? Add each to your cart and pay for
+                  everything in one order.
+                </p>
               </div>
             ))}
           </div>
@@ -504,3 +519,31 @@ const variantList = variants.map((v) => v.label).join(', ');
   .rail__from { font-weight: 400; color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
   .rail__price { margin-top: var(--ra-space-xs); font-weight: 700; color: var(--ra-navy-600); }
 </style>
+
+<script>
+  import { addToCart, cartCount, readCart } from '../../lib/client/cart';
+
+  function updateBadge() {
+    const badge = document.getElementById('cart-badge');
+    if (!badge) return;
+    const count = cartCount(readCart(localStorage));
+    badge.textContent = String(count);
+    badge.hidden = count === 0;
+  }
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('.buy__add-cart')) {
+    button.addEventListener('click', () => {
+      const { product, variant, label, price } = button.dataset;
+      if (!product || !variant || !label || !price) return;
+
+      addToCart(localStorage, { product, variant, label, price: Number(price) });
+      updateBadge();
+
+      const original = button.textContent;
+      button.textContent = 'Added';
+      setTimeout(() => {
+        button.textContent = original;
+      }, 1200);
+    });
+  }
+</script>
