@@ -33,6 +33,10 @@ const current = Astro.url.pathname;
       </svg>
     </button>
 
+    <a href="/cart/" class="hdr__cart-link">
+      Cart<span id="cart-badge" class="hdr__cart-badge" hidden>0</span>
+    </a>
+
     <nav id="primary-nav" class="hdr__nav" aria-label="Primary">
       <ul role="list">
         {links.map(({ href, label }) => (
@@ -42,11 +46,6 @@ const current = Astro.url.pathname;
             </a>
           </li>
         ))}
-        <li class="hdr__cart-item">
-          <a href="/cart/" class="hdr__cart-link">
-            Cart<span id="cart-badge" class="hdr__cart-badge" hidden>0</span>
-          </a>
-        </li>
         <li class="hdr__cta-item">
           <a href="/start-project" class="hdr__cta">Start Your Project</a>
         </li>
@@ -244,4 +243,5 @@ const current = Astro.url.pathname;
     font-size: var(--ra-step--2);
     font-weight: 700;
   }
+  .hdr__cart-badge[hidden] { display: none; }
 </style>
