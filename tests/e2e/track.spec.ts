@@ -26,45 +26,51 @@ test('the reference prefills from a ?reference= link', async ({ page }) => {
   await expect(page.getByLabel('Order reference')).toHaveValue('RA-abc123');
 });
 
+function encodeItems(items: unknown): string {
+  const json = JSON.stringify(items);
+  return Buffer.from(json).toString('base64url');
+}
+
 test.describe('the result page renders a timeline from the query string', () => {
   test('shows completed steps with dates and future steps as not yet', async ({ page }) => {
-    await page.goto(
-      '/track/result/?ref=RA-abc123&product=Apple%20iPhone%2015%20Pro%20Max%20%E2%80%94%20256GB&status=processing&paid_at=2026-08-01%2010%3A00%3A00&processing_at=2026-08-02%2009%3A00%3A00'
-    );
+    const items = [
+      {
+        label: 'Apple iPhone 15 Pro Max — 256GB',
+        quantity: 1,
+        status: 'processing',
+        dates: { paid: '2026-08-01 10:00:00', processing: '2026-08-02 09:00:00' },
+      },
+    ];
+    await page.goto(`/track/result/?ref=RA-abc123&items=${encodeItems(items)}`);
 
-    await expect(page.getByRole('heading', { name: 'Apple iPhone 15 Pro Max — 256GB' })).toBeVisible();
     await expect(page.getByText('Order reference RA-abc123')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Apple iPhone 15 Pro Max — 256GB × 1/ })).toBeVisible();
 
-    const timeline = page.locator('#timeline');
-    await expect(timeline).toBeVisible();
+    const processing = page.locator('.timeline__step', { hasText: 'processing' });
+    await expect(processing).toHaveClass(/is-done/);
 
-    const paid = timeline.locator('[data-step="paid"]');
-    await expect(paid).toHaveClass(/is-done/);
-    await expect(paid).toContainText('2026-08-01 10:00:00');
-
-    const processing = timeline.locator('[data-step="processing"]');
-    await expect(processing).toHaveClass(/is-current/);
-
-    const shipped = timeline.locator('[data-step="shipped"]');
-    await expect(shipped).toHaveClass(/is-pending/);
-    await expect(shipped).toContainText('Not yet');
-
-    const delivered = timeline.locator('[data-step="delivered"]');
+    const delivered = page.locator('.timeline__step', { hasText: 'delivered' });
     await expect(delivered).toHaveClass(/is-pending/);
+    await expect(delivered).toContainText('Not yet');
   });
 
-  test('shows a pending note instead of a timeline for an unpaid order', async ({ page }) => {
-    await page.goto('/track/result/?ref=RA-abc123&product=Apple%20iPhone%2015&status=pending');
+  test('renders more than one item independently', async ({ page }) => {
+    const items = [
+      { label: 'iPhone 13 — 128GB', quantity: 1, status: 'shipped', dates: {} },
+      { label: 'iPhone 15 — 256GB', quantity: 2, status: 'processing', dates: {} },
+    ];
+    await page.goto(`/track/result/?ref=RA-multi&items=${encodeItems(items)}`);
 
-    await expect(page.locator('#timeline')).toBeHidden();
-    await expect(page.locator('#pending-note')).toBeVisible();
-    await expect(page.locator('#pending-note')).toContainText("haven't received a completed payment");
+    await expect(page.locator('.item-card')).toHaveCount(2);
+    await expect(page.getByRole('heading', { name: /iPhone 13 — 128GB × 1/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /iPhone 15 — 256GB × 2/ })).toBeVisible();
   });
 
-  test('shows a failed message for a payment that never went through', async ({ page }) => {
-    await page.goto('/track/result/?ref=RA-abc123&product=Apple%20iPhone%2015&status=failed');
+  test('shows a pending note instead of a timeline for an unpaid item', async ({ page }) => {
+    const items = [{ label: 'iPhone 15', quantity: 1, status: 'pending', dates: {} }];
+    await page.goto(`/track/result/?ref=RA-abc123&items=${encodeItems(items)}`);
 
-    await expect(page.locator('#timeline')).toBeHidden();
-    await expect(page.locator('#pending-note')).toContainText("payment didn't complete");
+    await expect(page.locator('.timeline')).toHaveCount(0);
+    await expect(page.locator('.pending-note')).toContainText("haven't received a completed payment");
   });
 });

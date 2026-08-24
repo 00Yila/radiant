@@ -2,19 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Section from '../../components/Section.astro';
 import Button from '../../components/Button.astro';
-
-/*
- * order-status.php redirects here with the order's details in the query
- * string — never a database lookup by this page itself. Everything is
- * rendered client-side from location.search since Astro has no access to it
- * at build time; the page itself is a static, empty shell otherwise.
- */
-const STEPS = [
-  { key: 'paid', label: 'Paid' },
-  { key: 'processing', label: 'Processing' },
-  { key: 'shipped', label: 'Shipped' },
-  { key: 'delivered', label: 'Delivered' },
-] as const;
+import { TRACKING_STEPS } from '../../lib/orders';
 ---
 <Base
   title="Order status"
@@ -24,21 +12,12 @@ const STEPS = [
 >
   <Section register="dark">
     <p class="ra-eyebrow">Order status</p>
-    <h1 class="ra-display" id="product">Your order</h1>
+    <h1 class="ra-display">Your order</h1>
     <p class="ra-lede" id="ref-line">&nbsp;</p>
   </Section>
 
   <Section>
-    <p class="pending-note" id="pending-note" hidden></p>
-
-    <ol class="timeline ra-measure" id="timeline" hidden>
-      {STEPS.map((s) => (
-        <li data-step={s.key} class="timeline__step">
-          <span class="timeline__label">{s.label}</span>
-          <span class="timeline__date"></span>
-        </li>
-      ))}
-    </ol>
+    <div id="items"></div>
 
     <p class="help">
       Something look wrong? <Button href="/contact" variant="secondary">Contact us</Button>
@@ -46,69 +25,72 @@ const STEPS = [
   </Section>
 </Base>
 
-<script>
-  const params = new URLSearchParams(location.search);
-  const status = params.get('status') ?? '';
-  const product = params.get('product');
-  const ref = params.get('ref');
+<script define:vars={{ STEPS: TRACKING_STEPS }}>
+  function base64UrlDecode(value) {
+    const padded = value.replace(/-/g, '+').replace(/_/g, '/');
+    const withPadding = padded + '='.repeat((4 - (padded.length % 4)) % 4);
+    return atob(withPadding);
+  }
 
-  const titleEl = document.getElementById('product');
+  const params = new URLSearchParams(location.search);
+  const ref = params.get('ref');
+  const encoded = params.get('items');
+
   const refLine = document.getElementById('ref-line');
-  if (titleEl && product) titleEl.textContent = product;
   if (refLine) refLine.textContent = ref ? `Order reference ${ref}` : '';
 
-  const pendingNote = document.getElementById('pending-note');
-  const timeline = document.getElementById('timeline');
-
-  if (status === 'pending' || status === 'failed' || status === '') {
-    if (pendingNote) {
-      pendingNote.hidden = false;
-      pendingNote.textContent =
-        status === 'failed'
-          ? "This order's payment didn't complete, so there's nothing to track yet. If you were charged, please contact us."
-          : "We haven't received a completed payment for this order yet.";
+  const container = document.getElementById('items');
+  if (!container || !encoded) {
+    if (container) container.textContent = 'No order details to show.';
+  } else {
+    let items = [];
+    try {
+      items = JSON.parse(base64UrlDecode(encoded));
+    } catch {
+      items = [];
     }
-  } else if (timeline) {
-    timeline.hidden = false;
-    const order = ['paid', 'processing', 'shipped', 'delivered'];
-    const currentIndex = order.indexOf(status);
 
-    for (const li of timeline.querySelectorAll<HTMLLIElement>('.timeline__step')) {
-      const step = li.dataset.step!;
-      const stepIndex = order.indexOf(step);
-      const date = params.get(`${step}_at`);
-      const dateEl = li.querySelector('.timeline__date');
+    for (const item of items) {
+      const card = document.createElement('div');
+      card.className = 'item-card';
 
-      if (stepIndex <= currentIndex) {
-        li.classList.add('is-done');
-        if (dateEl) dateEl.textContent = date ?? '';
-      } else {
-        li.classList.add('is-pending');
-        if (dateEl) dateEl.textContent = 'Not yet';
-      }
-      if (stepIndex === currentIndex) li.classList.add('is-current');
+      const currentIndex = STEPS.indexOf(item.status);
+      const stepsHtml = STEPS.map((step, i) => {
+        const date = item.dates?.[step];
+        const cls = i <= currentIndex ? 'is-done' : 'is-pending';
+        const dateText = i <= currentIndex ? (date ?? '') : 'Not yet';
+        return `<li class="timeline__step ${cls}"><span>${step}</span><span>${dateText}</span></li>`;
+      }).join('');
+
+      card.innerHTML = `
+        <h2>${item.label} × ${item.quantity}</h2>
+        ${
+          currentIndex === -1
+            ? `<p class="pending-note">${item.status === 'pending' ? "We haven't received a completed payment for this order yet." : 'No status yet.'}</p>`
+            : `<ol class="timeline">${stepsHtml}</ol>`
+        }
+      `;
+      container.appendChild(card);
+    }
+
+    if (items.length === 0) {
+      container.textContent = 'No items found for this order.';
     }
   }
 </script>
 
 <style>
+  .item-card { margin-bottom: var(--ra-space-xl); max-width: 32rem; }
+  .item-card h2 { font-size: var(--ra-step-1); margin-bottom: var(--ra-space-s); }
+
   .pending-note {
-    max-width: 60ch;
     background: var(--ra-navy-50);
     border: 1px solid rgb(239 180 46 / 0.4);
     border-radius: var(--ra-radius-s);
     padding: var(--ra-space-m) var(--ra-space-l);
   }
 
-  /* display:grid outranks the user agent's [hidden] { display: none }. */
-  .timeline[hidden] { display: none; }
-  .timeline {
-    display: grid;
-    gap: var(--ra-space-s);
-    padding: 0;
-    list-style: none;
-    max-width: 32rem;
-  }
+  .timeline { display: grid; gap: var(--ra-space-s); padding: 0; list-style: none; }
   .timeline__step {
     display: flex;
     justify-content: space-between;
@@ -119,12 +101,6 @@ const STEPS = [
   }
   .timeline__step.is-pending { color: var(--ra-fg-muted); }
   .timeline__step.is-done { border-color: var(--ra-gold-500); }
-  .timeline__step.is-current {
-    background: var(--ra-navy-50);
-    border-color: var(--ra-gold-500);
-  }
-  .timeline__label { font-weight: 700; }
-  .timeline__date { font-size: var(--ra-step--1); color: var(--ra-fg-muted); }
 
   .help { margin-top: var(--ra-space-xl); display: flex; align-items: center; gap: var(--ra-space-m); flex-wrap: wrap; }
 </style>

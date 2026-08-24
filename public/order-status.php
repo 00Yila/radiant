@@ -1,12 +1,11 @@
 <?php
 /**
  * Customer-facing order lookup: reference + the email it was placed with.
- * Both must match, or the response is identical either way — a wrong
- * reference and a wrong email look the same, so this can never be used to
- * confirm whether a given reference or a given email exists on its own.
- *
- * Communicates back to the static site only via redirect + query string, the
- * same convention as order-callback.php — this file renders no HTML itself.
+ * Both must match, or the response is identical either way. Encodes every
+ * line item's product, quantity, status, and status history dates into one
+ * base64url JSON blob rather than flattening a single item's statuses into
+ * separate query params — this now has to represent N items, and a
+ * per-field flattening scheme doesn't scale to that.
  */
 
 declare(strict_types=1);
@@ -32,27 +31,26 @@ if (!$matches) {
     redirect('/order/not-found/');
 }
 
-$history = getOrderHistory($pdo, (int) $order['id']);
+$items = getOrderItems($pdo, (int) $order['id']);
 
-// Only ever the first time each status was reached — matches what the
-// timeline needs to show and nothing else from the log.
-$dates = [];
-foreach ($history as $row) {
-    if (!isset($dates[$row['status']])) {
-        $dates[$row['status']] = $row['created_at'];
+$payload = [];
+foreach ($items as $item) {
+    $history = getOrderItemHistory($pdo, (int) $item['id']);
+    $dates = [];
+    foreach ($history as $row) {
+        if (!isset($dates[$row['status']])) {
+            $dates[$row['status']] = $row['created_at'];
+        }
     }
+
+    $payload[] = [
+        'label' => $item['product_label'] . ' — ' . $item['variant_label'],
+        'quantity' => (int) $item['quantity'],
+        'status' => $item['status'],
+        'dates' => $dates,
+    ];
 }
 
-$params = [
-    'ref' => $order['reference'],
-    'product' => $order['product_label'] . ' — ' . $order['variant_label'],
-    'status' => $order['status'],
-];
+$encoded = rtrim(strtr(base64_encode((string) json_encode($payload)), '+/', '-_'), '=');
 
-foreach (['paid', 'processing', 'shipped', 'delivered'] as $step) {
-    if (isset($dates[$step])) {
-        $params[$step . '_at'] = $dates[$step];
-    }
-}
-
-redirect('/track/result/?' . http_build_query($params));
+redirect('/track/result/?ref=' . rawurlencode($order['reference']) . '&items=' . $encoded);
