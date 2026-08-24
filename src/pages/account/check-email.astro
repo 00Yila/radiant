@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+---
+<Base
+  title="Check your email"
+  description="We've sent you a link to view your order history."
+  path="/account/check-email"
+  noindex
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Almost there</p>
+    <h1 class="ra-display">Check your email.</h1>
+    <p class="ra-lede">
+      If that address has ordered from us before, a link is on its way — it
+      expires in 15 minutes. If it doesn&rsquo;t arrive in a few minutes, check
+      your spam folder.
+    </p>
+  </Section>
+</Base>

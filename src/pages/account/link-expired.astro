@@ -1,0 +1,21 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+---
+<Base
+  title="Link expired"
+  description="That login link is no longer valid."
+  path="/account/link-expired"
+  noindex
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Link expired</p>
+    <h1 class="ra-display">That link&rsquo;s no longer valid.</h1>
+    <p class="ra-lede">
+      Login links expire after 15 minutes and can only be used once. Request a
+      new one below.
+    </p>
+    <Button href="/account/login/" variant="gold">Request a new link</Button>
+  </Section>
+</Base>

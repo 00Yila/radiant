@@ -1,0 +1,49 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+---
+<Base
+  title="View your orders"
+  description="Enter your email to get a link to your order history."
+  path="/account/login"
+  noindex
+>
+  <Section register="dark">
+    <p class="ra-eyebrow">Your orders</p>
+    <h1 class="ra-display">See your order history.</h1>
+    <p class="ra-lede">
+      Enter your email and we&rsquo;ll send you a link — no password needed. It
+      works whether or not you&rsquo;ve created an account before; if you&rsquo;ve
+      ordered from us with this email, your orders will be there.
+    </p>
+  </Section>
+
+  <Section>
+    <form method="post" action="/account/login.php" class="login-form ra-measure">
+      <p class="ra-visually-hidden" aria-hidden="true">
+        <label for="bot-field">Leave this field empty</label>
+        <input id="bot-field" name="bot-field" tabindex="-1" autocomplete="off" />
+      </p>
+
+      <div class="login-field">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" required autocomplete="email" maxlength="190" />
+      </div>
+
+      <button type="submit" class="ra-btn ra-btn--primary">Send me a link</button>
+    </form>
+  </Section>
+</Base>
+
+<style>
+  .login-form { display: grid; gap: var(--ra-space-m); max-width: 28rem; }
+  .login-field { display: grid; gap: var(--ra-space-2xs); }
+  .login-field label { font-weight: 600; font-size: var(--ra-step--1); }
+  .login-field input {
+    min-height: var(--ra-tap-min);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-s);
+    background: var(--ra-surface);
+  }
+</style>
