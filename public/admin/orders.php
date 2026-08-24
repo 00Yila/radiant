@@ -44,9 +44,6 @@ function formatNaira(int $kobo): string
   .status { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
   .status-pending { background: #f0e6c8; }
   .status-paid { background: #d9f0e0; }
-  .status-processing { background: #dbe6f7; }
-  .status-shipped { background: #dbe6f7; }
-  .status-delivered { background: #d9f0e0; }
   .status-failed { background: #f5d9d9; }
 </style>
 </head>
@@ -57,11 +54,11 @@ function formatNaira(int $kobo): string
     <thead>
       <tr>
         <th>Reference</th>
-        <th>Product</th>
+        <th>Items</th>
         <th>Customer</th>
         <th>Amount</th>
-        <th>Status</th>
-        <th>Updated</th>
+        <th>Payment</th>
+        <th>Placed</th>
         <th></th>
       </tr>
     </thead>
@@ -69,11 +66,11 @@ function formatNaira(int $kobo): string
       <?php foreach ($orders as $order): ?>
         <tr>
           <td><?= h($order['reference']) ?></td>
-          <td><?= h($order['product_label']) ?> — <?= h($order['variant_label']) ?></td>
+          <td><?= (int) $order['item_count'] ?> item<?= (int) $order['item_count'] === 1 ? '' : 's' ?></td>
           <td><?= h($order['customer_name']) ?><br><small><?= h($order['customer_email']) ?></small></td>
           <td><?= formatNaira((int) $order['amount_kobo']) ?></td>
           <td><span class="status status-<?= h($order['status']) ?>"><?= h($order['status']) ?></span></td>
-          <td><?= h($order['status_updated_at']) ?></td>
+          <td><?= h($order['created_at']) ?></td>
           <td><a href="/admin/order.php?id=<?= (int) $order['id'] ?>">View</a></td>
         </tr>
       <?php endforeach; ?>

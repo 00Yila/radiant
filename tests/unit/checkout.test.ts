@@ -173,3 +173,24 @@ describe('checkout.php resolves both the legacy and cart paths through the same 
     expect(cartBranchIndex).toBeLessThan(createOrderIndex);
   });
 });
+
+describe('admin/order.php scopes its CSRF token per item, not per order', () => {
+  const php = readFileSync('public/admin/order.php', 'utf8');
+
+  it('signs the token over the item id', () => {
+    expect(php).toContain("hash_hmac('sha256', $itemId . '|' . date('Y-m-d'), $secret)");
+  });
+
+  it('validates item_id before touching the database', () => {
+    const validateIndex = php.indexOf('hash_equals(itemCsrfToken');
+    const updateIndex = php.indexOf('updateOrderItemStatus(');
+    expect(validateIndex).toBeGreaterThan(-1);
+    expect(updateIndex).toBeGreaterThan(-1);
+    expect(validateIndex).toBeLessThan(updateIndex);
+  });
+
+  it('confirms the posted item belongs to the order on screen before updating it', () => {
+    expect(php).toContain('findOrderItemById($pdo, $itemId)');
+    expect(php).toContain("(int) $targetItem['order_id'] !== $id");
+  });
+});
