@@ -3,15 +3,21 @@
 -- Run once by hand in Hostinger's phpMyAdmin (hPanel → Databases → phpMyAdmin).
 -- Hostinger shared hosting has no migration runner, and this repo has no
 -- automated DB tooling — this file is documentation of what was run, not
--- something any build step executes.
+-- something any build step executes. Nothing is in production yet, so this
+-- is a full replacement, not a migration.
 --
--- Two tables, not one status column and not a fully normalised history-only
--- design: `orders` holds current state for cheap admin-list queries, and
--- `order_status_history` is an append-only log of when each status was set,
--- which a single column can't answer. Every status write goes through one
--- shared PHP function (markOrderPaid() in public/_lib/orders.php, and the
--- admin status-change handler) that updates both together, so they cannot
--- drift apart.
+-- `orders` is a payment envelope (one row per Paystack transaction);
+-- `order_items` is one row per cart line, each with its own fulfillment
+-- status, since a multi-item order can have phones with different sourcing
+-- lead times. `order_item_status_history` is an append-only log per item, so
+-- the tracking/account views can show *when* each status was set. Every
+-- status write goes through a shared PHP function (markOrderPaid() and
+-- updateOrderItemStatus() in public/_lib/orders.php) that updates the row and
+-- its history together, so they cannot drift apart.
+--
+-- order_items.status has no 'failed' value: a failed payment is entirely an
+-- orders-level fact (the row never leaves 'pending'), so a failed order's
+-- items simply stay 'pending' forever, which already reads correctly.
 
 CREATE TABLE IF NOT EXISTS orders (
   id                       INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -21,13 +27,9 @@ CREATE TABLE IF NOT EXISTS orders (
   -- customer tracking page's auth check (reference + email).
   reference                VARCHAR(40)  NOT NULL UNIQUE,
 
-  -- Every product/variant/price field below is a SNAPSHOT at purchase time,
-  -- not a foreign key into the catalogue. A later price change on the site
-  -- must never rewrite what a past order says it cost.
-  product_id               VARCHAR(80)  NOT NULL,
-  product_label            VARCHAR(160) NOT NULL,
-  variant_ref              VARCHAR(80)  NOT NULL,
-  variant_label            VARCHAR(80)  NOT NULL,
+  -- Sum of every order_items line at purchase time — a snapshot, not a
+  -- computed value, so a later catalogue price change can never rewrite
+  -- what a past order says it cost.
   amount_kobo              BIGINT UNSIGNED NOT NULL,
   currency                 CHAR(3)      NOT NULL DEFAULT 'NGN',
 
@@ -35,22 +37,52 @@ CREATE TABLE IF NOT EXISTS orders (
   customer_email           VARCHAR(190) NOT NULL,
   customer_phone           VARCHAR(40)  NOT NULL,
 
-  status                   ENUM('pending','paid','processing','shipped','delivered','failed')
-                             NOT NULL DEFAULT 'pending',
-  status_updated_at        DATETIME     NOT NULL,
-
+  status                   ENUM('pending','paid','failed') NOT NULL DEFAULT 'pending',
   paystack_transaction_id  BIGINT UNSIGNED NULL,
 
   created_at               DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at               DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
   INDEX idx_customer_email (customer_email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS order_status_history (
-  id         INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  order_id   INT UNSIGNED NOT NULL,
-  status     ENUM('pending','paid','processing','shipped','delivered','failed') NOT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE IF NOT EXISTS order_items (
+  id               INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  order_id         INT UNSIGNED NOT NULL,
+
+  -- Every product/variant field is a SNAPSHOT at purchase time, not a
+  -- foreign key into the catalogue — same reasoning as orders.amount_kobo.
+  product_id       VARCHAR(80)  NOT NULL,
+  product_label    VARCHAR(160) NOT NULL,
+  variant_ref      VARCHAR(80)  NOT NULL,
+  variant_label    VARCHAR(80)  NOT NULL,
+  unit_price_kobo  BIGINT UNSIGNED NOT NULL,
+  quantity         SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+
+  status            ENUM('pending','processing','shipped','delivered') NOT NULL DEFAULT 'pending',
+  status_updated_at DATETIME NOT NULL,
+
   FOREIGN KEY (order_id) REFERENCES orders(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS order_item_status_history (
+  id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  order_item_id INT UNSIGNED NOT NULL,
+  status        ENUM('pending','processing','shipped','delivered') NOT NULL,
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_item_id) REFERENCES order_items(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS login_tokens (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  email       VARCHAR(190) NOT NULL,
+
+  -- SHA-256 of the raw token. The raw token exists only in the emailed URL —
+  -- never stored — so a DB read alone can't be used to log in as someone.
+  token_hash  CHAR(64)     NOT NULL,
+
+  expires_at  DATETIME     NOT NULL,
+  used_at     DATETIME     NULL,
+  created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  INDEX idx_token_hash (token_hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

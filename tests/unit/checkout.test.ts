@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { ORDER_STATUSES, ORDER_REDIRECTS } from '../../src/lib/orders';
+import { PAYMENT_STATUSES, ITEM_STATUSES, ORDER_REDIRECTS } from '../../src/lib/orders';
 
 /*
  * Mirrors tests/unit/contact.test.ts's approach: regex-parse the PHP source
@@ -12,32 +12,61 @@ import { ORDER_STATUSES, ORDER_REDIRECTS } from '../../src/lib/orders';
  * production.
  */
 
-describe('the order status enum stays in sync with the PHP', () => {
+describe('the payment status enum stays in sync with the PHP', () => {
   const php = readFileSync('public/_lib/orders.php', 'utf8');
 
   const phpStatuses = [
-    ...(php.match(/const ORDER_STATUSES = \[([\s\S]*?)\];/)?.[1] ?? '').matchAll(
+    ...(php.match(/const PAYMENT_STATUSES = \[([\s\S]*?)\];/)?.[1] ?? '').matchAll(
       /'([a-z]+)'/g
     ),
   ].map((m) => m[1]);
 
-  it('finds ORDER_STATUSES in the PHP', () => {
-    expect(phpStatuses.length, 'could not parse ORDER_STATUSES out of orders.php').toBeGreaterThan(0);
+  it('finds PAYMENT_STATUSES in the PHP', () => {
+    expect(phpStatuses.length, 'could not parse PAYMENT_STATUSES out of orders.php').toBeGreaterThan(0);
   });
 
   it('matches the TypeScript source of truth exactly, in order', () => {
-    expect(phpStatuses).toEqual([...ORDER_STATUSES]);
+    expect(phpStatuses).toEqual([...PAYMENT_STATUSES]);
+  });
+});
+
+describe('the item status enum stays in sync with the PHP', () => {
+  const php = readFileSync('public/_lib/orders.php', 'utf8');
+
+  const phpStatuses = [
+    ...(php.match(/const ITEM_STATUSES = \[([\s\S]*?)\];/)?.[1] ?? '').matchAll(
+      /'([a-z]+)'/g
+    ),
+  ].map((m) => m[1]);
+
+  it('finds ITEM_STATUSES in the PHP', () => {
+    expect(phpStatuses.length, 'could not parse ITEM_STATUSES out of orders.php').toBeGreaterThan(0);
   });
 
-  it('matches the ENUM column in the checked-in schema', () => {
-    const schema = readFileSync('docs/db/schema.sql', 'utf8');
-    const enums = [...schema.matchAll(/status\s+ENUM\(([^)]+)\)/g)].map((m) =>
-      [...m[1].matchAll(/'([a-z]+)'/g)].map((s) => s[1])
-    );
+  it('matches the TypeScript source of truth exactly, in order', () => {
+    expect(phpStatuses).toEqual([...ITEM_STATUSES]);
+  });
+});
 
-    expect(enums.length, 'no ENUM(...) status column found in schema.sql').toBeGreaterThan(0);
-    for (const columnValues of enums) {
-      expect(columnValues).toEqual([...ORDER_STATUSES]);
+describe('the schema ENUM columns match their TypeScript source of truth', () => {
+  const schema = readFileSync('docs/db/schema.sql', 'utf8');
+
+  it('orders.status matches PAYMENT_STATUSES', () => {
+    const match = schema.match(/^\s*status\s+ENUM\(([^)]+)\)\s+NOT NULL DEFAULT 'pending'/m);
+    expect(match, 'could not find orders.status ENUM in schema.sql').not.toBeNull();
+    const values = [...match![1].matchAll(/'([a-z]+)'/g)].map((m) => m[1]);
+    expect(values).toEqual([...PAYMENT_STATUSES]);
+  });
+
+  it('order_items.status and order_item_status_history.status match ITEM_STATUSES', () => {
+    const matches = [...schema.matchAll(/status\s+ENUM\(([^)]+)\)/g)]
+      // orders.status is ENUM('pending','paid','failed') — 3 values, filtered out here.
+      .map((m) => [...m[1].matchAll(/'([a-z]+)'/g)].map((s) => s[1]))
+      .filter((values) => values.length !== PAYMENT_STATUSES.length);
+
+    expect(matches.length, 'expected two ITEM_STATUSES ENUM columns').toBe(2);
+    for (const values of matches) {
+      expect(values).toEqual([...ITEM_STATUSES]);
     }
   });
 });
@@ -96,7 +125,7 @@ describe('the tracking timeline covers exactly the post-payment statuses', () =>
     expect(TRACKING_STEPS).not.toContain('pending');
     expect(TRACKING_STEPS).not.toContain('failed');
     for (const step of TRACKING_STEPS) {
-      expect(ORDER_STATUSES).toContain(step);
+      expect(ITEM_STATUSES).toContain(step);
     }
   });
 });
