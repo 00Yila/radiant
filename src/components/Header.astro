@@ -33,24 +33,26 @@ const current = Astro.url.pathname;
       </svg>
     </button>
 
-    <a href="/cart/" class="hdr__cart-link">
-      Cart<span id="cart-badge" class="hdr__cart-badge" hidden>0</span>
-    </a>
+    <div class="hdr__nav-group">
+      <a href="/cart/" class="hdr__cart-link">
+        Cart<span id="cart-badge" class="hdr__cart-badge" hidden>0</span>
+      </a>
 
-    <nav id="primary-nav" class="hdr__nav" aria-label="Primary">
-      <ul role="list">
-        {links.map(({ href, label }) => (
-          <li>
-            <a href={href} aria-current={current.startsWith(href) ? 'page' : undefined}>
-              {label}
-            </a>
+      <nav id="primary-nav" class="hdr__nav" aria-label="Primary">
+        <ul role="list">
+          {links.map(({ href, label }) => (
+            <li>
+              <a href={href} aria-current={current.startsWith(href) ? 'page' : undefined}>
+                {label}
+              </a>
+            </li>
+          ))}
+          <li class="hdr__cta-item">
+            <a href="/start-project" class="hdr__cta">Start Your Project</a>
           </li>
-        ))}
-        <li class="hdr__cta-item">
-          <a href="/start-project" class="hdr__cta">Start Your Project</a>
-        </li>
-      </ul>
-    </nav>
+        </ul>
+      </nav>
+    </div>
   </div>
 </header>
 
@@ -130,6 +132,12 @@ const current = Astro.url.pathname;
   .hdr__toggle:hover {
     background: var(--ra-gold-500);
     color: var(--ra-navy-900);
+  }
+
+  .hdr__nav-group {
+    display: flex;
+    align-items: center;
+    gap: var(--ra-space-m);
   }
 
   .hdr__nav ul {
