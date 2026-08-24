@@ -25,6 +25,10 @@ import Section from '../../components/Section.astro';
         <input id="bot-field" name="bot-field" tabindex="-1" autocomplete="off" />
       </p>
 
+      <p class="error" id="error" hidden>
+        That doesn&rsquo;t look like a valid email address — check it and try again.
+      </p>
+
       <div class="login-field">
         <label for="email">Email address</label>
         <input id="email" name="email" type="email" required autocomplete="email" maxlength="190" />
@@ -34,6 +38,12 @@ import Section from '../../components/Section.astro';
     </form>
   </Section>
 </Base>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const errorBox = document.getElementById('error');
+  if (errorBox && params.get('error') === 'invalid') errorBox.hidden = false;
+</script>
 
 <style>
   .login-form { display: grid; gap: var(--ra-space-m); max-width: 28rem; }
@@ -45,5 +55,12 @@ import Section from '../../components/Section.astro';
     border: 1px solid var(--ra-border);
     border-radius: var(--ra-radius-s);
     background: var(--ra-surface);
+  }
+  .error {
+    background: var(--ra-navy-50);
+    border: 1px solid rgb(239 180 46 / 0.4);
+    border-radius: var(--ra-radius-s);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    font-size: var(--ra-step--1);
   }
 </style>

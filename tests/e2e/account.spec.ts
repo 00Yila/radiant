@@ -34,3 +34,11 @@ test('the link-expired page offers a way to request a new link', async ({ page }
   await page.goto('/account/link-expired');
   await expect(page.getByRole('link', { name: /request a new link/i })).toHaveAttribute('href', '/account/login/');
 });
+
+test('shows invalid email error when redirected with ?error=invalid', async ({ page }) => {
+  await page.goto('/account/login/?error=invalid');
+
+  const errorBox = page.locator('#error');
+  await expect(errorBox).toBeVisible();
+  await expect(errorBox).toContainText(/valid email address/i);
+});
