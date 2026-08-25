@@ -73,4 +73,14 @@ test.describe('the result page renders a timeline from the query string', () => 
     await expect(page.locator('.timeline')).toHaveCount(0);
     await expect(page.locator('.pending-note')).toContainText("haven't received a completed payment");
   });
+
+  test('renders a malicious label as literal text instead of executing it', async ({ page }) => {
+    const items = [
+      { label: '<img src=x onerror="window.__xss=true">', quantity: 1, status: 'pending', dates: {} },
+    ];
+    await page.goto(`/track/result/?ref=RA-xss&items=${encodeItems(items)}`);
+
+    expect(await page.evaluate(() => (window as any).__xss)).toBeFalsy();
+    await expect(page.locator('.item-card')).toContainText('<img src=x onerror="window.__xss=true">');
+  });
 });

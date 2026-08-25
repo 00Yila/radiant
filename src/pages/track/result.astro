@@ -58,21 +58,44 @@ import { TRACKING_STEPS } from '../../lib/orders';
       card.className = 'item-card';
 
       const currentIndex = STEPS.indexOf(item.status);
-      const stepsHtml = STEPS.map((step, i) => {
-        const date = item.dates?.[step];
-        const cls = i <= currentIndex ? 'is-done' : 'is-pending';
-        const dateText = i <= currentIndex ? (date ?? '') : 'Not yet';
-        return `<li class="timeline__step ${cls}"><span>${step}</span><span>${dateText}</span></li>`;
-      }).join('');
 
-      card.innerHTML = `
-        <h2>${item.label} × ${item.quantity}</h2>
-        ${
-          currentIndex === -1
-            ? `<p class="pending-note">${item.status === 'pending' ? "We haven't received a completed payment for this order yet." : 'No status yet.'}</p>`
-            : `<ol class="timeline">${stepsHtml}</ol>`
-        }
-      `;
+      const heading = document.createElement('h2');
+      heading.appendChild(document.createTextNode(`${item.label} × ${item.quantity}`));
+      card.appendChild(heading);
+
+      if (currentIndex === -1) {
+        const note = document.createElement('p');
+        note.className = 'pending-note';
+        note.textContent =
+          item.status === 'pending'
+            ? "We haven't received a completed payment for this order yet."
+            : 'No status yet.';
+        card.appendChild(note);
+      } else {
+        const list = document.createElement('ol');
+        list.className = 'timeline';
+
+        STEPS.forEach((step, i) => {
+          const date = item.dates?.[step];
+          const cls = i <= currentIndex ? 'is-done' : 'is-pending';
+          const dateText = i <= currentIndex ? (date ?? '') : 'Not yet';
+
+          const li = document.createElement('li');
+          li.className = `timeline__step ${cls}`;
+
+          const stepSpan = document.createElement('span');
+          stepSpan.textContent = step;
+          const dateSpan = document.createElement('span');
+          dateSpan.textContent = dateText;
+
+          li.appendChild(stepSpan);
+          li.appendChild(dateSpan);
+          list.appendChild(li);
+        });
+
+        card.appendChild(list);
+      }
+
       container.appendChild(card);
     }
 
