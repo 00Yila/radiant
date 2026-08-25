@@ -5,14 +5,21 @@ describe('the login flow never reveals whether an email has ordered before', () 
   const php = readFileSync('public/account/login.php', 'utf8');
 
   it('redirects to the same check-email page regardless of lookup result', () => {
-    // Only one redirect target should exist for the success path — a
-    // second, different one would be exactly the oracle this must avoid.
+    // Two call sites land on this exact literal target: the honeypot
+    // short-circuit and the genuine success path. A second, DIFFERENT
+    // target for either case would be exactly the oracle this must avoid,
+    // so what matters is that both hard-code the identical string rather
+    // than branching to distinct pages.
     const matches = [...php.matchAll(/redirect\('\/account\/check-email\/'\)/g)];
-    expect(matches.length).toBe(1);
+    expect(matches.length).toBe(2);
   });
 
   it('never queries whether the email already has an account or order', () => {
     expect(php).not.toMatch(/SELECT.*FROM (users|orders)/i);
+  });
+
+  it('checks the honeypot field, same convention as contact.astro/checkout.php', () => {
+    expect(php).toContain("field('bot-field')");
   });
 });
 

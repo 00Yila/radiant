@@ -26,6 +26,8 @@ import { formatNaira } from '../../lib/format';
     <form method="post" action="/checkout.php" id="cart-checkout-form" class="cart-form" hidden>
       <input type="hidden" name="items" id="cart-items-field" />
 
+      <p class="error" id="error" hidden></p>
+
       <p class="ra-visually-hidden" aria-hidden="true">
         <label for="bot-field">Leave this field empty</label>
         <input id="bot-field" name="bot-field" tabindex="-1" autocomplete="off" />
@@ -59,6 +61,22 @@ import { formatNaira } from '../../lib/format';
   const totalEl = document.getElementById('cart-total')!;
   const form = document.getElementById('cart-checkout-form') as HTMLFormElement;
   const itemsField = document.getElementById('cart-items-field') as HTMLInputElement;
+
+  // checkout.php redirects back here on either failure it can hit before
+  // handing off to Paystack — surface both instead of silently swallowing them.
+  const errorBox = document.getElementById('error');
+  const errorParam = new URLSearchParams(location.search).get('error');
+  if (errorBox && errorParam) {
+    const messages: Record<string, string> = {
+      invalid: 'There was a problem with your cart — please check your items and try again.',
+      'payment-init': "We couldn't start your payment just now. Nothing was charged — please try again.",
+    };
+    const message = messages[errorParam];
+    if (message) {
+      errorBox.textContent = message;
+      errorBox.hidden = false;
+    }
+  }
 
   function render() {
     const items = readCart(localStorage);
@@ -165,6 +183,13 @@ import { formatNaira } from '../../lib/format';
   .cart-total { margin-top: var(--ra-space-l); font-size: var(--ra-step-1); font-weight: 700; }
 
   .cart-form { display: grid; gap: var(--ra-space-s); margin-top: var(--ra-space-l); max-width: 28rem; }
+  .error {
+    background: var(--ra-navy-50);
+    border: 1px solid rgb(239 180 46 / 0.4);
+    border-radius: var(--ra-radius-s);
+    padding: var(--ra-space-s) var(--ra-space-m);
+    font-size: var(--ra-step--1);
+  }
   .cart-field { display: grid; gap: var(--ra-space-2xs); }
   .cart-field label { font-weight: 600; font-size: var(--ra-step--1); }
   .cart-field input {

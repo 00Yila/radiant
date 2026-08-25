@@ -18,6 +18,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     redirect('/account/login/');
 }
 
+if (field('bot-field') !== '') {
+    redirect('/account/check-email/');
+}
+
 $email = field('email');
 
 if (filter_var($email, FILTER_VALIDATE_EMAIL) === false || mb_strlen($email) > 190) {

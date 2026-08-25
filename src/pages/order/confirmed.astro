@@ -28,11 +28,14 @@ import Button from '../../components/Button.astro';
     <div class="ra-actions">
       <a id="track-link" href="/track/" class="ra-btn ra-btn--gold">Track your order</a>
       <Button href="/shop" variant="secondary">Continue shopping</Button>
+      <Button href="/account/login/" variant="secondary">See your orders</Button>
     </div>
   </Section>
 </Base>
 
 <script>
+  import { clearCart } from '../../lib/client/cart';
+
   const ref = new URLSearchParams(location.search).get('ref');
   const refEl = document.getElementById('ref');
   const trackLink = document.getElementById('track-link') as HTMLAnchorElement | null;
@@ -43,4 +46,10 @@ import Button from '../../components/Button.astro';
   } else if (refEl) {
     refEl.textContent = '(check your confirmation email)';
   }
+
+  // Reached only after order-callback.php verifies payment server-side, so
+  // this is the correct place to empty the cart — otherwise a customer who
+  // revisits /cart/ would see the same items with a live checkout button,
+  // risking a duplicate payment.
+  clearCart(localStorage);
 </script>
