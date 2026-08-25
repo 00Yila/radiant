@@ -130,6 +130,30 @@ describe('the tracking timeline covers exactly the post-payment statuses', () =>
   });
 });
 
+describe('admin can never manually move an item back to pending', () => {
+  const php = readFileSync('public/_lib/orders.php', 'utf8');
+
+  const phpStatuses = [
+    ...(php.match(/const ADMIN_SETTABLE_STATUSES = \[([\s\S]*?)\];/)?.[1] ?? '').matchAll(
+      /'([a-z]+)'/g
+    ),
+  ].map((m) => m[1]);
+
+  it('finds ADMIN_SETTABLE_STATUSES in the PHP', () => {
+    expect(phpStatuses.length, 'could not parse ADMIN_SETTABLE_STATUSES out of orders.php').toBeGreaterThan(0);
+  });
+
+  it('matches TRACKING_STEPS from src/lib/orders.ts exactly, in order', async () => {
+    const { TRACKING_STEPS } = await import('../../src/lib/orders');
+    expect(phpStatuses).toEqual([...TRACKING_STEPS]);
+  });
+
+  it('updateOrderItemStatus validates against ADMIN_SETTABLE_STATUSES, not ITEM_STATUSES', () => {
+    const fn = php.match(/function updateOrderItemStatus[\s\S]*?\n}/)?.[0] ?? '';
+    expect(fn).toContain('in_array($status, ADMIN_SETTABLE_STATUSES, true)');
+  });
+});
+
 describe('orders.php exposes the functions the rest of the system calls', () => {
   const php = readFileSync('public/_lib/orders.php', 'utf8');
 

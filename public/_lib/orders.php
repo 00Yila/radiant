@@ -13,6 +13,16 @@ const PAYMENT_STATUSES = ['pending', 'paid', 'failed'];
 /** Fulfillment-lifecycle status of one line item within an order. */
 const ITEM_STATUSES = ['pending', 'processing', 'shipped', 'delivered'];
 
+/**
+ * The subset of ITEM_STATUSES an admin may manually set. 'pending' is a
+ * valid *initial* item state (set by createPendingOrder(), left there for a
+ * failed payment) but is never a manual transition target — that would let
+ * an admin move a paid item's status back to "pending", which then makes
+ * the customer-facing tracking page claim the order hasn't been paid for.
+ * Same three values as TRACKING_STEPS in src/lib/orders.ts.
+ */
+const ADMIN_SETTABLE_STATUSES = ['processing', 'shipped', 'delivered'];
+
 /** 64 bits of entropy — this doubles as half of the tracking page's auth check. */
 function generateOrderReference(): string
 {
@@ -142,14 +152,15 @@ function markOrderPaid(PDO $pdo, array $order, int $paystackTransactionId): void
 }
 
 /**
- * Used only by the admin tool. Validates $status against ITEM_STATUSES
- * before it ever reaches a prepared statement — the ENUM column would also
- * reject an invalid value, but failing here gives a clear message instead of
- * a raw DB error.
+ * Used only by the admin tool. Validates $status against
+ * ADMIN_SETTABLE_STATUSES (not the full ITEM_STATUSES) before it ever
+ * reaches a prepared statement — an item is never manually moved back to
+ * 'pending', so that value is deliberately excluded here even though the
+ * ENUM column itself would accept it.
  */
 function updateOrderItemStatus(PDO $pdo, int $itemId, string $status): bool
 {
-    if (!in_array($status, ITEM_STATUSES, true)) {
+    if (!in_array($status, ADMIN_SETTABLE_STATUSES, true)) {
         return false;
     }
 

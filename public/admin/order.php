@@ -135,7 +135,7 @@ $items = getOrderItems($pdo, $id);
         <input type="hidden" name="item_id" value="<?= (int) $item['id'] ?>">
         <input type="hidden" name="csrf" value="<?= h(itemCsrfToken((int) $item['id'], $secret)) ?>">
         <select name="status">
-          <?php foreach (ITEM_STATUSES as $status): ?>
+          <?php foreach (ADMIN_SETTABLE_STATUSES as $status): ?>
             <option value="<?= h($status) ?>" <?= $status === $item['status'] ? 'selected' : '' ?>><?= h($status) ?></option>
           <?php endforeach; ?>
         </select>

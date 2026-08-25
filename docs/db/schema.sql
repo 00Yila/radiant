@@ -19,6 +19,21 @@
 -- orders-level fact (the row never leaves 'pending'), so a failed order's
 -- items simply stay 'pending' forever, which already reads correctly.
 
+-- This file is a full replacement, not a migration (see note above). A
+-- database still holding the OLD schema has an incompatible `orders` table
+-- (no order_items/variant columns, a different status ENUM) and an orphaned
+-- `order_status_history` table that this schema no longer uses. Without
+-- these drops, `CREATE TABLE IF NOT EXISTS orders` would silently no-op
+-- against the old table while the new order_items/order_item_status_history/
+-- login_tokens tables get created fresh — a broken hybrid with no error.
+-- Dropped children before parents to satisfy foreign keys; login_tokens has
+-- no dependents but is included in case of a partial prior run of this file.
+DROP TABLE IF EXISTS order_item_status_history;
+DROP TABLE IF EXISTS order_status_history;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS login_tokens;
+
 CREATE TABLE IF NOT EXISTS orders (
   id                       INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 
