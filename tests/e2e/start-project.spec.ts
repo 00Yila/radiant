@@ -19,22 +19,22 @@ test.describe('"Start Your Project" leads to the guided intake, not the plain fo
   });
 
   test('a service page carries its subject into the guided intake', async ({ page }) => {
-    await page.goto('/services/solar-pv-installation');
+    await page.goto('/services/software-development');
     await page.locator('.ra-actions').first()
       .getByRole('link', { name: 'Start Your Project' }).click();
 
     await expect(page).toHaveURL(/\/start-project/);
     await expect(
-      page.locator('input[name="subject"][value="Solar & PV installation"]')
+      page.locator('input[name="subject"][value="Software development"]')
     ).toBeChecked();
-    await expect(page.locator('#message-guide')).toHaveText(/keep running/i);
+    await expect(page.locator('#message-guide')).toHaveText(/replace or automate/i);
   });
 
   test('"Get in Touch" on the same page still goes to the plain contact form', async ({ page }) => {
-    await page.goto('/services/solar-pv-installation');
+    await page.goto('/services/software-development');
     await page.getByRole('link', { name: 'Get in Touch' }).first().click();
     await expect(page).toHaveURL(/\/contact(?!.*start-project)/);
-    await expect(page.getByLabel('What can we help with?')).toHaveValue('Solar & PV installation');
+    await expect(page.getByLabel('What can we help with?')).toHaveValue('Software development');
   });
 });
 
@@ -44,7 +44,7 @@ test.describe('the guided intake asks what the plain form does not', () => {
 
     await expect(page.getByRole('radiogroup', { name: 'When do you need this?' })).toBeVisible();
     await expect(page.getByPlaceholder(/₦150,000/)).toBeVisible();
-    await expect(page.locator('input[name="subject"]')).toHaveCount(9);
+    await expect(page.locator('input[name="subject"]')).toHaveCount(6);
   });
 
   test('changing the project type updates the guidance for the message box', async ({ page }) => {
@@ -76,7 +76,7 @@ test.describe('the guided intake works without JavaScript', () => {
 
   test('every field is present and the form is submittable natively', async ({ page }) => {
     await page.goto('/start-project');
-    await expect(page.locator('input[name="subject"]')).toHaveCount(9);
+    await expect(page.locator('input[name="subject"]')).toHaveCount(6);
     await expect(page.locator('input[name="timeline"]')).toHaveCount(4);
     await expect(page.locator('#message')).toBeVisible();
     // The live guidance swap is progressive enhancement only — the default

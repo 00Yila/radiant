@@ -12,9 +12,6 @@ export const SUBJECTS = [
   'E-commerce',
   'Digital marketing',
   'IT consulting',
-  'Networking & infrastructure',
-  'Solar & PV installation',
-  'Technology products',
   'Something else',
 ] as const;
 
@@ -27,9 +24,6 @@ export const SUBJECT_BY_SERVICE: Record<string, Subject> = {
   'ecommerce-solutions': 'E-commerce',
   'digital-marketing': 'Digital marketing',
   'it-consulting': 'IT consulting',
-  'networking-infrastructure': 'Networking & infrastructure',
-  'solar-pv-installation': 'Solar & PV installation',
-  'technology-products': 'Technology products',
 };
 
 /**
@@ -51,12 +45,6 @@ export const MESSAGE_PROMPT: Record<string, string> = {
     'Who are you trying to reach, and what have you tried so far?',
   'it-consulting':
     'What decision or problem are you weighing up?',
-  'networking-infrastructure':
-    'How many people and devices, and is it a new site or an existing one?',
-  'solar-pv-installation':
-    'What do you need to keep running, and for how long without the grid?',
-  'technology-products':
-    'Which device or model are you after, and how many?',
 };
 
 /** Link a service CTA at the contact form with that service preselected. */

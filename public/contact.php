@@ -62,9 +62,6 @@ const SUBJECTS = [
     'E-commerce',
     'Digital marketing',
     'IT consulting',
-    'Networking & infrastructure',
-    'Solar & PV installation',
-    'Technology products',
     'Something else',
 ];
 

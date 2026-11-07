@@ -2,7 +2,7 @@
 /*
  * One glyph per service, drawn in the logo's own language: a hexagon shell
  * (the lattice) with a gold element inside (the sun). Inline SVG rather than
- * files — seven of these cost no requests, scale cleanly, and inherit colour
+ * files — five of these cost no requests, scale cleanly, and inherit colour
  * from the register they sit in.
  *
  * `navy` is currentColor so the glyph works on light and dark alike; the gold
@@ -67,23 +67,6 @@ const HEX = 'M20 2.6 34.6 11v17.3L20 36.7 5.4 28.3V11z';
     <>
       <path d="M14 15.5h12v8h-7l-3.4 2.8v-2.8H14z" />
       <path d="M18 19.5h4" class="glyph__gold" />
-    </>
-  )}
-
-  {name === 'networking-infrastructure' && (
-    <>
-      {/* the logo's connected nodes */}
-      <path d="M20 17v6M20 20l-4.6 3M20 20l4.6 3" />
-      <circle cx="20" cy="15.4" r="1.8" class="glyph__gold" />
-      <circle cx="14.6" cy="25" r="1.8" />
-      <circle cx="25.4" cy="25" r="1.8" />
-    </>
-  )}
-
-  {name === 'technology-products' && (
-    <>
-      <rect x="15.4" y="12.6" width="9.2" height="14.8" rx="1.8" />
-      <path d="M18.6 24.6h2.8" class="glyph__gold" />
     </>
   )}
 </svg>

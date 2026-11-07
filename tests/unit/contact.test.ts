@@ -45,14 +45,14 @@ describe('service CTAs resolve to a real form option', () => {
   });
 
   it('encodes the service id into the link', () => {
-    expect(contactUrlForService('solar-pv-installation')).toBe(
-      '/contact?subject=solar-pv-installation'
+    expect(contactUrlForService('software-development')).toBe(
+      '/contact?subject=software-development'
     );
   });
 
   it('sends "Start Your Project" to the guided intake, not the plain form', () => {
-    expect(startProjectUrlForService('solar-pv-installation')).toBe(
-      '/start-project?subject=solar-pv-installation'
+    expect(startProjectUrlForService('software-development')).toBe(
+      '/start-project?subject=software-development'
     );
   });
 });
