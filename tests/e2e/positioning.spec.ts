@@ -80,3 +80,31 @@ test.describe('the contact page', () => {
     await expect(page.locator('main')).not.toContainText("If the form doesn’t work");
   });
 });
+
+test.describe('pages outside the homepage follow the new positioning', () => {
+  test('the About page no longer pitches technology products', async ({ page }) => {
+    await page.goto('/about');
+    await expect(page.locator('main')).not.toContainText(/technology products/i);
+  });
+
+  test('the 404 page leads with Services, not the Shop', async ({ page }) => {
+    await page.goto('/404');
+    await expect(page.getByRole('link', { name: 'Our Services' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Browse the Shop/i })).toHaveCount(0);
+  });
+});
+
+test('a returning visitor with items sees the Cart link on a non-shop page', async ({ page }) => {
+  await page.goto('/about');
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'ra-cart',
+      JSON.stringify([
+        { product: 'iphone-13', variant: 'IP13-128', label: '128GB', price: 492870, quantity: 2 },
+      ])
+    )
+  );
+  await page.reload();
+  await expect(page.locator('#cart-link')).toBeVisible();
+  await expect(page.locator('#cart-badge')).toHaveText('2');
+});

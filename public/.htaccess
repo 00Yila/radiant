@@ -76,7 +76,7 @@ Options -Indexes
 <IfModule mod_alias.c>
   RedirectMatch 404 ^/_lib/
 
-  # Services retired in the positioning pass. They were never indexed, but any
+  # Services retired in the positioning pass. They may still be linked or indexed, so any
   # stray link should land somewhere useful instead of a 404.
   RedirectMatch 301 ^/services/(solar-pv-installation|networking-infrastructure)/?$ /services/
   RedirectMatch 301 ^/services/technology-products/?$ /shop/

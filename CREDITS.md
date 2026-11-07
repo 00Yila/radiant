@@ -9,7 +9,7 @@ recorded here so the provenance of every image on the site is traceable.
 
 | File | Photographer | Source | Used on |
 |---|---|---|---|
-| `public/images/photos/products-iphone-*` | Filip Baotić | [unsplash.com/photos/DV0mB2uJM34](https://unsplash.com/photos/DV0mB2uJM34) | Home — technology products; Shop |
+| `public/images/photos/products-iphone-*` | Filip Baotić | [unsplash.com/photos/DV0mB2uJM34](https://unsplash.com/photos/DV0mB2uJM34) | Shop |
 | `public/images/photos/abuja-skyline-*` | Chizon | [unsplash.com/photos/LfRn3yxsrQo](https://unsplash.com/photos/LfRn3yxsrQo) | About |
 
 The Abuja photograph is tagged by the photographer as taken in Abuja, Nigeria.
