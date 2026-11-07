@@ -62,9 +62,11 @@ test('Add to Cart on a product page updates the header badge', async ({ page }) 
   await page.evaluate(() => localStorage.removeItem('ra-cart'));
   await page.reload();
 
+  await expect(page.locator('#cart-link')).toBeHidden();
   await expect(page.locator('#cart-badge')).toBeHidden();
 
   await page.locator('.buy__panel:visible .buy__add-cart').click();
+  await expect(page.locator('#cart-link')).toBeVisible();
   await expect(page.locator('#cart-badge')).toBeVisible();
   await expect(page.locator('#cart-badge')).toHaveText('1');
 });

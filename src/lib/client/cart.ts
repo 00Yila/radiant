@@ -99,3 +99,26 @@ export function cartTotal(items: CartItem[]): number {
 export function cartCount(items: CartItem[]): number {
   return items.reduce((sum, i) => sum + i.quantity, 0);
 }
+
+/** The two bits of an element the cart indicator touches; lets tests pass plain objects. */
+export interface CartIndicatorElement {
+  hidden: boolean;
+  textContent: string | null;
+}
+
+/**
+ * Shows the header Cart link only when there is something in the cart, and
+ * writes the count into its badge. Shared by the header and the product page
+ * so the two cannot drift apart.
+ */
+export function applyCartCount(
+  link: CartIndicatorElement | null,
+  badge: CartIndicatorElement | null,
+  count: number
+): void {
+  if (link) link.hidden = count === 0;
+  if (badge) {
+    badge.textContent = String(count);
+    badge.hidden = count === 0;
+  }
+}

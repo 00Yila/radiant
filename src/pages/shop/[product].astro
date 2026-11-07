@@ -521,14 +521,14 @@ const variantList = variants.map((v) => v.label).join(', ');
 </style>
 
 <script>
-  import { addToCart, cartCount, readCart } from '../../lib/client/cart';
+  import { addToCart, cartCount, readCart, applyCartCount } from '../../lib/client/cart';
 
   function updateBadge() {
-    const badge = document.getElementById('cart-badge');
-    if (!badge) return;
-    const count = cartCount(readCart(localStorage));
-    badge.textContent = String(count);
-    badge.hidden = count === 0;
+    applyCartCount(
+      document.getElementById('cart-link'),
+      document.getElementById('cart-badge'),
+      cartCount(readCart(localStorage))
+    );
   }
 
   for (const button of document.querySelectorAll<HTMLButtonElement>('.buy__add-cart')) {

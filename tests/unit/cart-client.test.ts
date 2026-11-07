@@ -7,6 +7,7 @@ import {
   clearCart,
   cartTotal,
   cartCount,
+  applyCartCount,
   type CartStorage,
 } from '../../src/lib/client/cart';
 import { CART_LIMITS } from '../../src/lib/orders';
@@ -114,5 +115,31 @@ describe('cartTotal and cartCount', () => {
     ];
     expect(cartTotal(items)).toBe(350);
     expect(cartCount(items)).toBe(5);
+  });
+});
+
+describe('applyCartCount', () => {
+  const el = () => ({ hidden: true, textContent: '' as string | null });
+
+  it('keeps the link and badge hidden when the cart is empty', () => {
+    const link = el();
+    const badge = el();
+    applyCartCount(link, badge, 0);
+    expect(link.hidden).toBe(true);
+    expect(badge.hidden).toBe(true);
+    expect(badge.textContent).toBe('0');
+  });
+
+  it('reveals the link and writes the count when there are items', () => {
+    const link = el();
+    const badge = el();
+    applyCartCount(link, badge, 3);
+    expect(link.hidden).toBe(false);
+    expect(badge.hidden).toBe(false);
+    expect(badge.textContent).toBe('3');
+  });
+
+  it('tolerates elements that are not on the page', () => {
+    expect(() => applyCartCount(null, null, 2)).not.toThrow();
   });
 });
