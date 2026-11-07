@@ -66,3 +66,17 @@ test.describe('the homepage', () => {
     await expect(page.locator('main')).not.toContainText('Smartphones');
   });
 });
+
+test.describe('the contact page', () => {
+  test('promises a reply time and shows only the domain email', async ({ page }) => {
+    await page.goto('/contact');
+    await expect(page.getByText('We reply within one working day.')).toBeVisible();
+    await expect(page.locator('main')).toContainText('help@radiantalphadigital.com');
+    expect(await page.content()).not.toContain('gmail');
+  });
+
+  test('no longer hedges about the form failing', async ({ page }) => {
+    await page.goto('/contact');
+    await expect(page.locator('main')).not.toContainText("If the form doesn’t work");
+  });
+});

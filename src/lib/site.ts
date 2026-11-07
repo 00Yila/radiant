@@ -12,7 +12,6 @@ export const SITE = Object.freeze({
   founded: '2026-03-17',
 
   email: 'help@radiantalphadigital.com',
-  emailSecondary: 'radiantalphadigital@gmail.com',
 
   phoneE164: '+2349129665798',
   phoneDisplay: '+234 912 966 5798',

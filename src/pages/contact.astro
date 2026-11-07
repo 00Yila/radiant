@@ -18,8 +18,8 @@ const waUrl = buildWhatsAppUrl({
     <p class="ra-eyebrow">Contact</p>
     <h1 class="ra-display">Let&rsquo;s build something great together.</h1>
     <p class="ra-lede lede--tight">
-      Whether you need a professional website, digital marketing, IT consulting, or
-      quality technology products, we&rsquo;re here to help.
+      Whether you need a professional website, custom software, digital marketing, or
+      IT consulting, we&rsquo;re here to help.
     </p>
   </Section>
 
@@ -29,7 +29,7 @@ const waUrl = buildWhatsAppUrl({
         <h2>Reach us directly</h2>
         <p class="ra-sub">
           For the fastest response, send us a message on WhatsApp. We&rsquo;re also available by
-          email for project enquiries and business partnerships.
+          email for project enquiries and business partnerships. We reply within one working day.
         </p>
 
         <ul class="channels" role="list">
@@ -44,10 +44,6 @@ const waUrl = buildWhatsAppUrl({
           <li>
             <span class="channels__label">Email</span>
             <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-          </li>
-          <li>
-            <span class="channels__label">Alternative email</span>
-            <a href={`mailto:${SITE.emailSecondary}`}>{SITE.emailSecondary}</a>
           </li>
           <li>
             <span class="channels__label">Location</span>
@@ -157,12 +153,6 @@ const waUrl = buildWhatsAppUrl({
 
           <button type="submit" class="ra-btn ra-btn--primary">Send message</button>
         </form>
-
-        <p class="fallback">
-          If the form doesn&rsquo;t work for any reason, message us on
-          <a href={waUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-          or email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> instead.
-        </p>
       </div>
     </div>
   </Section>
@@ -337,13 +327,4 @@ const waUrl = buildWhatsAppUrl({
     font-size: var(--ra-step--1);
   }
   .alert p { margin: 0; }
-
-  .fallback {
-    margin-top: var(--ra-space-l);
-    padding: var(--ra-space-m);
-    border-radius: var(--ra-radius-s);
-    background: var(--ra-navy-50);
-    font-size: var(--ra-step--1);
-    color: var(--ra-fg-muted);
-  }
 </style>

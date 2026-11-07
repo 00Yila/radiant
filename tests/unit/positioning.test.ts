@@ -103,3 +103,16 @@ describe('the services page no longer advertises retired offers', () => {
     expect(page).not.toContain('Custom Web Application');
   });
 });
+
+describe('the Gmail address is gone', () => {
+  it('is not defined in the site facts', () => {
+    expect(readFileSync('src/lib/site.ts', 'utf8')).not.toContain('gmail');
+    expect(readFileSync('src/lib/site.ts', 'utf8')).not.toContain('emailSecondary');
+  });
+
+  it('is not referenced by the contact page', () => {
+    const page = readFileSync('src/pages/contact.astro', 'utf8');
+    expect(page).not.toContain('emailSecondary');
+    expect(page).not.toContain('Alternative email');
+  });
+});
