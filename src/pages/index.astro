@@ -9,6 +9,7 @@ import PostCard from '../components/PostCard.astro';
 import { formatNaira } from '../lib/format';
 import { getPublishedPosts } from '../lib/posts';
 import { SITE } from '../lib/site';
+import { buildWhatsAppUrl } from '../lib/whatsapp';
 
 /* Newest three; the section hides itself entirely when there are none. */
 const latestPosts = (await getPublishedPosts()).slice(0, 3);
@@ -16,6 +17,11 @@ const latestPosts = (await getPublishedPosts()).slice(0, 3);
 const leadServices = (await getCollection('services'))
   .filter((s) => s.data.lead)
   .sort((a, b) => a.data.order - b.data.order);
+
+/* The low-commitment first step: a prospect sends their current site and we review it. */
+const reviewUrl = buildWhatsAppUrl({
+  message: "Hi Radiant Alpha, I'd like a free review of my current website. Here's the link: ",
+});
 
 const reasons = [
   { title: 'Registered & Trusted', body: `Fully incorporated with the Corporate Affairs Commission — RC ${SITE.rcNumber}.` },
@@ -28,15 +34,15 @@ const reasons = [
 
 /*
  * Every figure here is verifiable: the CAC registration, the trading location,
- * and the two timeframes published on /returns. No client counts or awards —
+ * and the website price and timeline published in the FAQ below. No client counts or awards —
  * we have neither yet, and inventing them is the one thing that would cost us
  * the trust the rest of this page is trying to earn.
  */
 const credentials = [
   { figure: `RC ${SITE.rcNumber}`, label: 'Registered with the CAC' },
   { figure: 'Abuja, FCT', label: 'Serving all of Nigeria' },
-  { figure: SITE.preOrderLeadTime, label: 'Typical pre-order delivery' },
-  { figure: '14 days', label: 'Defect warranty on hardware' },
+  { figure: 'From ₦150,000', label: 'Business websites' },
+  { figure: '2–3 weeks', label: 'Typical website delivery' },
 ];
 
 /*
@@ -95,15 +101,13 @@ const expectations = [
   <Section register="dark" class="hero ra-backdrop-glow">
     <HeroFigure />
     <p class="ra-eyebrow">Digital services · Abuja, Nigeria</p>
-    <h1 class="ra-display hero__title">{SITE.tagline}</h1>
+    <h1 class="ra-display hero__title">Fast, mobile-first websites and web apps for Abuja businesses.</h1>
     <p class="ra-lede">
-      We help businesses establish a powerful digital presence through professional web
-      development, custom software, digital marketing, IT consulting, and quality
-      technology products.
+      Websites from ₦150,000, live in 2–3 weeks. Software, e-commerce and marketing when you're ready.
     </p>
     <div class="ra-actions">
       <Button href="/start-project" variant="gold">Start Your Project</Button>
-      <Button href="/services" variant="secondary">Explore Our Services</Button>
+      <Button href={reviewUrl} variant="secondary" external>WhatsApp us your current site for a free review</Button>
     </div>
     <p class="hero__trust">{SITE.trustLine}</p>
   </Section>
@@ -127,7 +131,7 @@ const expectations = [
   <Section class="ra-backdrop-hex">
     <h2>What we do</h2>
     <p class="ra-measure ra-sub">
-      Four core services, plus IT consulting, networking, and technology products.
+      Four core services, plus IT consulting.
     </p>
     <ul class="ra-cards" role="list">
       {leadServices.map((service) => (
@@ -154,38 +158,6 @@ const expectations = [
         </li>
       ))}
     </ul>
-  </Section>
-
-  <Section class="products">
-    <div class="products__grid">
-      <div>
-        <h2>Technology products, described honestly</h2>
-        <p class="ra-sub">
-          Smartphones, laptops, and accessories on pre-order. Every listing states
-          condition, network lock, SIM type, battery health, and warranty before you
-          order — allow {SITE.preOrderLeadTime} for delivery from confirmation.
-        </p>
-        <p class="shop-cta"><Button href="/shop">Browse the Shop</Button></p>
-      </div>
-      {/* Dimensions are on the tag so the grid does not reflow as it loads. */}
-      <picture class="products__shot">
-        <source
-          type="image/webp"
-          srcset="/images/photos/products-iphone-640.webp 640w, /images/photos/products-iphone-1280.webp 1280w"
-          sizes="(min-width: 900px) 46vw, 100vw"
-        />
-        <img
-          src="/images/photos/products-iphone-640.jpg"
-          srcset="/images/photos/products-iphone-640.jpg 640w, /images/photos/products-iphone-1280.jpg 1280w"
-          sizes="(min-width: 900px) 46vw, 100vw"
-          width="640"
-          height="480"
-          loading="lazy"
-          decoding="async"
-          alt="The rear camera array of a modern smartphone, lit against a dark background."
-        />
-      </picture>
-    </div>
   </Section>
 
   <Section>
@@ -248,8 +220,8 @@ const expectations = [
   <Section register="dark" class="ra-backdrop-nodes">
     <h2 class="ra-display">Ready to grow your business?</h2>
     <p class="ra-lede">
-      Whether you need a professional website, custom software, digital marketing, IT
-      consulting, or quality technology products — let's build something remarkable together.
+      Whether you need a professional website, custom software, digital marketing, or IT
+      consulting — let's build something remarkable together.
     </p>
     <Button href="/contact" variant="gold">Get in Touch</Button>
   </Section>
@@ -275,11 +247,11 @@ const expectations = [
   /*
    * The home headline is the one place the type should be genuinely large —
    * a step above the global h1, tighter, and held to a narrow measure so it
-   * breaks into three stacked lines rather than running wide.
+   * breaks into a few stacked lines.
    */
   .hero__title {
-    max-width: 15ch;
-    font-size: clamp(2.75rem, 1.6rem + 5.2vw, 5.5rem);
+    max-width: 20ch;
+    font-size: clamp(2.25rem, 1.4rem + 4vw, 4.25rem);
     letter-spacing: -0.03em;
     line-height: 1.02;
   }
@@ -372,7 +344,6 @@ const expectations = [
   }
 
   .more { margin-top: var(--ra-space-l); font-weight: 600; }
-  .shop-cta { margin-top: var(--ra-space-l); }
 
   .insights__head {
     display: flex;
@@ -382,19 +353,6 @@ const expectations = [
     justify-content: space-between;
   }
   .insights__all { font-weight: 600; white-space: nowrap; }
-
-  .products__grid { display: grid; gap: var(--ra-space-xl); align-items: center; }
-  @media (min-width: 900px) {
-    .products__grid { grid-template-columns: 1fr 1fr; gap: var(--ra-space-2xl); }
-  }
-  .products__shot {
-    display: block;
-    overflow: hidden;
-    border-radius: var(--ra-radius-l);
-    /* The photo is dark on dark; a hairline keeps its edge legible on canvas. */
-    box-shadow: 0 0 0 1px var(--ra-border), var(--ra-shadow-m);
-  }
-  .products__shot img { width: 100%; height: auto; }
 
   .reasons {
     display: grid;
