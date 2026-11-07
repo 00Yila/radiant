@@ -67,21 +67,21 @@ describe('service CTAs resolve to a real form option', () => {
 describe('contact.php redirects each form to its own pages', () => {
   const php = readFileSync('public/contact.php', 'utf8');
 
-  const formsBlock = php.match(/const FORMS = \[([\s\S]*?)\n\];/)?.[1] ?? '';
+  const formsBlock = php.match(/const FORMS = \[([\s\S]*?)\r?\n\];/)?.[1] ?? '';
 
   it('finds the FORMS map in the PHP handler', () => {
     expect(formsBlock, 'could not parse FORMS out of contact.php').not.toBe('');
   });
 
   it('routes the plain contact form back to /contact', () => {
-    const block = formsBlock.match(/'contact' => \[([\s\S]*?)\],\n {4}'start-project'/)?.[1] ?? '';
+    const block = formsBlock.match(/'contact' => \[([\s\S]*?)\],\r?\n {4}'start-project'/)?.[1] ?? '';
     expect(block).toMatch(/'success' => '\/contact\/thanks\/'/);
     expect(block).toMatch(/'error' => '\/contact\/\?error=send'/);
     expect(block).toMatch(/'invalid' => '\/contact\/\?error=invalid'/);
   });
 
   it('routes the guided intake back to /start-project on failure', () => {
-    const block = formsBlock.match(/'start-project' => \[([\s\S]*?)\],\n\];?$/)?.[1]
+    const block = formsBlock.match(/'start-project' => \[([\s\S]*?)\],\r?\n\];?$/)?.[1]
       ?? formsBlock.split("'start-project' =>")[1] ?? '';
     expect(block).toMatch(/'success' => '\/contact\/thanks\/'/);
     expect(block).toMatch(/'error' => '\/start-project\/\?error=send'/);
