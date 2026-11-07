@@ -34,8 +34,10 @@ page.
   E-Commerce Solutions, Digital Marketing, IT Consulting.
 - **Services removed:** Solar & PV Installation, Networking & IT Infrastructure,
   Technology Products.
-- **Domain mailbox:** untested, so `radiantalphadigital@gmail.com` and the "if
-  the form doesn't work" fallback line stay for now.
+- **Domain mailbox:** the owner confirmed `help@radiantalphadigital.com` sends
+  and receives, so `radiantalphadigital@gmail.com` and the "if the form doesn't
+  work" fallback line are removed in this sub-project. Only the domain address
+  remains on the Contact page.
 - **Response-time promise:** "We reply within one working day."
 - **Free-review CTA:** approved. The secondary hero button becomes a WhatsApp
   offer to review a visitor's current site.
@@ -55,7 +57,8 @@ Out of scope, each its own spec and plan, in this order:
 3. Proof and people: founder photo and bio, this site as a case study, blog
    bylines, softening "one of Africa's leading…".
 4. Off-site checklist (not code): Search Console, Google Business Profile,
-   LinkedIn, mail DNS (MX, SPF, DKIM, DMARC), then remove the Gmail address.
+   LinkedIn, and a deliverability check of mail DNS (SPF, DKIM, DMARC) so
+   messages from `help@` don't land in spam.
 
 Also deferred, because it needs the owner's real business terms: the audit's
 three website packages, five-step process and deposit split.
@@ -131,7 +134,12 @@ comment above it ("every figure is one we can evidence") stays true.
 
 ### Contact page (`src/pages/contact.astro`)
 
-Add the line "We reply within one working day." near the form. No other change.
+- Add the line "We reply within one working day." near the form.
+- Remove the "Alternative email" entry (`SITE.emailSecondary`) from the page, and
+  the fallback sentence "If the form doesn't work for any reason…". Remove
+  `emailSecondary` from `src/lib/site.ts`. Verified by grep: it is used only in
+  `contact.astro:50` and defined in `site.ts:15`, and no test references it.
+- The domain mailbox is the only email shown.
 
 ## Error handling and risks
 
@@ -156,7 +164,8 @@ Add the line "We reply within one working day." near the form. No other change.
   trust items; header nav has no Shop link and the footer does; `/services/`
   shows exactly five service cards with units on Marketing and Consulting; Cart
   link is hidden on first visit and visible after an Add to Cart (extends
-  `cart.spec.ts`); Contact shows the response-time line.
+  `cart.spec.ts`); Contact shows the response-time line and no Gmail address or
+  fallback sentence.
 - `.htaccess` redirect rules are asserted by a unit test that reads the file.
 - Existing accessibility and SEO specs must continue to pass unchanged.
 
