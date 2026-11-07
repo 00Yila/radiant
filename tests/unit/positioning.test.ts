@@ -65,3 +65,41 @@ describe('retired service URLs redirect instead of 404ing', () => {
     );
   });
 });
+
+describe('recurring prices carry their billing unit', () => {
+  it('marks marketing as monthly and consulting as hourly', () => {
+    expect(frontmatter('digital-marketing', 'startingUnit')).toBe('"/month"');
+    expect(frontmatter('it-consulting', 'startingUnit')).toBe('"/hour"');
+  });
+
+  it('leaves one-off services without a unit', () => {
+    for (const id of [
+      'software-development',
+      'website-design-development',
+      'ecommerce-solutions',
+    ]) {
+      expect(frontmatter(id, 'startingUnit'), id).toBeUndefined();
+    }
+  });
+});
+
+describe('the services page no longer advertises retired offers', () => {
+  const page = readFileSync('src/pages/services/index.astro', 'utf8');
+
+  it('has no Equip tier', () => {
+    expect(page).not.toContain("name: 'Equip'");
+  });
+
+  it('has no network-setup price row', () => {
+    expect(page).not.toContain('Network Setup');
+  });
+
+  it('does not name networking in its meta description', () => {
+    expect(page).not.toMatch(/description="[^"]*networking/i);
+  });
+
+  it('names the software row to match its card', () => {
+    expect(page).toContain("service: 'Software Development'");
+    expect(page).not.toContain('Custom Web Application');
+  });
+});

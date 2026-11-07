@@ -11,9 +11,9 @@ const services = (await getCollection('services')).sort(
 );
 
 /*
- * Seven services in one flat grid reads as a list of whatever we happen to
- * offer. Grouped into Build → Grow → Equip it reads as a progression, and a
- * visitor can find their own stage in it.
+ * A flat grid of services reads as a list of whatever we happen to offer.
+ * Grouped into Build → Grow it reads as a progression, and a visitor can find
+ * their own stage in it.
  */
 const tiers = [
   {
@@ -26,11 +26,6 @@ const tiers = [
     name: 'Grow',
     blurb: 'Getting it in front of people, and making sound decisions about it.',
   },
-  {
-    n: 3,
-    name: 'Equip',
-    blurb: 'The networks and hardware everything else runs on.',
-  },
 ] as const;
 
 const byTier = tiers.map((tier) => ({
@@ -41,19 +36,18 @@ const byTier = tiers.map((tier) => ({
 const pricing = [
   { service: 'Business Website', from: 150000, unit: '' },
   { service: 'E-commerce Website', from: 300000, unit: '' },
-  { service: 'Custom Web Application', from: 500000, unit: '' },
+  { service: 'Software Development', from: 500000, unit: '' },
   { service: 'Website Maintenance', from: 30000, unit: '/month' },
   { service: 'SEO Services', from: 80000, unit: '/month' },
   { service: 'Social Media Management', from: 100000, unit: '/month' },
   { service: 'Branding Package', from: 120000, unit: '' },
   { service: 'IT Consulting', from: 25000, unit: '/hour' },
-  { service: 'Network Setup', from: 100000, unit: '' },
   { service: 'Technical Support', from: 20000, unit: '' },
 ];
 ---
 <Base
   title="Services"
-  description="Software development, website design, e-commerce, digital marketing, IT consulting, and networking for businesses across Nigeria. Transparent starting prices."
+  description="Software development, website design, e-commerce, digital marketing, and IT consulting for businesses across Nigeria. Transparent starting prices."
   path="/services"
 >
   <Section register="dark" class="ra-backdrop-glow">
@@ -81,7 +75,7 @@ const pricing = [
               <p>{service.data.summary}</p>
               {service.data.startingFrom && (
                 <p class="ra-card__price ra-numeric">
-                  From {formatNaira(service.data.startingFrom)}
+                  From {formatNaira(service.data.startingFrom)}{service.data.startingUnit ?? ''}
                 </p>
               )}
             </li>

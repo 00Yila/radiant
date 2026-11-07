@@ -18,7 +18,7 @@ export async function getStaticPaths() {
 
 const { service } = Astro.props;
 const { Content } = await render(service);
-const { title, summary, startingFrom, faqs } = service.data;
+const { title, summary, startingFrom, startingUnit, faqs } = service.data;
 
 const path = `/services/${service.id}`;
 const waUrl = buildWhatsAppUrl({ message: buildEnquiryMessage(title) });
@@ -89,7 +89,7 @@ const breadcrumbSchema = {
     <h1 class="ra-display">{title}</h1>
     <p class="ra-lede lede--tight">{summary}</p>
     {startingFrom && (
-      <p class="from ra-numeric">Starting from {formatNaira(startingFrom)}</p>
+      <p class="from ra-numeric">Starting from {formatNaira(startingFrom)}{startingUnit ?? ''}</p>
     )}
     <div class="ra-actions">
       <Button href={startProjectUrl} variant="gold">Start Your Project</Button>

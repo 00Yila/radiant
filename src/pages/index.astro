@@ -136,7 +136,7 @@ const expectations = [
           <h3><a href={`/services/${service.id}`}>{service.data.title}</a></h3>
           <p>{service.data.summary}</p>
           {service.data.startingFrom && (
-            <p class="ra-card__price ra-numeric">From {formatNaira(service.data.startingFrom)}</p>
+            <p class="ra-card__price ra-numeric">From {formatNaira(service.data.startingFrom)}{service.data.startingUnit ?? ''}</p>
           )}
         </li>
       ))}

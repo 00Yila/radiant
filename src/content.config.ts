@@ -11,9 +11,11 @@ const services = defineCollection({
     summary: z.string().min(70).max(160),
     lead: z.boolean(),
     order: z.number().int().positive(),
-    /** Which band of the Build → Grow → Equip hierarchy this service sits in. */
-    tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+    /** Which band of the Build → Grow hierarchy this service sits in. */
+    tier: z.union([z.literal(1), z.literal(2)]),
     startingFrom: z.number().int().positive().optional(),
+    /** Shown after the price for recurring or hourly services: "From ₦80,000/month". */
+    startingUnit: z.enum(['/month', '/hour']).optional(),
     faqs: z
       .array(z.object({ question: z.string(), answer: z.string() }))
       .default([]),

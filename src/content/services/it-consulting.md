@@ -6,6 +6,7 @@ lead: false
 order: 5
 tier: 2
 startingFrom: 25000
+startingUnit: "/hour"
 faqs:
   - question: "Do you only recommend systems you build?"
     answer: "No. Our advice is independent, and when an off-the-shelf product serves you better than something custom, we will say so."
