@@ -61,3 +61,18 @@ test.describe('the terms page', () => {
     await expect(page.getByText('Last updated 16 November 2026')).toBeVisible();
   });
 });
+
+test('links in the legal pages are separated from the words before them', async ({ page }) => {
+  for (const path of ['/privacy', '/terms']) {
+    await page.goto(path);
+    const glued = await page.$$eval('main a', (links) =>
+      links
+        .filter((a) => {
+          const prev = a.previousSibling;
+          return prev && prev.nodeType === 3 && !/[\s(]$/.test(prev.textContent ?? '');
+        })
+        .map((a) => a.textContent)
+    );
+    expect(glued, `${path}: links glued to the word before them`).toEqual([]);
+  }
+});

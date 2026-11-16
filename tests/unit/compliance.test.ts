@@ -130,3 +130,11 @@ describe('the terms match instant checkout', () => {
     );
   });
 });
+
+describe('the privacy policy states a recognised basis for WhatsApp messages', () => {
+  it('does not say "you contacted us" is the basis', () => {
+    const page = readFileSync('src/pages/privacy.astro', 'utf8');
+    expect(page).not.toContain('Our basis is that you contacted us');
+    expect(page).toContain('Our basis is taking steps at your request.');
+  });
+});
