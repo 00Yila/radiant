@@ -3,6 +3,7 @@ import { getCollection, getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Section from '../../components/Section.astro';
 import Button from '../../components/Button.astro';
+import PrivacyNote from '../../components/PrivacyNote.astro';
 import ProductFigure from '../../components/ProductFigure.astro';
 import { formatNaira } from '../../lib/format';
 import { buildWhatsAppUrl } from '../../lib/whatsapp';
@@ -199,6 +200,7 @@ const variantList = variants.map((v) => v.label).join(', ');
                     <input id={`phone-${v.ref}`} name="phone" type="tel" required autocomplete="tel" maxlength="40" />
                   </div>
 
+                  <PrivacyNote kind="order" />
                   <Button as="button" type="submit" variant="gold">
                     Pay {formatNaira(v.price)} now
                   </Button>

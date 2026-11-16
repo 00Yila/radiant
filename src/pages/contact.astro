@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Section from '../components/Section.astro';
+import PrivacyNote from '../components/PrivacyNote.astro';
 import { buildWhatsAppUrl } from '../lib/whatsapp';
 import { SITE } from '../lib/site';
 import { SUBJECTS, SUBJECT_BY_SERVICE, MESSAGE_PROMPT } from '../lib/contact';
@@ -151,6 +152,7 @@ const waUrl = buildWhatsAppUrl({
             ></textarea>
           </div>
 
+          <PrivacyNote kind="enquiry" />
           <button type="submit" class="ra-btn ra-btn--primary">Send message</button>
         </form>
       </div>

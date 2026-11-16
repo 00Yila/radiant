@@ -1,0 +1,29 @@
+---
+/*
+ * The one-sentence notice shown directly above a form's submit button. Every
+ * form on the site that collects personal data uses this, so the wording and
+ * the link to /privacy cannot drift between forms.
+ */
+interface Props {
+  kind: 'enquiry' | 'order' | 'signin';
+}
+const { kind } = Astro.props;
+
+const text = {
+  enquiry: 'We use these details only to reply to your enquiry.',
+  order:
+    'We use these details to process and deliver your order. Card payments are handled by Paystack.',
+  signin: "We'll use your email only to send your sign-in link.",
+}[kind];
+---
+<p class="privacy-note">{text} See our <a href="/privacy">privacy policy</a>.</p>
+
+<style>
+  .privacy-note {
+    font-size: var(--ra-step--1);
+    color: var(--ra-fg-muted);
+  }
+  .privacy-note a {
+    text-decoration: underline;
+  }
+</style>

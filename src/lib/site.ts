@@ -27,6 +27,9 @@ export const SITE = Object.freeze({
 
   tagline: 'Building Digital Solutions That Drive Business Growth.',
   preOrderLeadTime: '3–4 weeks',
+
+  /** Shown as "Last updated" on both the Privacy Policy and the Terms. */
+  legalUpdated: '16 November 2026',
 } as const);
 
 /**
