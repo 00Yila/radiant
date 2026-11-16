@@ -32,6 +32,11 @@ $token = bin2hex(random_bytes(32));
 $tokenHash = hash('sha256', $token);
 
 $pdo = dbConnect();
+
+// Expired links are useless and each row holds an email address, so drop them
+// here instead of keeping them forever. The privacy policy promises this.
+$pdo->prepare('DELETE FROM login_tokens WHERE expires_at < NOW()')->execute();
+
 $pdo->prepare(
     'INSERT INTO login_tokens (email, token_hash, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE))'
 )->execute([$email, $tokenHash]);

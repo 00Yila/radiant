@@ -43,3 +43,19 @@ describe('every form that collects personal data carries the notice', () => {
     expect(note).toBeLessThan(button);
   });
 });
+
+describe('expired login tokens are not kept forever', () => {
+  const php = readFileSync('public/account/login.php', 'utf8');
+
+  it('deletes expired tokens with a prepared statement', () => {
+    expect(php).toContain("DELETE FROM login_tokens WHERE expires_at < NOW()");
+  });
+
+  it('prunes before inserting the new token', () => {
+    const prune = php.indexOf('DELETE FROM login_tokens');
+    const insert = php.indexOf('INSERT INTO login_tokens');
+    expect(prune).toBeGreaterThan(-1);
+    expect(insert).toBeGreaterThan(-1);
+    expect(prune).toBeLessThan(insert);
+  });
+});
