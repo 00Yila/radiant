@@ -397,7 +397,7 @@ describe('the privacy policy describes what the site really does', () => {
   it('states fixed retention periods', () => {
     expect(page).toContain('2 years');
     expect(page).toContain('6 years');
-    expect(page).toMatch(/deleted once (they have )?expired/);
+    expect(page).toContain('expired ones are cleared out whenever a new link is requested');
   });
 
   it('shows the shared last-updated date', () => {
@@ -548,8 +548,8 @@ import { SITE } from '../lib/site';
           accounting and tax purposes.
         </li>
         <li>
-          <strong>Sign-in links:</strong> deleted once they have expired. They last 15
-          minutes.
+          <strong>Sign-in links:</strong> deleted after they expire. They last 15 minutes,
+          and expired ones are cleared out whenever a new link is requested.
         </li>
       </ul>
 
