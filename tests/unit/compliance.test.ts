@@ -99,3 +99,34 @@ describe('the privacy policy describes what the site really does', () => {
     expect(page).not.toMatch(/registered with the (nigeria data protection|ndpc)/i);
   });
 });
+
+describe('the terms match instant checkout', () => {
+  const page = readFileSync('src/pages/terms.astro', 'utf8');
+
+  it('confirms orders on payment, not on a quoted price', () => {
+    expect(page).toContain('after your payment is confirmed');
+    expect(page).toContain('the price shown at checkout when you pay');
+    expect(page).not.toContain('confirmed with you at the point of order');
+  });
+
+  it('explains payments and refunds through Paystack', () => {
+    expect(page).toContain('Paystack');
+    expect(page).toContain('<h2>Payments</h2>');
+  });
+
+  it('has governing law and a dispute step', () => {
+    expect(page).toContain('<h2>Governing law and disputes</h2>');
+    expect(page).toContain('laws of the Federal Republic of Nigeria');
+    expect(page).toContain('within 30 days');
+  });
+
+  it('shows the shared last-updated date', () => {
+    expect(page).toContain('SITE.legalUpdated');
+  });
+
+  it('leaves the cancellation sentence exactly as it was', () => {
+    expect(page).toContain(
+      'Once procurement and shipping have begun, an order cannot be cancelled.'
+    );
+  });
+});

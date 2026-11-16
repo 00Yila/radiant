@@ -50,3 +50,14 @@ test.describe('the privacy policy page', () => {
     );
   });
 });
+
+test.describe('the terms page', () => {
+  test('shows the new sections and the last-updated date', async ({ page }) => {
+    await page.goto('/terms');
+    await expect(page.getByRole('heading', { level: 2, name: 'Payments' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Governing law and disputes' })
+    ).toBeVisible();
+    await expect(page.getByText('Last updated 16 November 2026')).toBeVisible();
+  });
+});

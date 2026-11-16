@@ -15,6 +15,8 @@ import { SITE } from '../lib/site';
 
   <Section>
     <div class="ra-measure ra-prose">
+      <p class="updated">Last updated {SITE.legalUpdated}</p>
+
       <h2>Who we are</h2>
       <p>
         {SITE.legalName}, RC {SITE.rcNumber}, registered with the Corporate Affairs
@@ -24,18 +26,27 @@ import { SITE } from '../lib/site';
       <h2>Pre-order terms</h2>
       <p>
         All products in our shop are supplied on a pre-order basis. We source your device
-        after your order is confirmed, which is what allows us to price competitively.
+        after your payment is confirmed, which is what allows us to price competitively.
         <strong> Please allow {SITE.preOrderLeadTime} from order confirmation for
         delivery.</strong>
       </p>
       <p>
         Prices are quoted in Nigerian Naira and may change without notice. The price that
-        applies to your order is the price confirmed with you at the point of order.
+        applies to your order is the price shown at checkout when you pay.
       </p>
       <p>
         Once procurement and shipping have begun, an order cannot be cancelled. Your
         rights if something arrives damaged, defective, or not as described are set out in
         our <a href="/returns">Returns &amp; Warranty</a> policy.
+      </p>
+
+      <h2>Payments</h2>
+      <p>
+        Card payments for shop orders are processed by Paystack. You enter your card
+        details on Paystack&rsquo;s page, and we never see or store them. Your order is
+        confirmed once Paystack confirms your payment. If we refund an order, the money
+        goes back to the payment method you used, as set out in our
+        <a href="/returns">Returns &amp; Warranty</a> policy.
       </p>
 
       <h2>Product descriptions</h2>
@@ -64,6 +75,15 @@ import { SITE } from '../lib/site';
         Competition and Consumer Protection Act or other applicable Nigerian law.
       </p>
 
+      <h2>Governing law and disputes</h2>
+      <p>
+        These terms are governed by the laws of the Federal Republic of Nigeria, and the
+        courts of the Federal Capital Territory, Abuja, have jurisdiction. If you have a
+        complaint, please contact us first at
+        <a href={`mailto:${SITE.email}`}>{SITE.email}</a> so that we can try to resolve it
+        within 30 days before either of us takes it further.
+      </p>
+
       <h2>Changes to these terms</h2>
       <p>
         We may update these terms. The version published on this page at the time you
@@ -81,4 +101,5 @@ import { SITE } from '../lib/site';
 
 <style>
   .lede--tight { margin-block: var(--ra-space-m) 0; }
+  .updated { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
 </style>
