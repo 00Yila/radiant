@@ -59,3 +59,43 @@ describe('expired login tokens are not kept forever', () => {
     expect(prune).toBeLessThan(insert);
   });
 });
+
+describe('the privacy policy describes what the site really does', () => {
+  const page = readFileSync('src/pages/privacy.astro', 'utf8');
+
+  it('no longer names Netlify as the host', () => {
+    expect(page).not.toMatch(/netlify/i);
+  });
+
+  it.each([
+    'Hostinger',
+    'Paystack',
+    'WhatsApp',
+    'Nigeria Data Protection Commission',
+    'ndpc.gov.ng',
+    'legitimate interest',
+    'outside Nigeria',
+    'session cookie',
+  ])('mentions %s', (phrase) => {
+    expect(page).toContain(phrase);
+  });
+
+  it('states fixed retention periods', () => {
+    expect(page).toContain('2 years');
+    expect(page).toContain('6 years');
+    expect(page).toContain('expired ones are cleared out whenever a new link is requested');
+  });
+
+  it('shows the shared last-updated date', () => {
+    expect(page).toContain('SITE.legalUpdated');
+  });
+
+  it('cites no statute section numbers', () => {
+    expect(page).not.toMatch(/\bsection\s+\d+\b/i);
+    expect(page).not.toMatch(/\bs\.\s?\d+\b/);
+  });
+
+  it('does not claim NDPC registration', () => {
+    expect(page).not.toMatch(/registered with the (nigeria data protection|ndpc)/i);
+  });
+});

@@ -5,7 +5,7 @@ import { SITE } from '../lib/site';
 ---
 <Base
   title="Privacy Policy"
-  description="How Radiant Alpha Digital Services collects, uses, and protects the personal information you provide through our website and contact channels."
+  description="How Radiant Alpha Digital Services collects, uses, and protects the personal information you give us through our website, orders and contact channels."
   path="/privacy"
 >
   <Section register="dark">
@@ -15,18 +15,49 @@ import { SITE } from '../lib/site';
 
   <Section>
     <div class="ra-measure ra-prose">
-      <h2>What we collect</h2>
+      <p class="updated">Last updated {SITE.legalUpdated}</p>
+
+      <h2>Who we are</h2>
       <p>
-        When you use our contact form we collect your name, email address, an optional
-        phone number, and the message you write. When you contact us on WhatsApp we
-        receive your phone number and the messages you send.
+        {SITE.legalName}, RC {SITE.rcNumber}, {SITE.location}, is responsible for the
+        personal information described on this page. Questions about it:
+        <a href={`mailto:${SITE.email}`}>{SITE.email}</a> or {SITE.phoneDisplay}.
       </p>
 
-      <h2>What we use it for</h2>
+      <h2>What we collect, and why we are allowed to</h2>
+      <ul>
+        <li>
+          <strong>Enquiry and project forms.</strong> Your name, email address, phone
+          number and message and, on the project form, your budget and timeline. We use
+          them to reply to you and to scope your project. Our basis is taking steps at
+          your request before a contract.
+        </li>
+        <li>
+          <strong>Orders.</strong> Your name, email address, phone number and what you
+          ordered. We use them to take payment, source and deliver your order and support
+          you afterwards. Our basis is performing the contract with you. We also keep order
+          records because the law requires us to keep accounts.
+        </li>
+        <li>
+          <strong>Your orders and order tracking.</strong> Your email address and order
+          reference, a one-time sign-in link we email you, and a session cookie. We use
+          them to show you your own orders and nobody else&rsquo;s. Our basis is
+          performing the contract with you and our legitimate interest in keeping your
+          orders secure.
+        </li>
+        <li>
+          <strong>WhatsApp.</strong> Your phone number and the messages you send. We use
+          them to reply to you. Our basis is that you contacted us.
+        </li>
+      </ul>
+
+      <h2>Cookies and similar storage</h2>
       <p>
-        We use your information solely to respond to your enquiry, to fulfil and support
-        an order you place, and to keep a record of our correspondence with you. We do
-        not use it for anything else.
+        We set one cookie, and only if you sign in to &ldquo;Your orders&rdquo;: a session
+        cookie that keeps you signed in. It is strictly necessary for that feature and is
+        deleted when you close your browser. Your shopping cart is kept in your own
+        browser&rsquo;s storage on your device and is not sent to us until you check out.
+        We do not use analytics, advertising or tracking cookies.
       </p>
 
       <h2>What we do not do</h2>
@@ -37,32 +68,50 @@ import { SITE } from '../lib/site';
         <li>We do not use advertising or tracking cookies on this site</li>
       </ul>
 
-      <h2>Service providers</h2>
+      <h2>Who else handles your data</h2>
       <p>
-        Our website is hosted by Netlify, and form submissions are processed through
-        Netlify Forms. WhatsApp messages are handled by WhatsApp. Each of these providers
-        processes data under its own privacy policy.
+        Hostinger hosts this website, our order database and our email. Paystack
+        processes card payments: you enter your card details on Paystack&rsquo;s own page
+        and we never see or store them. WhatsApp handles WhatsApp messages. Each of these
+        providers processes data under its own privacy policy and security commitments.
+      </p>
+
+      <h2>Data leaving Nigeria</h2>
+      <p>
+        Some of these providers may store or process your information on servers
+        outside Nigeria. When they do, we rely on their own data-protection commitments.
       </p>
 
       <h2>How long we keep it</h2>
-      <p>
-        Enquiry records are kept for as long as needed to respond to you and maintain a
-        reasonable business record. Order records are kept for as long as required for
-        warranty, accounting, and tax purposes.
-      </p>
+      <ul>
+        <li><strong>Enquiries:</strong> 2 years after our last contact with you.</li>
+        <li>
+          <strong>Order records:</strong> 6 years from the date of the order, for warranty,
+          accounting and tax purposes.
+        </li>
+        <li>
+          <strong>Sign-in links:</strong> deleted after they expire. They last 15 minutes,
+          and expired ones are cleared out whenever a new link is requested.
+        </li>
+      </ul>
 
       <h2>Your rights</h2>
       <p>
-        Under the Nigeria Data Protection Act, you may request a copy of the personal
-        information we hold about you, ask us to correct it, or ask us to delete it. Email
-        <a href={`mailto:${SITE.email}`}>{SITE.email}</a> and we will respond within 30
-        days.
+        Under the Nigeria Data Protection Act you may ask for a copy of the personal
+        information we hold about you, ask us to correct or delete it, ask us to restrict
+        how we use it, object to our use of it, receive it in a portable format, and
+        withdraw your consent where we rely on consent. We cannot delete records we are
+        legally required to keep, such as order records, before the period above ends.
+        Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> and we will respond within
+        30 days.
       </p>
 
-      <h2>Contact</h2>
+      <h2>Complaints</h2>
       <p>
-        Questions about this policy: <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-        or {SITE.phoneDisplay}. {SITE.legalName}, RC {SITE.rcNumber}, {SITE.location}.
+        If you are unhappy with how we have handled your information, please tell us
+        first at <a href={`mailto:${SITE.email}`}>{SITE.email}</a> so we can put it right.
+        You also have the right to complain to the Nigeria Data Protection Commission
+        (<a href="https://ndpc.gov.ng" rel="noopener noreferrer">ndpc.gov.ng</a>).
       </p>
     </div>
   </Section>
@@ -70,4 +119,5 @@ import { SITE } from '../lib/site';
 
 <style>
   .lede--tight { margin-block: var(--ra-space-m) 0; }
+  .updated { color: var(--ra-fg-muted); font-size: var(--ra-step--1); }
 </style>

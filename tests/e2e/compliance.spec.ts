@@ -21,3 +21,32 @@ test.describe('each form tells people how their details are used', () => {
     });
   }
 });
+
+test.describe('the privacy policy page', () => {
+  test('has every required section and a last-updated date', async ({ page }) => {
+    await page.goto('/privacy');
+    for (const heading of [
+      'Who we are',
+      'What we collect, and why we are allowed to',
+      'Cookies and similar storage',
+      'What we do not do',
+      'Who else handles your data',
+      'Data leaving Nigeria',
+      'How long we keep it',
+      'Your rights',
+      'Complaints',
+    ]) {
+      await expect(page.getByRole('heading', { level: 2, name: heading })).toBeVisible();
+    }
+    await expect(page.getByText('Last updated 16 November 2026')).toBeVisible();
+    await expect(page.locator('main')).not.toContainText(/netlify/i);
+  });
+
+  test('links to the regulator', async ({ page }) => {
+    await page.goto('/privacy');
+    await expect(page.getByRole('link', { name: 'ndpc.gov.ng' })).toHaveAttribute(
+      'href',
+      'https://ndpc.gov.ng'
+    );
+  });
+});
