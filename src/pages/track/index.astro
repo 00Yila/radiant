@@ -1,13 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Section from '../../components/Section.astro';
+import PrivacyNote from '../../components/PrivacyNote.astro';
 
 /*
- * Plain GET form to /order-status.php — works with zero JavaScript, and a
- * lookup is naturally bookmarkable/shareable since the reference and email
- * just become query params. order/confirmed.astro links here with
- * ?reference= prefilled; the field below reads it client-side since Astro
- * has no access to the query string at build time.
+ * Plain POST form to /order-status.php — works with zero JavaScript. It is a
+ * POST (not GET) so the customer's email address never ends up in the web
+ * address, server logs or browser history. order/confirmed.astro links here
+ * with ?reference= prefilled; the field below reads it client-side since
+ * Astro has no access to the query string at build time.
  */
 ---
 <Base
@@ -26,7 +27,7 @@ import Section from '../../components/Section.astro';
   </Section>
 
   <Section>
-    <form method="get" action="/order-status.php" class="lookup ra-measure">
+    <form method="post" action="/order-status.php" class="lookup ra-measure">
       <p class="error" id="error" hidden>
         We couldn&rsquo;t find an order matching those details. Double-check your reference
         and the email you paid with, or message us if you&rsquo;re still stuck.
@@ -42,6 +43,7 @@ import Section from '../../components/Section.astro';
         <input id="email" name="email" type="email" required autocomplete="email" />
       </div>
 
+      <PrivacyNote kind="lookup" />
       <button type="submit" class="ra-btn ra-btn--primary">Track order</button>
     </form>
   </Section>

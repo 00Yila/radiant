@@ -5,7 +5,7 @@
  * the link to /privacy cannot drift between forms.
  */
 interface Props {
-  kind: 'enquiry' | 'order' | 'signin';
+  kind: 'enquiry' | 'order' | 'signin' | 'lookup';
 }
 const { kind } = Astro.props;
 
@@ -14,6 +14,7 @@ const text = {
   order:
     'We use these details to process and deliver your order. Card payments are handled by Paystack.',
   signin: "We'll use your email only to send your sign-in link.",
+  lookup: 'We use these details only to find your order.',
 }[kind];
 ---
 <p class="privacy-note">{text} See our <a href="/privacy">privacy policy</a>.</p>

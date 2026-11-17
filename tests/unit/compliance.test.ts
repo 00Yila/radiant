@@ -21,6 +21,7 @@ describe('the privacy notice component', () => {
       'We use these details to process and deliver your order. Card payments are handled by Paystack.'
     );
     expect(component).toContain("We'll use your email only to send your sign-in link.");
+    expect(component).toContain('We use these details only to find your order.');
   });
 });
 
@@ -31,6 +32,7 @@ describe('every form that collects personal data carries the notice', () => {
     ['src/pages/cart/index.astro', 'order', 'Proceed to Payment'],
     ['src/pages/account/login.astro', 'signin', 'Send me a link'],
     ['src/pages/shop/[product].astro', 'order', 'Pay {formatNaira(v.price)} now'],
+    ['src/pages/track/index.astro', 'lookup', 'Track order</button>'],
   ];
 
   it.each(pages)('%s shows a %s notice before its submit button', (file, kind, label) => {
@@ -41,6 +43,15 @@ describe('every form that collects personal data carries the notice', () => {
     expect(note, `no <PrivacyNote kind="${kind}" /> in ${file}`).toBeGreaterThan(-1);
     expect(button, `could not find the submit button "${label}" in ${file}`).toBeGreaterThan(-1);
     expect(note).toBeLessThan(button);
+  });
+});
+
+describe('the order lookup form keeps the email out of the web address', () => {
+  const page = readFileSync('src/pages/track/index.astro', 'utf8');
+
+  it('submits with POST, not GET', () => {
+    expect(page).toContain('<form method="post" action="/order-status.php"');
+    expect(page).not.toContain('method="get"');
   });
 });
 
@@ -88,6 +99,25 @@ describe('the privacy policy describes what the site really does', () => {
 
   it('shows the shared last-updated date', () => {
     expect(page).toContain('SITE.legalUpdated');
+  });
+
+  it('discloses server logs and how long they are kept', () => {
+    expect(page).toContain('<strong>Server logs.</strong>');
+    expect(page).toContain('your IP address, browser type and the pages you request');
+    expect(page).toContain('<strong>Server logs:</strong> kept for a short period set by our host.');
+  });
+
+  it('says what Paystack receives', () => {
+    expect(page).toContain(
+      'Paystack processes payments: we give it your email address, the amount and an order reference,'
+    );
+    expect(page).not.toContain('processes card payments');
+  });
+
+  it('describes the enquiry fields and the cookie condition accurately', () => {
+    expect(page).toContain('an optional phone number, the subject and your message');
+    expect(page).toContain('only if you use &ldquo;Your orders&rdquo;');
+    expect(page).not.toContain('only if you sign in');
   });
 
   it('cites no statute section numbers', () => {

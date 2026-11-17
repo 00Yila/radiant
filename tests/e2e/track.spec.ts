@@ -14,7 +14,7 @@ test.describe('the order lookup form works without JavaScript', () => {
     await page.goto('/track');
 
     const form = page.locator('form[action="/order-status.php"]');
-    await expect(form).toHaveAttribute('method', 'get');
+    await expect(form).toHaveAttribute('method', 'post');
     await expect(form.getByLabel('Order reference')).toBeVisible();
     await expect(form.getByLabel('Email address')).toBeVisible();
     await expect(form.getByRole('button', { name: /track order/i })).toBeVisible();

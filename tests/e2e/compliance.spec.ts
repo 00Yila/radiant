@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { SITE } from '../../src/lib/site';
 
 const forms = [
   { label: 'contact', path: '/contact', form: 'form[action="/contact.php"]', text: /reply to your enquiry/i },
@@ -6,6 +7,7 @@ const forms = [
   { label: 'cart checkout', path: '/cart', form: '#cart-checkout-form', text: /process and deliver your order/i },
   { label: 'sign-in', path: '/account/login', form: 'form[action="/account/login.php"]', text: /send your sign-in link/i },
   { label: 'Pay Now', path: '/shop/iphone-13', form: 'form[action="/checkout.php"]', text: /process and deliver your order/i },
+  { label: 'order lookup', path: '/track', form: 'form[action="/order-status.php"]', text: /find your order/i },
 ];
 
 test.describe('each form tells people how their details are used', () => {
@@ -38,7 +40,7 @@ test.describe('the privacy policy page', () => {
     ]) {
       await expect(page.getByRole('heading', { level: 2, name: heading })).toBeVisible();
     }
-    await expect(page.getByText('Last updated 16 November 2026')).toBeVisible();
+    await expect(page.getByText(`Last updated ${SITE.legalUpdated}`)).toBeVisible();
     await expect(page.locator('main')).not.toContainText(/netlify/i);
   });
 
@@ -58,7 +60,7 @@ test.describe('the terms page', () => {
     await expect(
       page.getByRole('heading', { level: 2, name: 'Governing law and disputes' })
     ).toBeVisible();
-    await expect(page.getByText('Last updated 16 November 2026')).toBeVisible();
+    await expect(page.getByText(`Last updated ${SITE.legalUpdated}`)).toBeVisible();
   });
 });
 
